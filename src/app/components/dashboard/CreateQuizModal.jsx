@@ -1,22 +1,76 @@
 "use client";
 
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-const CreateQuizModal = ({ isOpen, onClose, notes }) => {
-  const [step, setStep] = useState("selectType"); // 'selectType', 'selectNote', 'enterTopic'
-  const [selectedNote, setSelectedNote] = useState(null);
+const CreateQuizModal = ({ isOpen, onClose }) => {
+  const router = useRouter();
+  const [step, setStep] = useState("selectType");
+  const [notes, setNotes] = useState([]);
+  const [selectedNoteId, setSelectedNoteId] = useState(null);
   const [topic, setTopic] = useState("");
+  
+  const [isLoadingNotes, setIsLoadingNotes] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState("");
 
-  if (!isOpen) return null;
+  // Fetch notes only when the user wants to create from notes
+  useEffect(() => {
+    if (step === "selectNote" && isOpen) {
+      setIsLoadingNotes(true);
+      setError("");
+      fetch("/api/notes")
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to load notes.");
+          return res.json();
+        })
+        .then((data) => setNotes(data))
+        .catch((err) => setError(err.message))
+        .finally(() => setIsLoadingNotes(false));
+    }
+  }, [step, isOpen]);
+  
+  const resetState = () => {
+    setStep("selectType");
+    setSelectedNoteId(null);
+    setTopic("");
+    setError("");
+    setIsGenerating(false);
+  };
 
-  const handleStartQuiz = () => {
-    if (step === 'selectNote' && selectedNote) {
-      console.log("Starting quiz from note:", selectedNote);
-      onClose();
-    } else if (step === 'enterTopic' && topic) {
-      console.log("Starting quiz with AI on topic:", topic);
-      onClose();
+  const handleClose = () => {
+    resetState();
+    onClose();
+  };
+
+  const handleGenerateQuiz = async () => {
+    setIsGenerating(true);
+    setError("");
+
+    const sourceType = step === 'selectNote' ? 'note' : 'topic';
+    const sourceValue = step === 'selectNote' ? selectedNoteId : topic;
+
+    try {
+      const res = await fetch('/api/generate/quiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sourceType, sourceValue })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || `Failed to generate quiz.`);
+      }
+
+      const { quizId } = await res.json();
+      handleClose();
+      router.push(`/dashboard/quiz/${quizId}`);
+
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -25,78 +79,49 @@ const CreateQuizModal = ({ isOpen, onClose, notes }) => {
       case "selectNote":
         return (
           <div>
-            <h3 className="text-xl font-semibold text-black mb-4">
-              Select a Note
-            </h3>
-            <div className="space-y-2">
+            <h3 className="text-xl font-semibold text-black mb-4">Select a Note</h3>
+            {isLoadingNotes && <p>Loading notes...</p>}
+            <div className="space-y-2 max-h-60 overflow-y-auto">
               {notes.map((note) => (
                 <div
                   key={note.id}
-                  onClick={() => setSelectedNote(note)}
+                  onClick={() => setSelectedNoteId(note.id)}
                   className={`p-4 rounded-md cursor-pointer ${
-                    selectedNote && selectedNote.id === note.id
-                      ? "bg-gray-200"
+                    selectedNoteId === note.id
+                      ? "bg-gray-200 border border-black"
                       : "bg-gray-100 hover:bg-gray-200"
                   }`}
                 >
-                  <p className="font-medium text-black">{note.title}</p>
+                  <p className="font-medium text-black truncate">{note.title}</p>
                 </div>
               ))}
-            </div>
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={handleStartQuiz}
-                disabled={!selectedNote}
-                className="px-6 py-2 text-sm font-medium text-white bg-black rounded-md disabled:bg-gray-400"
-              >
-                Start Quiz
-              </button>
             </div>
           </div>
         );
       case "enterTopic":
         return (
           <div>
-            <h3 className="text-xl font-semibold text-black mb-4">
-              Enter a Topic
-            </h3>
+            <h3 className="text-xl font-semibold text-black mb-4">Enter a Topic</h3>
             <input
               type="text"
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              placeholder="e.g., 'Machine Learning'"
+              placeholder="e.g., 'The fundamentals of Machine Learning'"
               className="w-full px-3 py-2 placeholder-gray-500 text-black border border-gray-300 rounded-md focus:outline-none focus:ring-black focus:border-black"
             />
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={handleStartQuiz}
-                disabled={!topic}
-                className="px-6 py-2 text-sm font-medium text-white bg-black rounded-md disabled:bg-gray-400"
-              >
-                Start Quiz
-              </button>
-            </div>
           </div>
         );
       case "selectType":
       default:
         return (
           <div className="text-center">
-            <h3 className="text-xl font-semibold text-black mb-6">
-              Create a New Quiz
-            </h3>
+            <h3 className="text-xl font-semibold text-black mb-6">Create a New Quiz</h3>
             <div className="flex flex-col space-y-4">
-              <button
-                onClick={() => setStep("selectNote")}
-                className="w-full px-6 py-3 text-lg font-medium text-white bg-black rounded-md hover:bg-gray-800"
-              >
+              <button onClick={() => setStep("selectNote")} className="w-full px-6 py-3 text-lg font-medium text-white bg-black rounded-md hover:bg-gray-800">
                 Create from My Notes
               </button>
-              <button
-                onClick={() => setStep("enterTopic")}
-                className="w-full px-6 py-3 text-lg font-medium text-white bg-black rounded-md hover:bg-gray-800"
-              >
-                Create with AI
+              <button onClick={() => setStep("enterTopic")} className="w-full px-6 py-3 text-lg font-medium text-white bg-black rounded-md hover:bg-gray-800">
+                Create with AI Topic
               </button>
             </div>
           </div>
@@ -104,15 +129,31 @@ const CreateQuizModal = ({ isOpen, onClose, notes }) => {
     }
   };
 
+  const showSubmit = step === 'selectNote' || step === 'enterTopic';
+  const isSubmitDisabled = isGenerating || (step === 'selectNote' && !selectedNoteId) || (step === 'enterTopic' && !topic);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="w-full max-w-lg p-8 bg-white rounded-2xl shadow-md">
-        <div className="flex justify-end">
-          <button onClick={onClose}>
-            <XMarkIcon className="w-6 h-6 text-gray-500" />
-          </button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm">
+      <div className="w-full max-w-lg p-8 bg-white rounded-2xl shadow-xl">
+        <div className="flex justify-between items-start">
+            <h2 className="text-2xl font-bold text-black mb-6">Create Quiz</h2>
+            <button onClick={handleClose}>
+                <XMarkIcon className="w-6 h-6 text-gray-500" />
+            </button>
         </div>
         {renderContent()}
+        {error && <p className="text-sm text-red-500 mt-4">{error}</p>}
+        {showSubmit && (
+             <div className="mt-6 flex justify-end">
+              <button
+                onClick={handleGenerateQuiz}
+                disabled={isSubmitDisabled}
+                className="px-6 py-2 text-sm font-medium text-white bg-black rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {isGenerating ? 'Generating...' : 'Generate Quiz'}
+              </button>
+            </div>
+        )}
       </div>
     </div>
   );

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
+import { TrashIcon, SparklesIcon, QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
 
 const EditNotePage = () => {
   const router = useRouter();
@@ -15,65 +16,170 @@ const EditNotePage = () => {
     []
   );
 
-  // In a real application, you would fetch this data based on the noteId
-  const [notes, setNotes] = useState([
-    { id: "1", title: "Note 1: Introduction to AI", content: "This note contains an introduction to the field of Artificial Intelligence...", folderId: 1 },
-    { id: "2", title: "Note 2: Machine Learning Basics", content: "An overview of the fundamental concepts in Machine Learning...", folderId: 1 },
-    { id: "3", title: "Note 3: Deep Learning", content: "Exploring the architecture and applications of deep neural networks...", folderId: 2 },
-  ]);
+  const [note, setNote] = useState(null);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [folderId, setFolderId] = useState("");
+  const [folders, setFolders] = useState([]);
+  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(null); // 'flashcards' or 'quiz'
 
-  const note = notes.find((n) => n.id === noteId);
+  useEffect(() => {
+    if (!noteId) return;
 
-  const [title, setTitle] = useState(note ? note.title : "");
-  const [content, setContent] = useState(note ? note.content : "");
-  const [folderId, setFolderId] = useState(note ? note.folderId : "");
+    const fetchData = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const [noteRes, foldersRes] = await Promise.all([
+          fetch(`/api/notes/${noteId}`),
+          fetch("/api/folders"),
+        ]);
 
+        if (!noteRes.ok) throw new Error("Note not found or access denied.");
+        if (!foldersRes.ok) throw new Error("Failed to fetch folders.");
 
-  const folders = useState([
-    { id: "1", name: "Mata Kuliah: AI" },
-    { id: "2", name: "Mata Kuliah: Web Dev" },
-    { id: "3", name: "Mata Kuliah: Basis Data" },
-  ])[0];
+        const noteData = await noteRes.json();
+        const foldersData = await foldersRes.json();
 
-  const handleSaveChanges = (e) => {
+        setNote(noteData);
+        setTitle(noteData.title);
+        setContent(noteData.content);
+        setFolderId(noteData.folderId || "");
+        setFolders(foldersData);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [noteId]);
+
+  const handleSaveChanges = async (e) => {
     e.preventDefault();
-    console.log("Saving changes:", { noteId, title, content, folderId });
-    router.push("/dashboard");
+    setIsSaving(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/notes/${noteId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          content,
+          folderId: folderId ? parseInt(folderId) : null,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to save changes.");
+      // Maybe show a success toast in a real app
+      router.refresh(); // Refresh data on the page
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  if (!note) {
-    return (
-      <div className="p-8">
-        <h1 className="text-3xl font-semibold text-black">Note not found</h1>
-      </div>
-    );
-  }
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this note? This action cannot be undone.")) {
+      setIsDeleting(true);
+      setError("");
+      try {
+        const res = await fetch(`/api/notes/${noteId}`, { method: "DELETE" });
+        if (!res.ok) throw new Error("Failed to delete note.");
+        router.push("/dashboard");
+      } catch (err) {
+        setError(err.message);
+        setIsDeleting(false);
+      }
+    }
+  };
+
+  const handleGenerate = async (type) => {
+    setIsGenerating(type);
+    setError('');
+    try {
+        const url = type === 'flashcards' ? '/api/generate/flashcards' : '/api/generate/quiz';
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sourceType: 'note', sourceValue: noteId })
+        });
+
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.message || `Failed to generate ${type}`);
+        }
+        
+        // On success, redirect to the appropriate page
+        if (type === 'quiz') {
+            const { quizId } = await res.json();
+            router.push(`/dashboard/quiz/${quizId}`);
+        } else {
+             // For flashcards, maybe just refresh or go to a flashcard viewer page
+            router.push(`/dashboard/flashcards?noteId=${noteId}`);
+        }
+
+    } catch (err) {
+        setError(err.message);
+    } finally {
+        setIsGenerating(null);
+    }
+  };
+
+  if (loading) return <div className="p-8">Loading...</div>;
+  if (error && !note) return <div className="p-8 text-red-500">Error: {error}</div>;
+
 
   return (
     <div className="p-8">
       <form onSubmit={handleSaveChanges}>
-        <div className="mb-8">
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full text-3xl font-semibold text-black border-none focus:outline-none"
-            placeholder="Note Title"
-          />
+        <div className="flex justify-between items-start mb-8">
+            <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full text-4xl font-bold bg-transparent text-black border-none focus:outline-none focus:ring-0"
+                placeholder="Note Title"
+            />
+            <div className="flex space-x-2">
+                <button
+                    type="button"
+                    onClick={() => handleGenerate('flashcards')}
+                    disabled={isGenerating}
+                    className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                    title="Generate Flashcards from this Note"
+                >
+                    <SparklesIcon className="w-5 h-5 mr-2"/>
+                    {isGenerating === 'flashcards' ? 'Generating...' : 'Flashcards'}
+                </button>
+                 <button
+                    type="button"
+                    onClick={() => handleGenerate('quiz')}
+                    disabled={isGenerating}
+                    className="flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:opacity-50"
+                    title="Create a Quiz from this Note"
+                >
+                    <QuestionMarkCircleIcon className="w-5 h-5 mr-2"/>
+                    {isGenerating === 'quiz' ? 'Creating...' : 'Create Quiz'}
+                </button>
+            </div>
         </div>
+        
         <ReactQuill
           theme="snow"
           value={content}
           onChange={setContent}
           className="bg-white text-black"
+          style={{ height: "400px", marginBottom: "50px" }}
         />
         <div className="mt-8">
-          <label
-            htmlFor="folder"
-            className="block text-sm font-medium text-black"
-          >
-            Folder
-          </label>
+          <label htmlFor="folder" className="block text-sm font-medium text-black">Folder</label>
           <div className="mt-1">
             <select
               id="folder"
@@ -84,27 +190,38 @@ const EditNotePage = () => {
             >
               <option value="">No Folder</option>
               {folders.map((folder) => (
-                <option key={folder.id} value={folder.id}>
-                  {folder.name}
-                </option>
+                <option key={folder.id} value={folder.id}>{folder.name}</option>
               ))}
             </select>
           </div>
         </div>
-        <div className="mt-8 flex justify-end space-x-4">
-          <button
-            type="button"
-            onClick={() => router.push("/dashboard")}
-            className="px-4 py-2 text-sm font-medium text-black bg-gray-200 rounded-md hover:bg-gray-300"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-800"
-          >
-            Save Changes
-          </button>
+        {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
+        <div className="mt-8 flex justify-between items-center">
+            <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="flex items-center px-4 py-2 text-sm font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200 disabled:opacity-50"
+            >
+                <TrashIcon className="w-5 h-5 mr-2" />
+                {isDeleting ? 'Deleting...' : 'Delete Note'}
+            </button>
+            <div className="flex space-x-4">
+                <button
+                    type="button"
+                    onClick={() => router.push("/dashboard")}
+                    className="px-4 py-2 text-sm font-medium text-black bg-gray-200 rounded-md hover:bg-gray-300"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="submit"
+                    disabled={isSaving}
+                    className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-800 disabled:opacity-50"
+                >
+                    {isSaving ? "Saving..." : "Save Changes"}
+                </button>
+            </div>
         </div>
       </form>
     </div>

@@ -1,24 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import {
   FolderIcon,
   HomeIcon,
   CogIcon,
   QuestionMarkCircleIcon,
   RectangleStackIcon,
+  ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
+import { useEffect } from "react";
 
 const Sidebar = () => {
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
     { name: "Folders", href: "/dashboard/folders", icon: FolderIcon },
     { name: "Quiz", href: "/dashboard/quiz", icon: QuestionMarkCircleIcon },
-    { name: "Flashcards", href: "/dashboard/flashcards", icon: RectangleStackIcon },
+    {
+      name: "Flashcards",
+      href: "/dashboard/flashcards",
+      icon: RectangleStackIcon,
+    },
     { name: "Settings", href: "/dashboard/settings", icon: CogIcon },
   ];
 
@@ -44,29 +52,65 @@ const Sidebar = () => {
         ))}
       </nav>
       <div className="mt-auto p-4 border-t border-gray-200">
-        <div className="flex items-center">
-          <Image
-            src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
-            alt="User Avatar"
-            width={32}
-            height={32}
-            className="rounded-full mr-3"
-          />
-          <div>
-            <p className="text-sm font-medium text-black">Rizky Alfaridha</p>
-            <p className="text-xs text-gray-500">user@example.com</p>
+        {session?.user && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Image
+                src={`https://i.pravatar.cc/150?u=${session.user.email}`}
+                alt="User Avatar"
+                width={32}
+                height={32}
+                className="rounded-full mr-3"
+              />
+              <div>
+                <p className="text-sm font-medium text-black truncate">
+                  {session.user.name}
+                </p>
+                <p className="text-xs text-gray-500 truncate">
+                  {session.user.email}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              title="Logout"
+              className="p-2 text-gray-500 rounded-md hover:bg-gray-200 hover:text-black"
+            >
+              <ArrowRightOnRectangleIcon className="w-5 h-5" />
+            </button>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
 };
 
 export default function DashboardLayout({ children }) {
-  return (
-    <div className="flex h-screen bg-white">
-      <Sidebar />
-      <main className="flex-1">{children}</main>
-    </div>
-  );
+  const { status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (status === "authenticated") {
+    return (
+      <div className="flex h-screen bg-white">
+        <Sidebar />
+        <main className="flex-1 overflow-y-auto">{children}</main>
+      </div>
+    );
+  }
+
+  return null;
 }

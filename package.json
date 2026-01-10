@@ -3,15 +3,23 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node -r dotenv/config ./node_modules/.bin/next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@heroicons/react": "^2.2.0",
+    "@prisma/adapter-mariadb": "^7.2.0",
+    "@prisma/client": "^6.19.1",
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.2.3",
     "framer-motion": "^12.24.11",
+    "mysql2": "^3.16.0",
     "next": "14.2.3",
+    "next-auth": "^4.24.13",
+    "prisma": "^6.19.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-quill": "^2.0.0"

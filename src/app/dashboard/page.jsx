@@ -1,18 +1,43 @@
 "use client";
 
 import { MagnifyingGlassIcon, PlusIcon } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 const Dashboard = () => {
-  // Dummy data, in a real app this would come from a database or state management
-  const [notes, setNotes] = useState([
-    { id: 1, title: "Note 1: Introduction to AI", content: "This note contains an introduction to the field of Artificial Intelligence...", folderId: 1, lastModified: new Date() },
-    { id: 2, title: "Note 2: Machine Learning Basics", content: "An overview of the fundamental concepts in Machine Learning...", folderId: 1, lastModified: new Date() },
-    { id: 3, title: "Note 3: Deep Learning", content: "Exploring the architecture and applications of deep neural networks...", folderId: 2, lastModified: new Date() },
-  ]);
+  const [notes, setNotes] = useState([]);
+  const [recentNotes, setRecentNotes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const recentNotes = notes.sort((a, b) => b.lastModified - a.lastModified).slice(0, 3);
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const [recentRes, allRes] = await Promise.all([
+          fetch("/api/notes?recent=true"),
+          fetch("/api/notes"),
+        ]);
+
+        if (!recentRes.ok || !allRes.ok) {
+          throw new Error("Failed to fetch notes");
+        }
+
+        const recentData = await recentRes.json();
+        const allData = await allRes.json();
+
+        setRecentNotes(recentData);
+        setNotes(allData);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <div className="p-8">
@@ -39,39 +64,57 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="mb-12">
-        <h2 className="text-2xl font-semibold text-black mb-4">Recent Notes</h2>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {recentNotes.map((note) => (
-            <Link
-              key={note.id}
-              href={`/dashboard/notes/${note.id}/edit`}
-              className="p-6 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <h3 className="text-lg font-semibold text-black">
-                {note.title}
-              </h3>
-            </Link>
-          ))}
-        </div>
-      </div>
+      {loading && <p>Loading notes...</p>}
+      {error && <p className="text-red-500">Error: {error}</p>}
 
-      <h2 className="text-2xl font-semibold text-black mb-4">All Notes</h2>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {notes.map((note) => (
-          <Link
-            key={note.id}
-            href={`/dashboard/notes/${note.id}/edit`}
-            className="p-6 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
-          >
-            <h3 className="text-lg font-semibold text-black">
-              {note.title}
-            </h3>
-          </Link>
-        ))}
-      </div>
+      {!loading && !error && (
+        <>
+          <div className="mb-12">
+            <h2 className="text-2xl font-semibold text-black mb-4">
+              Recent Notes
+            </h2>
+            {recentNotes.length > 0 ? (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {recentNotes.map((note) => (
+                  <Link
+                    key={note.id}
+                    href={`/dashboard/notes/${note.id}/edit`}
+                    className="p-6 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <h3 className="text-lg font-semibold text-black truncate">
+                      {note.title}
+                    </h3>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500">No recent notes.</p>
+            )}
+          </div>
+
+          <h2 className="text-2xl font-semibold text-black mb-4">All Notes</h2>
+          {notes.length > 0 ? (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {notes.map((note) => (
+                <Link
+                  key={note.id}
+                  href={`/dashboard/notes/${note.id}/edit`}
+                  className="p-6 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
+                >
+                  <h3 className="text-lg font-semibold text-black truncate">
+                    {note.title}
+                  </h3>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">You haven't created any notes yet.</p>
+          )}
+        </>
+      )}
     </div>
   );
 };
 
 export default Dashboard;
+

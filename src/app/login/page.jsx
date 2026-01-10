@@ -1,26 +1,48 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { signIn } from "next-auth/react";
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loginSuccessMessage, setLoginSuccessMessage] = useState(""); // New state for login success
+  const [loading, setLoading] = useState(false);
 
-  const dummyUser = {
-    email: "user@example.com",
-    password: "password123",
-  };
+  useEffect(() => {
+    if (searchParams.get("registered") === "true") {
+      setSuccess("Registrasi berhasil! Silakan login.");
+    }
+  }, [searchParams]);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (email === dummyUser.email && password === dummyUser.password) {
-      router.push("/dashboard");
+    setLoading(true);
+    setError("");
+    setSuccess(""); // Clear registration message on new login attempt
+    setLoginSuccessMessage(""); // Clear login success message on new login attempt
+
+    const result = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
+    });
+
+    setLoading(false);
+
+    if (result.ok) {
+      setLoginSuccessMessage("Login berhasil! Mengalihkan ke dashboard..."); // Set success message
+      setTimeout(() => {
+        router.push("/dashboard"); // Redirect after a delay
+      }, 1500); // 1.5 seconds delay for message to show
     } else {
-      setError("Email atau kata sandi salah");
+      setError("Email atau kata sandi salah"); // More user-friendly message
     }
   };
 
@@ -33,6 +55,11 @@ export default function LoginPage() {
             Selamat datang kembali! Silakan masukkan detail Anda.
           </p>
         </div>
+        
+        {success && <p className="text-sm text-center p-3 bg-green-100 text-green-700 rounded-md">{success}</p>}
+        {loginSuccessMessage && <p className="text-sm text-center p-3 bg-green-100 text-green-700 rounded-md">{loginSuccessMessage}</p>}
+
+
         <form className="space-y-6" onSubmit={handleLogin}>
           <div>
             <label
@@ -75,21 +102,7 @@ export default function LoginPage() {
             </div>
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black"
-              />
-              <label
-                htmlFor="remember-me"
-                className="block ml-2 text-sm text-black"
-              >
-                Ingat saya
-              </label>
-            </div>
+          <div className="flex items-center justify-end">
             <div className="text-sm">
               <a
                 href="#"
@@ -102,9 +115,10 @@ export default function LoginPage() {
           <div>
             <button
               type="submit"
-              className="w-full px-4 py-2 text-sm font-medium text-white bg-black border border-transparent rounded-md shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
+              disabled={loading || loginSuccessMessage}
+              className="w-full px-4 py-2 text-sm font-medium text-white bg-black border border-transparent rounded-md shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50"
             >
-              Login
+              {loading ? "Memproses..." : "Login"}
             </button>
           </div>
         </form>
@@ -121,5 +135,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginPageContent />
+    </Suspense>
   );
 }

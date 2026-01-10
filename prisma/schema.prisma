@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  fullName  String   @map("full_name")
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  folders     Folder[]
+  notes       Note[]
+  quizzes     Quiz[]
+  quizResults QuizResult[]
+  flashcards  Flashcard[]
+
+  @@map("users")
+}
+
+model Folder {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes Note[]
+
+  @@map("folders")
+}
+
+model Note {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  folderId  Int?     @map("folder_id")
+  title     String   @db.VarChar(150)
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder    Folder?    @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  flashcards Flashcard[]
+
+  @@map("notes")
+}
+
+enum SourceType {
+  topic
+  note
+}
+
+model Quiz {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @map("user_id")
+  sourceType   SourceType   @map("source_type")
+  sourceValue  String   @map("source_value")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions     QuizQuestion[]
+  results       QuizResult[]
+
+  @@map("quizzes")
+}
+
+model QuizQuestion {
+  id            Int     @id @default(autoincrement())
+  quizId        Int     @map("quiz_id")
+  question      String  @db.Text
+  optionA       String  @map("option_a")
+  optionB       String  @map("option_b")
+  optionC       String?
+  optionD       String?
+  correctAnswer String  @db.Char(1) @map("correct_answer")
+
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@map("quiz_questions")
+}
+
+model QuizResult {
+  id       Int      @id @default(autoincrement())
+  quizId   Int      @map("quiz_id")
+  userId   Int      @map("user_id")
+  score    Int
+  takenAt  DateTime @default(now()) @map("taken_at")
+
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("quiz_results")
+}
+
+model Flashcard {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  noteId    Int      @map("note_id")
+  frontText String   @map("front_text")
+  backText  String   @db.Text @map("back_text")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@map("flashcards")
+}

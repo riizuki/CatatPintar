@@ -1,54 +1,98 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
 const FolderNotesPage = () => {
   const params = useParams();
+  const router = useRouter();
   const { folderId } = params;
 
-  // In a real application, you would fetch this data based on the folderId
-  const [folders, setFolders] = useState([
-    { id: "1", name: "Mata Kuliah: AI" },
-    { id: "2", name: "Mata Kuliah: Web Dev" },
-    { id: "3", name: "Mata Kuliah: Basis Data" },
-  ]);
+  const [folder, setFolder] = useState(null);
+  const [notes, setNotes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const [notes, setNotes] = useState([
-    { id: 1, title: "Note 1: Introduction to AI", content: "This note contains an introduction to the field of Artificial Intelligence...", folderId: "1" },
-    { id: 2, title: "Note 2: Machine Learning Basics", content: "An overview of the fundamental concepts in Machine Learning...", folderId: "1" },
-    { id: 3, title: "Note 3: Deep Learning", content: "Exploring the architecture and applications of deep neural networks...", folderId: "2" },
-  ]);
+  useEffect(() => {
+    if (!folderId) return;
 
-  const folder = folders.find((f) => f.id === folderId);
-  const folderNotes = notes.filter((n) => String(n.folderId) === String(folderId));
+    const fetchData = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const [folderRes, notesRes] = await Promise.all([
+          fetch(`/api/folders/${folderId}`),
+          fetch(`/api/notes?folderId=${folderId}`),
+        ]);
+
+        if (!folderRes.ok) {
+          throw new Error("Folder not found or you do not have access.");
+        }
+        if (!notesRes.ok) {
+          throw new Error("Failed to fetch notes for this folder.");
+        }
+
+        const folderData = await folderRes.json();
+        const notesData = await notesRes.json();
+
+        setFolder(folderData);
+        setNotes(notesData);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [folderId]);
+  
+  if (loading) {
+    return <div className="p-8">Loading notes...</div>;
+  }
+  
+  if (error) {
+    return <div className="p-8 text-red-500">Error: {error}</div>;
+  }
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-semibold text-black mb-8">
-        {folder ? folder.name : "Folder Not Found"}
-      </h1>
-      {folderNotes.length > 0 ? (
+      <div className="flex items-center mb-8">
+        <button onClick={() => router.back()} className="mr-4 p-2 rounded-full hover:bg-gray-100">
+            <ArrowLeftIcon className="w-6 h-6 text-black"/>
+        </button>
+        <h1 className="text-3xl font-semibold text-black">
+            {folder ? folder.name : "Folder"}
+        </h1>
+      </div>
+
+      {notes.length > 0 ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {folderNotes.map((note) => (
+          {notes.map((note) => (
             <Link
               key={note.id}
               href={`/dashboard/notes/${note.id}/edit`}
-              className="relative p-6 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
+              className="block p-6 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
             >
-              <h3 className="text-lg font-semibold text-black">
+              <h3 className="text-lg font-semibold text-black truncate">
                 {note.title}
               </h3>
               <div
-                className="mt-2 text-sm text-gray-600 prose"
-                dangerouslySetInnerHTML={{ __html: note.content.substring(0, 100) + '...' }}
+                className="mt-2 text-sm text-gray-600 prose max-h-24 overflow-hidden"
+                dangerouslySetInnerHTML={{ __html: note.content }}
               />
             </Link>
           ))}
         </div>
       ) : (
-        <p className="text-gray-600">No notes in this folder yet.</p>
+        <div className="text-center py-16">
+            <p className="text-gray-600">No notes in this folder yet.</p>
+            <Link href="/dashboard/notes/new" className="mt-4 inline-block px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-800">
+                Create the first note
+            </Link>
+        </div>
       )}
     </div>
   );
