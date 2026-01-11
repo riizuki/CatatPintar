@@ -22,7 +22,7 @@ const CreateQuizModal = ({ isOpen, onClose }) => {
       setError("");
       fetch("/api/notes")
         .then((res) => {
-          if (!res.ok) throw new Error("Failed to load notes.");
+          if (!res.ok) throw new Error("Gagal memuat catatan.");
           return res.json();
         })
         .then((data) => setNotes(data))
@@ -60,7 +60,7 @@ const CreateQuizModal = ({ isOpen, onClose }) => {
 
       if (!res.ok) {
         const errData = await res.json();
-        throw new Error(errData.message || `Failed to generate quiz.`);
+        throw new Error(errData.message || `Gagal membuat kuis.`);
       }
 
       const { quizId } = await res.json();
@@ -79,8 +79,8 @@ const CreateQuizModal = ({ isOpen, onClose }) => {
       case "selectNote":
         return (
           <div>
-            <h3 className="text-xl font-semibold text-black mb-4">Select a Note</h3>
-            {isLoadingNotes && <p>Loading notes...</p>}
+            <h3 className="text-xl font-semibold text-black mb-4">Pilih Catatan</h3>
+            {isLoadingNotes && <p>Memuat catatan...</p>}
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {notes.map((note) => (
                 <div
@@ -101,12 +101,12 @@ const CreateQuizModal = ({ isOpen, onClose }) => {
       case "enterTopic":
         return (
           <div>
-            <h3 className="text-xl font-semibold text-black mb-4">Enter a Topic</h3>
+            <h3 className="text-xl font-semibold text-black mb-4">Masukkan Topik</h3>
             <input
               type="text"
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              placeholder="e.g., 'The fundamentals of Machine Learning'"
+              placeholder="cth., 'Dasar-dasar Pembelajaran Mesin'"
               className="w-full px-3 py-2 placeholder-gray-500 text-black border border-gray-300 rounded-md focus:outline-none focus:ring-black focus:border-black"
             />
           </div>
@@ -115,13 +115,13 @@ const CreateQuizModal = ({ isOpen, onClose }) => {
       default:
         return (
           <div className="text-center">
-            <h3 className="text-xl font-semibold text-black mb-6">Create a New Quiz</h3>
+            <h3 className="text-xl font-semibold text-black mb-6">Buat Kuis Baru</h3>
             <div className="flex flex-col space-y-4">
               <button onClick={() => setStep("selectNote")} className="w-full px-6 py-3 text-lg font-medium text-white bg-black rounded-md hover:bg-gray-800">
-                Create from My Notes
+                Buat dari Catatan Saya
               </button>
               <button onClick={() => setStep("enterTopic")} className="w-full px-6 py-3 text-lg font-medium text-white bg-black rounded-md hover:bg-gray-800">
-                Create with AI Topic
+                Buat dengan Topik AI
               </button>
             </div>
           </div>
@@ -133,11 +133,11 @@ const CreateQuizModal = ({ isOpen, onClose }) => {
   const isSubmitDisabled = isGenerating || (step === 'selectNote' && !selectedNoteId) || (step === 'enterTopic' && !topic);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm">
+    <div className={`fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm ${isOpen ? '' : 'hidden'}`}>
       <div className="w-full max-w-lg p-8 bg-white rounded-2xl shadow-xl">
         <div className="flex justify-between items-start">
-            <h2 className="text-2xl font-bold text-black mb-6">Create Quiz</h2>
-            <button onClick={handleClose}>
+            <h2 className="text-2xl font-bold text-black mb-6">Buat Kuis</h2>
+            <button onClick={handleClose} className="relative z-50">
                 <XMarkIcon className="w-6 h-6 text-gray-500" />
             </button>
         </div>
@@ -150,7 +150,7 @@ const CreateQuizModal = ({ isOpen, onClose }) => {
                 disabled={isSubmitDisabled}
                 className="px-6 py-2 text-sm font-medium text-white bg-black rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                {isGenerating ? 'Generating...' : 'Generate Quiz'}
+                {isGenerating ? 'Membuat...' : 'Buat Kuis'}
               </button>
             </div>
         )}

@@ -23,7 +23,7 @@ const FolderModal = ({ isOpen, onClose, onSave, editingFolder, isLoading }) => {
       <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-md">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-semibold text-black">
-            {editingFolder ? "Edit Folder" : "Create Folder"}
+            {editingFolder ? "Edit Folder" : "Buat Folder"}
           </h2>
           <button onClick={onClose} disabled={isLoading}>
             <XMarkIcon className="w-6 h-6 text-gray-500" />
@@ -33,7 +33,7 @@ const FolderModal = ({ isOpen, onClose, onSave, editingFolder, isLoading }) => {
           <div className="space-y-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-black">
-                Folder Name
+                Nama Folder
               </label>
               <div className="mt-1">
                 <input
@@ -54,7 +54,7 @@ const FolderModal = ({ isOpen, onClose, onSave, editingFolder, isLoading }) => {
               disabled={isLoading}
               className="px-4 py-2 text-sm font-medium text-white bg-black border border-transparent rounded-md shadow-sm sm:w-auto hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50"
             >
-              {isLoading ? "Saving..." : (editingFolder ? "Save Changes" : "Create Folder")}
+              {isLoading ? "Menyimpan..." : (editingFolder ? "Simpan Perubahan" : "Buat Folder")}
             </button>
           </div>
         </form>
@@ -75,7 +75,7 @@ const FoldersPage = () => {
     setLoading(true);
     try {
       const res = await fetch("/api/folders");
-      if (!res.ok) throw new Error("Failed to fetch folders");
+      if (!res.ok) throw new Error("Gagal memuat folder");
       const data = await res.json();
       setFolders(data);
     } catch (err) {
@@ -103,7 +103,7 @@ const FoldersPage = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),
       });
-      if (!res.ok) throw new Error(`Failed to ${isEditing ? 'update' : 'create'} folder.`);
+      if (!res.ok) throw new Error(`Gagal ${isEditing ? 'memperbarui' : 'membuat'} folder.`);
       
       await fetchFolders(); // Refetch folders to update the list
       setIsModalOpen(false);
@@ -121,12 +121,12 @@ const FoldersPage = () => {
   };
 
   const handleDeleteFolder = async (id) => {
-    if (window.confirm("Are you sure you want to delete this folder? All notes inside will also be deleted.")) {
+    if (window.confirm("Anda yakin ingin menghapus folder ini? Semua catatan di dalamnya juga akan dihapus.")) {
       setIsMutating(true);
       setError("");
       try {
         const res = await fetch(`/api/folders/${id}`, { method: "DELETE" });
-        if (!res.ok) throw new Error("Failed to delete folder.");
+        if (!res.ok) throw new Error("Gagal menghapus folder.");
         await fetchFolders();
       } catch (err) {
         setError(err.message);
@@ -152,22 +152,22 @@ const FoldersPage = () => {
       />
       <div className="p-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-semibold text-black">Folders</h1>
+          <h1 className="text-3xl font-semibold text-black">Folder</h1>
           <button
             onClick={openCreateModal}
             className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-black border border-transparent rounded-md shadow-sm hover:bg-gray-800"
           >
             <PlusIcon className="w-5 h-5 mr-2" />
-            Create Folder
+            Buat Folder
           </button>
         </div>
 
-        {error && <p className="text-red-500 mb-4">Error: {error}</p>}
+        {error && <p className="text-red-500 mb-4">Kesalahan: {error}</p>}
 
         {loading ? (
-          <p>Loading folders...</p>
+          <p>Memuat folder...</p>
         ) : folders.length === 0 ? (
-          <p className="text-gray-500">No folders created yet. Click "Create Folder" to start.</p>
+          <p className="text-gray-500">Belum ada folder yang dibuat. Klik "Buat Folder" untuk memulai.</p>
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {folders.map((folder) => (
@@ -179,7 +179,7 @@ const FoldersPage = () => {
                   <FolderIcon className="w-8 h-8 mr-4 text-gray-400" />
                   <div>
                     <h3 className="text-lg font-semibold text-black truncate">{folder.name}</h3>
-                    <p className="mt-1 text-sm text-gray-600">{folder.noteCount} Notes</p>
+                    <p className="mt-1 text-sm text-gray-600">{folder.noteCount} Catatan</p>
                   </div>
                 </Link>
                 <div className="absolute top-3 right-3 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -193,7 +193,7 @@ const FoldersPage = () => {
                   <button
                     onClick={(e) => { e.preventDefault(); handleDeleteFolder(folder.id); }}
                     className="p-2 bg-white rounded-full shadow-sm hover:bg-gray-100"
-                    title="Delete Folder"
+                    title="Hapus Folder"
                   >
                     <TrashIcon className="w-4 h-4 text-red-600"/>
                   </button>

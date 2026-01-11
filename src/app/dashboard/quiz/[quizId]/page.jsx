@@ -27,7 +27,7 @@ const QuizTakingPage = () => {
                 if (!res.ok) {
                     const errData = await res.json();
                     if (res.status === 404) router.push('/dashboard/quiz'); // Redirect if quiz not found
-                    throw new Error(errData.message || "Failed to load quiz.");
+                    throw new Error(errData.message || "Gagal memuat kuis.");
                 }
                 const data = await res.json();
                 setQuiz(data);
@@ -46,7 +46,7 @@ const QuizTakingPage = () => {
 
     const handleSubmit = async () => {
         if (Object.keys(answers).length !== quiz.questions.length) {
-            alert("Please answer all questions before submitting.");
+            alert("Harap jawab semua pertanyaan sebelum mengirimkan.");
             return;
         }
 
@@ -72,7 +72,7 @@ const QuizTakingPage = () => {
                      router.push('/dashboard/quiz');
                      return;
                  }
-                throw new Error(errData.message || "Failed to submit answers.");
+                throw new Error(errData.message || "Gagal mengirimkan jawaban.");
             }
             
             const resultData = await res.json();
@@ -85,9 +85,9 @@ const QuizTakingPage = () => {
         }
     };
     
-    if (loading) return <div className="p-8">Loading Quiz...</div>;
-    if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
-    if (!quiz) return <div className="p-8">Quiz not found.</div>;
+    if (loading) return <div className="p-8">Memuat Kuis...</div>;
+    if (error) return <div className="p-8 text-red-500">Kesalahan: {error}</div>;
+    if (!quiz) return <div className="p-8">Kuis tidak ditemukan.</div>;
 
     // Render RESULTS view
     if (result) {
@@ -95,8 +95,8 @@ const QuizTakingPage = () => {
         return (
             <div className="p-8 max-w-4xl mx-auto">
                  <div className="text-center mb-12">
-                    <h1 className="text-4xl font-bold text-black">Quiz Result</h1>
-                    <p className="text-2xl mt-4">Your Score: <span className="font-bold text-blue-600">{result.score}%</span></p>
+                    <h1 className="text-4xl font-bold text-black">Hasil Kuis</h1>
+                    <p className="text-2xl mt-4">Skor Anda: <span className="font-bold text-blue-600">{result.score}%</span></p>
                 </div>
                 <div className="space-y-8">
                     {quiz.questions.map((q, index) => {
@@ -128,7 +128,7 @@ const QuizTakingPage = () => {
                 </div>
                  <div className="text-center mt-12">
                     <Link href="/dashboard/quiz" className="px-6 py-3 text-white bg-black rounded-md hover:bg-gray-800">
-                        Back to Quizzes
+                        Kembali ke Kuis
                     </Link>
                 </div>
             </div>
@@ -143,7 +143,7 @@ const QuizTakingPage = () => {
                     <ArrowLeftIcon className="w-6 h-6 text-black"/>
                 </button>
                 <h1 className="text-3xl font-semibold text-black capitalize">
-                    Quiz: {quiz.sourceType} - {quiz.sourceValue}
+                    Kuis: {quiz.sourceType} - {quiz.sourceValue}
                 </h1>
             </div>
             <div className="space-y-8">
@@ -174,7 +174,7 @@ const QuizTakingPage = () => {
                     disabled={isSubmitting}
                     className="px-8 py-3 text-lg font-medium text-white bg-black rounded-md hover:bg-gray-800 disabled:bg-gray-400"
                 >
-                    {isSubmitting ? 'Submitting...' : 'Submit Quiz'}
+                    {isSubmitting ? 'Mengirimkan...' : 'Kirim Kuis'}
                 </button>
             </div>
         </div>

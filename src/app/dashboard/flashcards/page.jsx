@@ -33,7 +33,7 @@ function FlashcardsDisplay() {
                 ]);
 
                 if (!cardsRes.ok || !noteRes.ok) {
-                    throw new Error("Could not load flashcards or note details.");
+                    throw new Error("Tidak dapat memuat flashcard atau detail catatan.");
                 }
 
                 const cardsData = await cardsRes.json();
@@ -43,7 +43,7 @@ function FlashcardsDisplay() {
                 setNote(noteData);
 
                 if (cardsData.length === 0) {
-                     setError("No flashcards found for this note. Try generating them from the note's edit page.");
+                     setError("Tidak ada flashcard ditemukan untuk catatan ini. Coba buat dari halaman edit catatan.");
                 }
 
             } catch (err) {
@@ -66,15 +66,15 @@ function FlashcardsDisplay() {
         setCurrentIndex(prev => (prev - 1 + flashcards.length) % flashcards.length);
     };
 
-    if (loading) return <div className="p-8 text-center">Loading flashcards...</div>;
+    if (loading) return <div className="p-8 text-center">Memuat flashcard...</div>;
 
     if (!noteId || error) {
         return (
             <div className="p-8 text-center text-gray-600">
-                <h1 className="text-2xl font-semibold mb-4">Flashcards</h1>
-                <p>{error || "To view flashcards, go to a specific note and click 'Generate Flashcards'."}</p>
+                <h1 className="text-2xl font-semibold mb-4">Flashcard</h1>
+                <p>{error || "Untuk melihat flashcard, pergi ke catatan tertentu dan klik 'Buat Flashcard'."}</p>
                  <button onClick={() => router.push('/dashboard')} className="mt-4 px-4 py-2 text-white bg-black rounded-md">
-                    Back to Dashboard
+                    Kembali ke Beranda
                 </button>
             </div>
         );
@@ -85,8 +85,8 @@ function FlashcardsDisplay() {
     return (
         <div className="p-8 flex flex-col items-center justify-center h-full">
             <div className="w-full max-w-2xl">
-                 <h1 className="text-2xl font-semibold text-center text-black mb-2">Flashcards for: {note?.title}</h1>
-                 <p className="text-center text-gray-500 mb-8">Card {currentIndex + 1} of {flashcards.length}</p>
+                 <h1 className="text-2xl font-semibold text-center text-black mb-2">Flashcard untuk: {note?.title}</h1>
+                 <p className="text-center text-gray-500 mb-8">Kartu {currentIndex + 1} dari {flashcards.length}</p>
 
                 <div 
                     className="relative w-full h-80 perspective-1000"
@@ -109,10 +109,10 @@ function FlashcardsDisplay() {
                 <div className="flex justify-between items-center mt-8">
                     <button onClick={goToPrev} className="flex items-center px-4 py-2 text-sm font-medium text-black bg-gray-200 rounded-md hover:bg-gray-300">
                         <ArrowLeftIcon className="w-5 h-5 mr-2"/>
-                        Previous
+                        Sebelumnya
                     </button>
                     <button onClick={goToNext} className="flex items-center px-4 py-2 text-sm font-medium text-black bg-gray-200 rounded-md hover:bg-gray-300">
-                        Next
+                        Selanjutnya
                         <ArrowRightIcon className="w-5 h-5 ml-2"/>
                     </button>
                 </div>
@@ -125,7 +125,7 @@ function FlashcardsDisplay() {
 // Wrap the component in Suspense as it uses useSearchParams
 export default function FlashcardsPage() {
     return (
-        <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+        <Suspense fallback={<div className="p-8 text-center">Memuat...</div>}>
             <FlashcardsDisplay />
         </Suspense>
     );

@@ -19,15 +19,15 @@ const Sidebar = () => {
   const { data: session } = useSession();
 
   const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
-    { name: "Folders", href: "/dashboard/folders", icon: FolderIcon },
-    { name: "Quiz", href: "/dashboard/quiz", icon: QuestionMarkCircleIcon },
+    { name: "Beranda", href: "/dashboard", icon: HomeIcon },
+    { name: "Folder", href: "/dashboard/folders", icon: FolderIcon },
+    { name: "Kuis", href: "/dashboard/quiz", icon: QuestionMarkCircleIcon },
     {
-      name: "Flashcards",
+      name: "Flashcard",
       href: "/dashboard/flashcards",
       icon: RectangleStackIcon,
     },
-    { name: "Settings", href: "/dashboard/settings", icon: CogIcon },
+    { name: "Pengaturan", href: "/dashboard/settings", icon: CogIcon },
   ];
 
   return (
@@ -73,7 +73,7 @@ const Sidebar = () => {
             </div>
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
-              title="Logout"
+              title="Keluar"
               className="p-2 text-gray-500 rounded-md hover:bg-gray-200 hover:text-black"
             >
               <ArrowRightOnRectangleIcon className="w-5 h-5" />
@@ -98,7 +98,7 @@ export default function DashboardLayout({ children }) {
   if (status === "loading") {
     return (
       <div className="flex items-center justify-center h-screen">
-        <p>Loading...</p>
+        <p>Memuat...</p>
       </div>
     );
   }

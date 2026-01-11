@@ -40,8 +40,8 @@ const EditNotePage = () => {
           fetch("/api/folders"),
         ]);
 
-        if (!noteRes.ok) throw new Error("Note not found or access denied.");
-        if (!foldersRes.ok) throw new Error("Failed to fetch folders.");
+        if (!noteRes.ok) throw new Error("Catatan tidak ditemukan atau akses ditolak.");
+        if (!foldersRes.ok) throw new Error("Gagal mengambil folder.");
 
         const noteData = await noteRes.json();
         const foldersData = await foldersRes.json();
@@ -75,7 +75,7 @@ const EditNotePage = () => {
           folderId: folderId ? parseInt(folderId) : null,
         }),
       });
-      if (!res.ok) throw new Error("Failed to save changes.");
+      if (!res.ok) throw new Error("Gagal menyimpan perubahan.");
       // Maybe show a success toast in a real app
       router.refresh(); // Refresh data on the page
     } catch (err) {
@@ -86,12 +86,12 @@ const EditNotePage = () => {
   };
 
   const handleDelete = async () => {
-    if (window.confirm("Are you sure you want to delete this note? This action cannot be undone.")) {
+    if (window.confirm("Anda yakin ingin menghapus catatan ini? Tindakan ini tidak dapat dibatalkan.")) {
       setIsDeleting(true);
       setError("");
       try {
         const res = await fetch(`/api/notes/${noteId}`, { method: "DELETE" });
-        if (!res.ok) throw new Error("Failed to delete note.");
+        if (!res.ok) throw new Error("Gagal menghapus catatan.");
         router.push("/dashboard");
       } catch (err) {
         setError(err.message);
@@ -113,7 +113,7 @@ const EditNotePage = () => {
 
         if (!res.ok) {
             const errData = await res.json();
-            throw new Error(errData.message || `Failed to generate ${type}`);
+            throw new Error(errData.message || `Gagal membuat ${type}`);
         }
         
         // On success, redirect to the appropriate page
@@ -132,8 +132,8 @@ const EditNotePage = () => {
     }
   };
 
-  if (loading) return <div className="p-8">Loading...</div>;
-  if (error && !note) return <div className="p-8 text-red-500">Error: {error}</div>;
+  if (loading) return <div className="p-8">Memuat...</div>;
+  if (error && !note) return <div className="p-8 text-red-500">Kesalahan: {error}</div>;
 
 
   return (
@@ -145,7 +145,7 @@ const EditNotePage = () => {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full text-4xl font-bold bg-transparent text-black border-none focus:outline-none focus:ring-0"
-                placeholder="Note Title"
+                placeholder="Judul Catatan"
             />
             <div className="flex space-x-2">
                 <button
@@ -153,20 +153,20 @@ const EditNotePage = () => {
                     onClick={() => handleGenerate('flashcards')}
                     disabled={isGenerating}
                     className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
-                    title="Generate Flashcards from this Note"
+                    title="Buat Flashcard dari Catatan Ini"
                 >
                     <SparklesIcon className="w-5 h-5 mr-2"/>
-                    {isGenerating === 'flashcards' ? 'Generating...' : 'Flashcards'}
+                    {isGenerating === 'flashcards' ? 'Membuat...' : 'Flashcard'}
                 </button>
                  <button
                     type="button"
                     onClick={() => handleGenerate('quiz')}
                     disabled={isGenerating}
                     className="flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:opacity-50"
-                    title="Create a Quiz from this Note"
+                    title="Buat Kuis dari Catatan Ini"
                 >
                     <QuestionMarkCircleIcon className="w-5 h-5 mr-2"/>
-                    {isGenerating === 'quiz' ? 'Creating...' : 'Create Quiz'}
+                    {isGenerating === 'quiz' ? 'Membuat...' : 'Buat Kuis'}
                 </button>
             </div>
         </div>
@@ -188,7 +188,7 @@ const EditNotePage = () => {
               onChange={(e) => setFolderId(e.target.value)}
               className="block w-full max-w-xs px-3 py-2 text-black border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black sm:text-sm"
             >
-              <option value="">No Folder</option>
+              <option value="">Tidak ada Folder</option>
               {folders.map((folder) => (
                 <option key={folder.id} value={folder.id}>{folder.name}</option>
               ))}
@@ -204,7 +204,7 @@ const EditNotePage = () => {
                 className="flex items-center px-4 py-2 text-sm font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200 disabled:opacity-50"
             >
                 <TrashIcon className="w-5 h-5 mr-2" />
-                {isDeleting ? 'Deleting...' : 'Delete Note'}
+                {isDeleting ? 'Menghapus...' : 'Hapus Catatan'}
             </button>
             <div className="flex space-x-4">
                 <button
@@ -212,14 +212,14 @@ const EditNotePage = () => {
                     onClick={() => router.push("/dashboard")}
                     className="px-4 py-2 text-sm font-medium text-black bg-gray-200 rounded-md hover:bg-gray-300"
                 >
-                    Cancel
+                    Batal
                 </button>
                 <button
                     type="submit"
                     disabled={isSaving}
                     className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-800 disabled:opacity-50"
                 >
-                    {isSaving ? "Saving..." : "Save Changes"}
+                    {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
                 </button>
             </div>
         </div>

@@ -24,11 +24,11 @@ const NewNotePage = () => {
     const fetchFolders = async () => {
       try {
         const res = await fetch("/api/folders");
-        if (!res.ok) throw new Error("Failed to fetch folders");
+        if (!res.ok) throw new Error("Gagal mengambil folder");
         const data = await res.json();
         setFolders(data);
       } catch (err) {
-        setError("Could not load folders. Please try again later.");
+        setError("Tidak dapat memuat folder. Silakan coba lagi nanti.");
       }
     };
     fetchFolders();
@@ -44,7 +44,7 @@ const NewNotePage = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: title || "Untitled Note",
+          title: title || "Catatan Tanpa Judul",
           content,
           folderId: folderId ? parseInt(folderId) : null,
         }),
@@ -52,7 +52,7 @@ const NewNotePage = () => {
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to create note");
+        throw new Error(errorData.message || "Gagal membuat catatan");
       }
 
       const newNote = await res.json();
@@ -72,7 +72,7 @@ const NewNotePage = () => {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full text-4xl font-bold bg-transparent text-black border-none focus:outline-none focus:ring-0"
-            placeholder="Note Title"
+            placeholder="Judul Catatan"
           />
         </div>
         <ReactQuill
@@ -97,7 +97,7 @@ const NewNotePage = () => {
               onChange={(e) => setFolderId(e.target.value)}
               className="block w-full max-w-xs px-3 py-2 text-black border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black sm:text-sm"
             >
-              <option value="">No Folder</option>
+              <option value="">Tidak ada Folder</option>
               {folders.map((folder) => (
                 <option key={folder.id} value={folder.id}>
                   {folder.name}
@@ -114,14 +114,14 @@ const NewNotePage = () => {
             disabled={loading}
             className="px-4 py-2 text-sm font-medium text-black bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50"
           >
-            Cancel
+            Batal
           </button>
           <button
             type="submit"
             disabled={loading}
             className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-800 disabled:opacity-50"
           >
-            {loading ? "Creating..." : "Create Note"}
+            {loading ? "Membuat..." : "Buat Catatan"}
           </button>
         </div>
       </form>

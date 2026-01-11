@@ -29,13 +29,13 @@ const SettingsPage = () => {
 
   const handleLogout = () => {
     // Dummy logout logic
-    console.log("Logging out...");
+    console.log("Keluar...");
     router.push("/login");
   };
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-semibold text-black mb-8">Settings</h1>
+      <h1 className="text-3xl font-semibold text-black mb-8">Pengaturan</h1>
       <div className="max-w-2xl">
         <form onSubmit={handleSaveChanges} className="space-y-6">
           <div>
@@ -139,7 +139,7 @@ const SettingsPage = () => {
             onClick={handleLogout}
             className="w-full px-4 py-2 text-sm font-medium text-red-700 bg-red-100 border border-transparent rounded-md shadow-sm sm:w-auto hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
           >
-            Logout
+            Keluar
           </button>
         </div>
       </div>

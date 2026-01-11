@@ -28,10 +28,10 @@ const FolderNotesPage = () => {
         ]);
 
         if (!folderRes.ok) {
-          throw new Error("Folder not found or you do not have access.");
+          throw new Error("Folder tidak ditemukan atau Anda tidak memiliki akses.");
         }
         if (!notesRes.ok) {
-          throw new Error("Failed to fetch notes for this folder.");
+          throw new Error("Gagal mengambil catatan untuk folder ini.");
         }
 
         const folderData = await folderRes.json();
@@ -50,11 +50,11 @@ const FolderNotesPage = () => {
   }, [folderId]);
   
   if (loading) {
-    return <div className="p-8">Loading notes...</div>;
+    return <div className="p-8">Memuat catatan...</div>;
   }
   
   if (error) {
-    return <div className="p-8 text-red-500">Error: {error}</div>;
+    return <div className="p-8 text-red-500">Kesalahan: {error}</div>;
   }
 
   return (
@@ -88,9 +88,9 @@ const FolderNotesPage = () => {
         </div>
       ) : (
         <div className="text-center py-16">
-            <p className="text-gray-600">No notes in this folder yet.</p>
+            <p className="text-gray-600">Belum ada catatan di folder ini.</p>
             <Link href="/dashboard/notes/new" className="mt-4 inline-block px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-800">
-                Create the first note
+                Buat catatan pertama
             </Link>
         </div>
       )}
