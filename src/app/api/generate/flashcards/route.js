@@ -47,7 +47,7 @@ export async function POST(request) {
             return NextResponse.json({ message: 'Flashcards already exist for this note.' }, { status: 409 });
         }
 
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
         const prompt = `
             Based on the following note content, generate a set of flashcards. Each flashcard should have a "front" (a key term or question) and a "back" (the definition or answer).

@@ -17,6 +17,7 @@ const QuizTakingPage = () => {
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
+    const [uiMessage, setUiMessage] = useState(""); // New state for UI messages
 
     useEffect(() => {
         if (!quizId) return;
@@ -45,8 +46,9 @@ const QuizTakingPage = () => {
     };
 
     const handleSubmit = async () => {
+        setUiMessage(""); // Clear previous messages
         if (Object.keys(answers).length !== quiz.questions.length) {
-            alert("Harap jawab semua pertanyaan sebelum mengirimkan.");
+            setUiMessage("Harap jawab semua pertanyaan sebelum mengirimkan.");
             return;
         }
 
@@ -66,10 +68,12 @@ const QuizTakingPage = () => {
 
             if (!res.ok) {
                  const errData = await res.json();
-                 // If already taken, just redirect to the main quiz page
+                 // If already taken, handle displaying the existing result
                  if (res.status === 409) {
-                     alert(errData.message);
-                     router.push('/dashboard/quiz');
+                     // The backend should ideally return the existing result here.
+                     // For now, we'll just display a message and prevent submission.
+                     setUiMessage(errData.message || "Kuis ini sudah Anda kerjakan.");
+                     setIsSubmitting(false); // Make sure button is enabled
                      return;
                  }
                 throw new Error(errData.message || "Gagal mengirimkan jawaban.");
@@ -80,6 +84,7 @@ const QuizTakingPage = () => {
 
         } catch (err) {
             setError(err.message);
+            setUiMessage(err.message); // Also display network/API errors in UI
         } finally {
             setIsSubmitting(false);
         }
@@ -96,17 +101,17 @@ const QuizTakingPage = () => {
             <div className="p-8 max-w-4xl mx-auto">
                  <div className="text-center mb-12">
                     <h1 className="text-4xl font-bold text-black">Hasil Kuis</h1>
-                    <p className="text-2xl mt-4">Skor Anda: <span className="font-bold text-blue-600">{result.score}%</span></p>
+                    <p className="text-2xl mt-4 text-black">Skor Anda: <span className="font-bold text-blue-600">{result.score}%</span></p>
                 </div>
                 <div className="space-y-8">
                     {quiz.questions.map((q, index) => {
                         const userAnswer = answers[q.id];
-                        const correctAnswer = correctAnswers.get(q.id);
+                        const correctAnswer = correctAnswersMap.get(q.id);
                         const isCorrect = userAnswer === correctAnswer;
                         
                         const getOptionClass = (option) => {
-                            if (option === correctAnswer) return 'bg-green-100 border-green-500 text-green-800';
-                            if (option === userAnswer && !isCorrect) return 'bg-red-100 border-red-500 text-red-800';
+                            if (option === correctAnswer) return 'bg-green-100 border-green-500';
+                            if (option === userAnswer && !isCorrect) return 'bg-red-100 border-red-500';
                             return 'bg-gray-100 border-gray-200';
                         };
 
@@ -116,7 +121,7 @@ const QuizTakingPage = () => {
                                 <div className="space-y-2 mt-4">
                                     {['A', 'B', 'C', 'D'].map(opt => (
                                         <div key={opt} className={`p-3 rounded-md border ${getOptionClass(opt)} flex justify-between items-center`}>
-                                            <span>{opt}. {q[`option${opt}`]}</span>
+                                            <span className="text-black">{opt}. {q[`option${opt}`]}</span>
                                             {opt === correctAnswer && <CheckIcon className="w-5 h-5 text-green-600"/>}
                                             {opt === userAnswer && !isCorrect && <XMarkIcon className="w-5 h-5 text-red-600"/>}
                                         </div>
@@ -155,12 +160,11 @@ const QuizTakingPage = () => {
                                 <div 
                                     key={opt}
                                     onClick={() => handleSelectAnswer(q.id, opt)}
-                                    className={`p-3 rounded-md cursor-pointer transition-colors ${
-                                        answers[q.id] === opt 
-                                        ? 'bg-blue-100 border-blue-500 text-blue-800' 
-                                        : 'bg-gray-50 hover:bg-gray-100 border-gray-200'
-                                    } border`}
-                                >
+                                                                        className={`p-3 rounded-md cursor-pointer transition-colors ${
+                                                                            answers[q.id] === opt
+                                                                            ? 'bg-blue-100 border-blue-500 text-black'
+                                                                            : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-black'
+                                                                        } border`}                                >
                                     {opt}. {q[`option${opt}`]}
                                 </div>
                            ))}
@@ -168,16 +172,18 @@ const QuizTakingPage = () => {
                     </div>
                 ))}
             </div>
-            <div className="mt-12 flex justify-end">
-                <button 
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
-                    className="px-8 py-3 text-lg font-medium text-white bg-black rounded-md hover:bg-gray-800 disabled:bg-gray-400"
-                >
-                    {isSubmitting ? 'Mengirimkan...' : 'Kirim Kuis'}
-                </button>
-            </div>
-        </div>
+                        <div className="mt-12 flex flex-col items-center">
+                            {uiMessage && (
+                                <p className="text-red-500 mb-4 text-center">{uiMessage}</p>
+                            )}
+                            <button
+                                onClick={handleSubmit}
+                                disabled={isSubmitting}
+                                className="px-8 py-3 text-lg font-medium text-white bg-black rounded-md hover:bg-gray-800 disabled:bg-gray-400"
+                            >
+                                {isSubmitting ? 'Mengirimkan...' : 'Kirim Kuis'}
+                            </button>
+                        </div>        </div>
     );
 };
 

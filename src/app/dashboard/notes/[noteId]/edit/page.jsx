@@ -100,21 +100,28 @@ const EditNotePage = () => {
     }
   };
 
-  const handleGenerate = async (type) => {
-    setIsGenerating(type);
-    setError('');
-    try {
-        const url = type === 'flashcards' ? '/api/generate/flashcards' : '/api/generate/quiz';
-        const res = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sourceType: 'note', sourceValue: noteId })
-        });
-
-        if (!res.ok) {
-            const errData = await res.json();
-            throw new Error(errData.message || `Gagal membuat ${type}`);
-        }
+      const handleGenerate = async (type) => {
+      setIsGenerating(type);
+      setError('');
+      try {
+          const url = type === 'flashcards' ? '/api/generate/flashcards' : '/api/generate/quiz';
+          let requestBody;
+  
+          if (type === 'flashcards') {
+              requestBody = { noteId: parseInt(noteId) };
+          } else { // type === 'quiz'
+              requestBody = { sourceType: 'note', sourceValue: noteId };
+          }
+  
+          const res = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(requestBody), // Corrected placement of comma for object property
+          });
+  
+          if (!res.ok) {
+              const errData = await res.json();
+              throw new Error(errData.message || `Gagal membuat ${type}`);        }
         
         // On success, redirect to the appropriate page
         if (type === 'quiz') {

@@ -2,6 +2,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
+import Link from "next/link"; // Import Link
 import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 
 function FlashcardsDisplay() {
@@ -16,45 +17,59 @@ function FlashcardsDisplay() {
     
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [notesWithFlashcards, setNotesWithFlashcards] = useState([]); // New state for notes list
 
     useEffect(() => {
-        if (!noteId) {
-            setLoading(false);
-            return;
-        }
-
         const fetchData = async () => {
             setLoading(true);
             setError('');
-            try {
-                const [cardsRes, noteRes] = await Promise.all([
-                    fetch(`/api/flashcards?noteId=${noteId}`),
-                    fetch(`/api/notes/${noteId}`)
-                ]);
 
-                if (!cardsRes.ok || !noteRes.ok) {
-                    throw new Error("Tidak dapat memuat flashcard atau detail catatan.");
+            if (noteId) {
+                // Scenario 1: noteId is present, fetch specific flashcards
+                try {
+                    const [cardsRes, noteRes] = await Promise.all([
+                        fetch(`/api/flashcards?noteId=${noteId}`),
+                        fetch(`/api/notes/${noteId}`)
+                    ]);
+
+                    if (!cardsRes.ok || !noteRes.ok) {
+                        throw new Error("Tidak dapat memuat flashcard atau detail catatan.");
+                    }
+
+                    const cardsData = await cardsRes.json();
+                    const noteData = await noteRes.json();
+
+                    setFlashcards(cardsData);
+                    setNote(noteData);
+
+                    if (cardsData.length === 0) {
+                         setError("Tidak ada flashcard ditemukan untuk catatan ini. Coba buat dari halaman edit catatan.");
+                    }
+
+                } catch (err) {
+                    setError(err.message);
+                } finally {
+                    setLoading(false);
                 }
-
-                const cardsData = await cardsRes.json();
-                const noteData = await noteRes.json();
-
-                setFlashcards(cardsData);
-                setNote(noteData);
-
-                if (cardsData.length === 0) {
-                     setError("Tidak ada flashcard ditemukan untuk catatan ini. Coba buat dari halaman edit catatan.");
+            } else {
+                // Scenario 2: no noteId, fetch list of notes that have flashcards
+                try {
+                    const res = await fetch('/api/flashcards/notes');
+                    if (!res.ok) {
+                        throw new Error("Gagal mengambil daftar catatan dengan flashcard.");
+                    }
+                    const data = await res.json();
+                    setNotesWithFlashcards(data);
+                } catch (err) {
+                    setError(err.message);
+                } finally {
+                    setLoading(false);
                 }
-
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
             }
         };
 
         fetchData();
-    }, [noteId]);
+    }, [noteId]); // Depend on noteId to re-fetch when it changes
 
     const goToNext = () => {
         setIsFlipped(false);
@@ -68,13 +83,52 @@ function FlashcardsDisplay() {
 
     if (loading) return <div className="p-8 text-center">Memuat flashcard...</div>;
 
-    if (!noteId || error) {
+    if (error) { // Display generic error if something went wrong
+        return (
+            <div className="p-8 text-center text-red-500">
+                <h1 className="text-2xl font-semibold mb-4">Kesalahan</h1>
+                <p>{error}</p>
+                 <button onClick={() => router.push('/dashboard')} className="mt-4 px-4 py-2 text-white bg-black rounded-md">
+                    Kembali ke Beranda
+                </button>
+            </div>
+        );
+    }
+
+    if (!noteId) {
+        // Render list of notes with flashcards
+        return (
+            <div className="p-8">
+                <h1 className="text-3xl font-semibold text-black mb-6">Flashcard</h1>
+                {notesWithFlashcards.length === 0 ? (
+                    <div className="text-center text-gray-600">
+                        <p className="mb-4">Belum ada flashcard yang dibuat. Untuk membuat flashcard, buka catatan Anda dan klik tombol 'Flashcard'.</p>
+                        <button onClick={() => router.push('/dashboard')} className="px-4 py-2 text-white bg-black rounded-md">
+                            Kembali ke Beranda
+                        </button>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {notesWithFlashcards.map(n => (
+                            <Link key={n.id} href={`/dashboard/flashcards?noteId=${n.id}`} className="block p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
+                                <h2 className="text-lg font-semibold text-black">{n.title}</h2>
+                                <p className="text-sm text-gray-500">Lihat Flashcard</p>
+                            </Link>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // Original rendering logic for specific note flashcards
+    if (flashcards.length === 0) { // If noteId exists but no flashcards were found
         return (
             <div className="p-8 text-center text-gray-600">
                 <h1 className="text-2xl font-semibold mb-4">Flashcard</h1>
-                <p>{error || "Untuk melihat flashcard, pergi ke catatan tertentu dan klik 'Buat Flashcard'."}</p>
-                 <button onClick={() => router.push('/dashboard')} className="mt-4 px-4 py-2 text-white bg-black rounded-md">
-                    Kembali ke Beranda
+                <p>Tidak ada flashcard ditemukan untuk catatan ini. Coba buat dari halaman edit catatan.</p>
+                 <button onClick={() => router.push('/dashboard/notes/' + noteId + '/edit')} className="mt-4 px-4 py-2 text-white bg-black rounded-md">
+                    Edit Catatan
                 </button>
             </div>
         );
@@ -131,19 +185,4 @@ export default function FlashcardsPage() {
     );
 }
 
-// Add some CSS for the 3D effect
-const styles = `
-.perspective-1000 { perspective: 1000px; }
-.transform-style-3d { transform-style: preserve-3d; }
-.backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-.rotate-y-180 { transform: rotateY(180deg); }
-`;
-
-// Inject styles into the head
-if (typeof window !== 'undefined') {
-    const styleSheet = document.createElement("style");
-    styleSheet.type = "text/css";
-    styleSheet.innerText = styles;
-    document.head.appendChild(styleSheet);
-}
 

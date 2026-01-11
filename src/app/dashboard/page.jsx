@@ -1,34 +1,44 @@
 "use client";
 
-import { MagnifyingGlassIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, PlusIcon, FolderIcon } from "@heroicons/react/24/outline";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
 const Dashboard = () => {
   const [notes, setNotes] = useState([]);
   const [recentNotes, setRecentNotes] = useState([]);
+  const [folders, setFolders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState(""); // New state for search term
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       setError("");
       try {
-        const [recentRes, allRes] = await Promise.all([
-          fetch("/api/notes?recent=true"),
-          fetch("/api/notes"),
+        const query = searchTerm ? `?search=${searchTerm}` : ''; // Add search query param
+
+        const [recentRes, allRes, foldersRes] = await Promise.all([
+          fetch(`/api/notes?recent=true${query}`), // Pass search term
+          fetch(`/api/notes${query}`),             // Pass search term
+          fetch("/api/folders"),
         ]);
 
         if (!recentRes.ok || !allRes.ok) {
           throw new Error("Gagal mengambil catatan");
         }
+        if (!foldersRes.ok) {
+          throw new Error("Gagal mengambil folder");
+        }
 
         const recentData = await recentRes.json();
         const allData = await allRes.json();
+        const foldersData = await foldersRes.json();
 
         setRecentNotes(recentData);
         setNotes(allData);
+        setFolders(foldersData);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -36,8 +46,13 @@ const Dashboard = () => {
       }
     };
 
-    fetchData();
-  }, []);
+    const debounceFetch = setTimeout(() => {
+        fetchData();
+    }, 300); // Debounce search input
+
+    return () => clearTimeout(debounceFetch);
+
+  }, [searchTerm]); // Re-fetch data when searchTerm changes
 
   return (
     <div className="p-8">
@@ -51,6 +66,8 @@ const Dashboard = () => {
             <input
               type="text"
               placeholder="Cari catatan..."
+              value={searchTerm} // Bind value
+              onChange={(e) => setSearchTerm(e.target.value)} // Update search term
               className="pl-10 pr-4 py-2 text-black placeholder-gray-500 border border-gray-300 rounded-md focus:outline-none focus:ring-black focus:border-black"
             />
           </div>
@@ -69,6 +86,31 @@ const Dashboard = () => {
 
       {!loading && !error && (
         <>
+          {/* Folders Section */}
+          <div className="mb-12">
+            <h2 className="text-2xl font-semibold text-black mb-4">
+              Folder
+            </h2>
+            {folders.length > 0 ? (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {folders.map((folder) => (
+                  <Link
+                    key={folder.id}
+                    href={`/dashboard/folders/${folder.id}`}
+                    className="p-6 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <FolderIcon className="w-8 h-8 mr-4 text-gray-400"/> {/* Assuming FolderIcon is imported */}
+                    <h3 className="text-lg font-semibold text-black truncate">
+                      {folder.name}
+                    </h3>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500">Belum ada folder yang dibuat.</p>
+            )}
+          </div>
+          
           <div className="mb-12">
             <h2 className="text-2xl font-semibold text-black mb-4">
               Catatan Terbaru

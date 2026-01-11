@@ -29,7 +29,12 @@ export async function POST(request, { params }) {
         });
 
         if (existingResult) {
-            return NextResponse.json({ message: 'You have already taken this quiz.' }, { status: 409 });
+            // If already taken, return the existing result data for review
+            const reviewData = quiz.questions.map(q => ({
+                questionId: q.id,
+                correctAnswer: q.correctAnswer,
+            }));
+            return NextResponse.json({ score: existingResult.score, correctAnswers: reviewData }, { status: 200 });
         }
 
         // 3. Get user answers from request body

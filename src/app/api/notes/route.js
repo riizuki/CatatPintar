@@ -15,6 +15,7 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const getRecent = searchParams.get('recent');
   const folderId = searchParams.get('folderId');
+  const searchTerm = searchParams.get('search'); // Get search term
 
   const whereClause = {
     userId: session.user.id,
@@ -22,6 +23,13 @@ export async function GET(request) {
 
   if (folderId) {
     whereClause.folderId = parseInt(folderId);
+  }
+
+  if (searchTerm) {
+    whereClause.OR = [
+      { title: { contains: searchTerm } },
+      { content: { contains: searchTerm } },
+    ];
   }
 
   const findOptions = {

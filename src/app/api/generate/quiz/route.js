@@ -47,7 +47,7 @@ export async function POST(request) {
             return NextResponse.json({ message: 'Invalid sourceType' }, { status: 400 });
         }
 
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
         const prompt = `
             Based on the following text, create a multiple-choice quiz with exactly 5 questions.
@@ -76,7 +76,7 @@ export async function POST(request) {
                 data: {
                     userId: session.user.id,
                     sourceType,
-                    sourceValue: sourceType === 'note' ? sourceValue : contextText.substring(0, 255),
+                    sourceValue: sourceType === 'note' ? String(sourceValue) : contextText.substring(0, 255),
                 }
             });
 

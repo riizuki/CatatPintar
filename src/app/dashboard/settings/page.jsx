@@ -1,37 +1,104 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react"; // Import useSession and signOut
 
 const SettingsPage = () => {
   const router = useRouter();
-  const [name, setName] = useState("Rizky Alfaridha");
-  const [email, setEmail] = useState("user@example.com");
+  const { data: session, status } = useSession(); // Fetch session data
+  const [name, setName] = useState(""); // Initialize with empty string
+  const [email, setEmail] = useState(""); // Initialize with empty string
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(true); // Add loading state
+  const [error, setError] = useState(""); // Add error state
 
-  const handleSaveChanges = (e) => {
-    e.preventDefault();
-    setMessage("");
-
-    if (password !== confirmPassword) {
-      setMessage("Kata sandi tidak cocok!");
+  useEffect(() => {
+    if (status === "loading") return; // Wait for session to load
+    if (!session) { // If not authenticated, redirect to login
+      router.push("/login");
       return;
     }
 
-    // Dummy save logic
-    console.log("Saving changes:", { name, email, password });
-    setMessage("Perubahan berhasil disimpan!");
-    setPassword("");
-    setConfirmPassword("");
+    const fetchUserProfile = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const res = await fetch("/api/user/profile");
+        if (!res.ok) {
+          throw new Error("Failed to fetch user profile.");
+        }
+        const data = await res.json();
+        setName(data.fullName);
+        setEmail(data.email);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUserProfile();
+  }, [session, status, router]); // Depend on session and status to re-fetch if they change
+
+  const handleSaveChanges = async (e) => {
+    e.preventDefault();
+    setMessage("");
+    setError("");
+    setLoading(true); // Use internal loading for save action
+
+    if (password && password !== confirmPassword) {
+      setMessage("Kata sandi tidak cocok!");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: name,
+          email,
+          ...(password && { password }), // Only send password if it's set
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Gagal menyimpan perubahan.");
+      }
+
+      setMessage("Perubahan berhasil disimpan!");
+      setPassword("");
+      setConfirmPassword("");
+      // Optionally refresh session if name/email changed
+      // update(data.user); // This would require `update` from useSession
+    } catch (err) {
+      setError(err.message);
+      setMessage(err.message); // Display error message
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLogout = () => {
-    // Dummy logout logic
-    console.log("Keluar...");
-    router.push("/login");
+    signOut({ callbackUrl: "/login" }); // Use signOut from next-auth/react
   };
+
+  if (status === "loading" || loading) {
+    return (
+      <div className="p-8 text-center">Memuat pengaturan...</div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 text-red-500">Kesalahan: {error}</div>
+    );
+  }
 
   return (
     <div className="p-8">
