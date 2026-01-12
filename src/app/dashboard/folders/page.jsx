@@ -3,6 +3,7 @@
 import { FolderIcon, PlusIcon, XMarkIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import ConfirmationModal from "../../components/dashboard/ConfirmationModal";
 
 const FolderModal = ({ isOpen, onClose, onSave, editingFolder, isLoading }) => {
   const [name, setName] = useState("");
@@ -19,7 +20,7 @@ const FolderModal = ({ isOpen, onClose, onSave, editingFolder, isLoading }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/70 backdrop-blur-sm">
       <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-md">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-semibold text-black">
@@ -29,7 +30,7 @@ const FolderModal = ({ isOpen, onClose, onSave, editingFolder, isLoading }) => {
             <XMarkIcon className="w-6 h-6 text-gray-500" />
           </button>
         </div>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} autoComplete="off">
           <div className="space-y-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-black">
@@ -70,6 +71,8 @@ const FoldersPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isMutating, setIsMutating] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [folderToDelete, setFolderToDelete] = useState(null);
 
   const fetchFolders = async () => {
     setLoading(true);
@@ -119,20 +122,30 @@ const FoldersPage = () => {
     setEditingFolder(folder);
     setIsModalOpen(true);
   };
+  
+  const handleOpenDeleteModal = (folder) => {
+    setFolderToDelete(folder);
+    setIsDeleteModalOpen(true);
+  };
 
-  const handleDeleteFolder = async (id) => {
-    if (window.confirm("Anda yakin ingin menghapus folder ini? Semua catatan di dalamnya juga akan dihapus.")) {
-      setIsMutating(true);
-      setError("");
-      try {
-        const res = await fetch(`/api/folders/${id}`, { method: "DELETE" });
-        if (!res.ok) throw new Error("Gagal menghapus folder.");
-        await fetchFolders();
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setIsMutating(false);
-      }
+  const handleCloseDeleteModal = () => {
+    setFolderToDelete(null);
+    setIsDeleteModalOpen(false);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!folderToDelete) return;
+    setIsMutating(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/folders/${folderToDelete.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Gagal menghapus folder.");
+      await fetchFolders();
+      handleCloseDeleteModal();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsMutating(false);
     }
   };
   
@@ -150,6 +163,15 @@ const FoldersPage = () => {
         editingFolder={editingFolder}
         isLoading={isMutating}
       />
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Hapus Folder"
+      >
+        <p>Anda yakin ingin menghapus folder <strong>{folderToDelete?.name}</strong>?</p>
+        <p className="mt-2 text-sm text-gray-600">Semua catatan di dalamnya juga akan dihapus secara permanen. Tindakan ini tidak dapat diurungkan.</p>
+      </ConfirmationModal>
       <div className="p-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-semibold text-black">Folder</h1>
@@ -191,7 +213,7 @@ const FoldersPage = () => {
                     <PencilIcon className="w-4 h-4 text-gray-600"/>
                   </button>
                   <button
-                    onClick={(e) => { e.preventDefault(); handleDeleteFolder(folder.id); }}
+                    onClick={(e) => { e.preventDefault(); handleOpenDeleteModal(folder); }}
                     className="p-2 bg-white rounded-full shadow-sm hover:bg-gray-100"
                     title="Hapus Folder"
                   >

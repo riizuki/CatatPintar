@@ -108,6 +108,7 @@ const CreateQuizModal = ({ isOpen, onClose }) => {
               onChange={(e) => setTopic(e.target.value)}
               placeholder="cth., 'Dasar-dasar Pembelajaran Mesin'"
               className="w-full px-4 py-3 placeholder-gray-500 text-black border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              autoComplete="off"
             />
           </div>
         );

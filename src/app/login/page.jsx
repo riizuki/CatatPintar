@@ -16,7 +16,14 @@ function LoginPageContent() {
   const toastShownRef = useRef(false);
 
   useEffect(() => {
-    if (searchParams.get("registered") === "true" && !toastShownRef.current) {
+    const logoutParam = searchParams.get("logout");
+    const registeredParam = searchParams.get("registered");
+
+    if (logoutParam === "success" && !toastShownRef.current) {
+      toast.success("Berhasil logout.");
+      toastShownRef.current = true;
+      router.replace('/login', undefined, { shallow: true });
+    } else if (registeredParam === "true" && !toastShownRef.current) {
       toast.success("Registrasi berhasil! Silakan login.");
       toastShownRef.current = true;
       router.replace('/login', undefined, { shallow: true });
@@ -40,7 +47,7 @@ function LoginPageContent() {
 
     if (result.ok) {
       toast.success('Login berhasil!', { id: toastId });
-      router.push("/dashboard?loggedin=true"); 
+      router.push("/dashboard"); 
     } else {
       toast.error('Email atau kata sandi salah.', { id: toastId });
       setError("Email atau kata sandi salah"); 
@@ -57,7 +64,7 @@ function LoginPageContent() {
           </p>
         </div>
         
-        <form className="space-y-6" onSubmit={handleLogin}>
+        <form className="space-y-6" onSubmit={handleLogin} autoComplete="off">
           <div>
             <label
               htmlFor="email"
@@ -70,7 +77,7 @@ function LoginPageContent() {
                 id="email"
                 name="email"
                 type="email"
-                autoComplete="email"
+                autoComplete="off"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -90,7 +97,7 @@ function LoginPageContent() {
                 id="password"
                 name="password"
                 type="password"
-                autoComplete="current-password"
+                autoComplete="off"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

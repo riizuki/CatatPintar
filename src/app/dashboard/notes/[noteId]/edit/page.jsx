@@ -9,6 +9,7 @@ import 'highlight.js/styles/monokai.css';
 import { TrashIcon, SparklesIcon, QuestionMarkCircleIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import toast from 'react-hot-toast';
 import AIChat from "@/app/components/dashboard/AIChat";
+import ConfirmationModal from "../../../../components/dashboard/ConfirmationModal";
 
 if (typeof window !== 'undefined') {
   window.hljs = hljs;
@@ -75,6 +76,7 @@ const EditNotePage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(null); 
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
     if (!noteId) return;
@@ -134,18 +136,19 @@ const EditNotePage = () => {
     }
   };
 
-  const handleDelete = async () => {
-    if (window.confirm("Anda yakin ingin menghapus catatan ini? Tindakan ini tidak dapat dibatalkan.")) {
-      setIsDeleting(true);
-      setError("");
-      try {
-        const res = await fetch(`/api/notes/${noteId}`, { method: "DELETE" });
-        if (!res.ok) throw new Error("Gagal menghapus catatan.");
-        router.push("/dashboard");
-      } catch (err) {
-        setError(err.message);
-        setIsDeleting(false);
-      }
+  const handleConfirmDelete = async () => {
+    setIsDeleteModalOpen(false);
+    setIsDeleting(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/notes/${noteId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Gagal menghapus catatan.");
+      toast.success('Catatan berhasil dihapus.');
+      router.push("/dashboard");
+    } catch (err) {
+      setError(err.message);
+      toast.error(err.message);
+      setIsDeleting(false);
     }
   };
 
@@ -193,7 +196,15 @@ const EditNotePage = () => {
 
   return (
     <div className="p-8">
-      <form onSubmit={handleSaveChanges}>
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Hapus Catatan"
+      >
+        <p>Anda yakin ingin menghapus catatan ini? Tindakan ini tidak dapat dibatalkan.</p>
+      </ConfirmationModal>
+      <form onSubmit={handleSaveChanges} autoComplete="off">
         <div className="flex justify-between items-start mb-8">
             <input
                 type="text"
@@ -265,7 +276,7 @@ const EditNotePage = () => {
         <div className="mt-8 flex justify-between items-center">
             <button
                 type="button"
-                onClick={handleDelete}
+                onClick={() => setIsDeleteModalOpen(true)}
                 disabled={isDeleting}
                 className="flex items-center px-4 py-2 text-sm font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200 disabled:opacity-50"
             >

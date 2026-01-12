@@ -79,7 +79,7 @@ const AIChat = ({ noteContent, onClose }) => {
         )}
       </div>
 
-      <form onSubmit={handleSearch} className="p-4 border-t border-gray-200">
+      <form onSubmit={handleSearch} autoComplete="off" className="p-4 border-t border-gray-200">
         <div className="relative">
           <input
             type="text"

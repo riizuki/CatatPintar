@@ -1,10 +1,8 @@
 "use client";
 
 import { MagnifyingGlassIcon, PlusIcon, FolderIcon } from "@heroicons/react/24/outline";
-import { useState, useEffect, Suspense, useRef } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
-import toast from "react-hot-toast";
 
 import SkeletonLoader from "@/app/components/dashboard/SkeletonLoader";
 
@@ -15,17 +13,8 @@ function DashboardContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const toastShownRef = useRef(false);
 
-  useEffect(() => {
-    if (searchParams.get("loggedin") === "true" && !toastShownRef.current) {
-      toast.success("Login berhasil!");
-      toastShownRef.current = true;
-      router.replace('/dashboard', undefined, { shallow: true });
-    }
-  }, [searchParams, router]);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -83,6 +72,7 @@ function DashboardContent() {
               placeholder="Cari catatan..."
               value={searchTerm} 
               onChange={(e) => setSearchTerm(e.target.value)} 
+              autoComplete="off"
               className="pl-10 pr-4 py-2 text-black placeholder-gray-500 border border-gray-300 rounded-md focus:outline-none focus:ring-black focus:border-black"
             />
           </div>

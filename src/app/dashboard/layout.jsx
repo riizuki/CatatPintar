@@ -33,7 +33,7 @@ const Sidebar = () => {
   ];
 
   const handleLogout = () => {
-    signOut({ callbackUrl: "/login" });
+    signOut({ callbackUrl: "/login?logout=success" });
   };
 
   return (

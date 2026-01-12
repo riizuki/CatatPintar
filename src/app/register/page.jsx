@@ -53,7 +53,7 @@ export default function RegisterPage() {
             Mulai perjalanan belajarmu bersama CatatPintar.
           </p>
         </div>
-        <form className="space-y-6" onSubmit={handleRegister}>
+        <form className="space-y-6" onSubmit={handleRegister} autoComplete="off">
           <div>
             <label
               htmlFor="name"
@@ -66,7 +66,7 @@ export default function RegisterPage() {
                 id="name"
                 name="name"
                 type="text"
-                autoComplete="name"
+                autoComplete="off"
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
@@ -86,7 +86,7 @@ export default function RegisterPage() {
                 id="email"
                 name="email"
                 type="email"
-                autoComplete="email"
+                autoComplete="off"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -106,7 +106,7 @@ export default function RegisterPage() {
                 id="password"
                 name="password"
                 type="password"
-                autoComplete="new-password"
+                autoComplete="off"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
