@@ -4,9 +4,49 @@ import { useState, useMemo, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
+import 'highlight.js/styles/monokai.css'; // Import highlight.js CSS for code blocks
 import { TrashIcon, SparklesIcon, QuestionMarkCircleIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import toast from 'react-hot-toast';
 import AIChat from "@/app/components/dashboard/AIChat";
+
+const modules = {
+  toolbar: [
+    [{ header: "1" }, { header: "2" }, { font: [] }],
+    [{ size: [] }],
+    ["bold", "italic", "underline", "strike", "blockquote"],
+    [
+      { list: "ordered" },
+      { list: "bullet" },
+      { indent: "-1" },
+      { indent: "+1" },
+    ],
+    ["link", "image", "video"],
+    ["code-block"], // Add code block button
+    ["clean"],
+  ],
+  clipboard: {
+    matchVisual: false,
+  },
+  syntax: true, // Enable syntax highlighting
+};
+
+const formats = [
+  "header",
+  "font",
+  "size",
+  "bold",
+  "italic",
+  "underline",
+  "strike",
+  "blockquote",
+  "list",
+  "bullet",
+  "indent",
+  "link",
+  "image",
+  "video",
+  "code-block", // Add code block format
+];
 
 const EditNotePage = () => {
   const router = useRouter();
@@ -196,6 +236,8 @@ const EditNotePage = () => {
           onChange={setContent}
           className="bg-white text-black"
           style={{ height: "400px", marginBottom: "50px" }}
+          modules={modules}
+          formats={formats}
         />
         <div className="mt-8">
           <label htmlFor="folder" className="block text-sm font-medium text-black">Folder</label>
