@@ -4,10 +4,15 @@ import { useState, useMemo, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
-import 'highlight.js/styles/monokai.css'; // Import highlight.js CSS for code blocks
+import hljs from 'highlight.js';
+import 'highlight.js/styles/monokai.css';
 import { TrashIcon, SparklesIcon, QuestionMarkCircleIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import toast from 'react-hot-toast';
 import AIChat from "@/app/components/dashboard/AIChat";
+
+if (typeof window !== 'undefined') {
+  window.hljs = hljs;
+}
 
 const modules = {
   toolbar: [
@@ -21,13 +26,13 @@ const modules = {
       { indent: "+1" },
     ],
     ["link", "image", "video"],
-    ["code-block"], // Add code block button
+    ["code-block"],
     ["clean"],
   ],
   clipboard: {
-    matchVisual: false,
+    matchVisual: true,
   },
-  syntax: true, // Enable syntax highlighting
+  syntax: true,
 };
 
 const formats = [
@@ -45,7 +50,7 @@ const formats = [
   "link",
   "image",
   "video",
-  "code-block", // Add code block format
+  "code-block",
 ];
 
 const EditNotePage = () => {
@@ -201,30 +206,30 @@ const EditNotePage = () => {
                 <button
                     type="button"
                     onClick={() => setIsAiChatOpen(true)}
-                    className="flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
+                    className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 whitespace-nowrap"
                     title="Tanya AI tentang catatan ini"
                 >
-                    <ChatBubbleLeftRightIcon className="w-5 h-5 mr-2"/>
+                    <ChatBubbleLeftRightIcon className="w-4 h-4 mr-1"/>
                     Tanya AI
                 </button>
                 <button
                     type="button"
                     onClick={() => handleGenerate('flashcards')}
                     disabled={isGenerating}
-                    className="flex items-center px-4 py-2 text-sm font-medium text-white bg-teal-600 rounded-md hover:bg-teal-700 disabled:opacity-50 whitespace-nowrap"
+                    className="flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 whitespace-nowrap"
                     title="Buat Flashcard dari Catatan Ini"
                 >
-                    <SparklesIcon className="w-5 h-5 mr-2"/>
+                    <SparklesIcon className="w-4 h-4 mr-1"/>
                     {isGenerating === 'flashcards' ? 'Membuat...' : 'Flashcard'}
                 </button>
                  <button
                     type="button"
                     onClick={() => handleGenerate('quiz')}
                     disabled={isGenerating}
-                    className="flex items-center px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-md hover:bg-amber-700 disabled:opacity-50 whitespace-nowrap"
+                    className="flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
                     title="Buat Kuis dari Catatan Ini"
                 >
-                    <QuestionMarkCircleIcon className="w-5 h-5 mr-2"/>
+                    <QuestionMarkCircleIcon className="w-4 h-4 mr-1"/>
                     {isGenerating === 'quiz' ? 'Membuat...' : 'Buat Kuis'}
                 </button>
             </div>
@@ -235,7 +240,7 @@ const EditNotePage = () => {
           value={content}
           onChange={setContent}
           className="bg-white text-black"
-          style={{ height: "400px", marginBottom: "50px" }}
+          style={{ height: "100%", marginBottom: "50px" }}
           modules={modules}
           formats={formats}
         />
