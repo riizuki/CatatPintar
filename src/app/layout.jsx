@@ -1,6 +1,7 @@
 import { Quicksand } from "next/font/google";
 import "./globals.css";
 import Providers from "./components/Providers";
+import { Toaster } from "react-hot-toast";
 
 const quicksand = Quicksand({
   subsets: ["latin"],
@@ -16,7 +17,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={quicksand.className} suppressHydrationWarning>
-        <Providers>{children}</Providers>
+        <Providers>
+          <Toaster position="top-center" reverseOrder={false} />
+          {children}
+        </Providers>
       </body>
     </html>
   );

@@ -12,11 +12,13 @@ import {
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import ConfirmationModal from "../components/dashboard/ConfirmationModal";
 
 const Sidebar = () => {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const navigation = [
     { name: "Beranda", href: "/dashboard", icon: HomeIcon },
@@ -30,58 +32,72 @@ const Sidebar = () => {
     { name: "Pengaturan", href: "/dashboard/settings", icon: CogIcon },
   ];
 
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/login" });
+  };
+
   return (
-    <div className="flex flex-col w-64 bg-gray-50 border-r border-gray-200">
-      <div className="p-4">
-        <h1 className="text-xl font-semibold text-black">CatatPintar</h1>
-      </div>
-      <nav className="flex-1 px-4 py-2 space-y-2">
-        {navigation.map((item) => (
-          <Link
-            key={item.name}
-            href={item.href}
-            className={`flex items-center px-2 py-2 text-sm font-medium rounded-md ${
-              pathname === item.href
-                ? "bg-gray-200 text-black"
-                : "text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            <item.icon className="w-6 h-6 mr-3" />
-            {item.name}
-          </Link>
-        ))}
-      </nav>
-      <div className="mt-auto p-4 border-t border-gray-200">
-        {session?.user && (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Image
-                src={`https://i.pravatar.cc/150?u=${session.user.email}`}
-                alt="User Avatar"
-                width={32}
-                height={32}
-                className="rounded-full mr-3"
-              />
-              <div>
-                <p className="text-sm font-medium text-black truncate">
-                  {session.user.name}
-                </p>
-                <p className="text-xs text-gray-500 truncate">
-                  {session.user.email}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => signOut({ callbackUrl: "/login" })}
-              title="Keluar"
-              className="p-2 text-gray-500 rounded-md hover:bg-gray-200 hover:text-black"
+    <>
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleLogout}
+        title="Konfirmasi Keluar"
+      >
+        <p>Apakah Anda yakin ingin keluar dari akun Anda?</p>
+      </ConfirmationModal>
+      <div className="flex flex-col w-64 bg-gray-50 border-r border-gray-200">
+        <div className="p-4">
+          <h1 className="text-xl font-semibold text-black">CatatPintar</h1>
+        </div>
+        <nav className="flex-1 px-4 py-2 space-y-2">
+          {navigation.map((item) => (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={`flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                pathname === item.href
+                  ? "bg-gray-200 text-black"
+                  : "text-gray-700 hover:bg-gray-200"
+              }`}
             >
-              <ArrowRightOnRectangleIcon className="w-5 h-5" />
-            </button>
-          </div>
-        )}
+              <item.icon className="w-6 h-6 mr-3" />
+              {item.name}
+            </Link>
+          ))}
+        </nav>
+        <div className="mt-auto p-4 border-t border-gray-200">
+          {session?.user && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Image
+                  src={`https://i.pravatar.cc/150?u=${session.user.email}`}
+                  alt="User Avatar"
+                  width={32}
+                  height={32}
+                  className="rounded-full mr-3"
+                />
+                <div>
+                  <p className="text-sm font-medium text-black truncate">
+                    {session.user.name}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {session.user.email}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                title="Keluar"
+                className="p-2 text-gray-500 rounded-md hover:bg-gray-200 hover:text-black"
+              >
+                <ArrowRightOnRectangleIcon className="w-5 h-5" />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { signIn } from "next-auth/react";
+import toast from 'react-hot-toast';
 
 function LoginPageContent() {
   const router = useRouter();
@@ -11,22 +12,23 @@ function LoginPageContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [loginSuccessMessage, setLoginSuccessMessage] = useState(""); // New state for login success
   const [loading, setLoading] = useState(false);
+  const toastShownRef = useRef(false);
 
   useEffect(() => {
-    if (searchParams.get("registered") === "true") {
-      setSuccess("Registrasi berhasil! Silakan login.");
+    if (searchParams.get("registered") === "true" && !toastShownRef.current) {
+      toast.success("Registrasi berhasil! Silakan login.");
+      toastShownRef.current = true;
+      router.replace('/login', undefined, { shallow: true });
     }
-  }, [searchParams]);
+  }, [searchParams, router]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    setSuccess(""); // Clear registration message on new login attempt
-    setLoginSuccessMessage(""); // Clear login success message on new login attempt
+
+    const toastId = toast.loading('Mencoba untuk login...');
 
     const result = await signIn("credentials", {
       redirect: false,
@@ -37,12 +39,11 @@ function LoginPageContent() {
     setLoading(false);
 
     if (result.ok) {
-      setLoginSuccessMessage("Login berhasil! Mengalihkan ke dashboard..."); // Set success message
-      setTimeout(() => {
-        router.push("/dashboard"); // Redirect after a delay
-      }, 1500); // 1.5 seconds delay for message to show
+      toast.success('Login berhasil!', { id: toastId });
+      router.push("/dashboard?loggedin=true"); 
     } else {
-      setError("Email atau kata sandi salah"); // More user-friendly message
+      toast.error('Email atau kata sandi salah.', { id: toastId });
+      setError("Email atau kata sandi salah"); 
     }
   };
 
@@ -56,10 +57,6 @@ function LoginPageContent() {
           </p>
         </div>
         
-        {success && <p className="text-sm text-center p-3 bg-green-100 text-green-700 rounded-md">{success}</p>}
-        {loginSuccessMessage && <p className="text-sm text-center p-3 bg-green-100 text-green-700 rounded-md">{loginSuccessMessage}</p>}
-
-
         <form className="space-y-6" onSubmit={handleLogin}>
           <div>
             <label
@@ -102,20 +99,10 @@ function LoginPageContent() {
             </div>
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
-          <div className="flex items-center justify-end">
-            <div className="text-sm">
-              <a
-                href="#"
-                className="font-medium text-black hover:text-gray-800"
-              >
-                Lupa kata sandi?
-              </a>
-            </div>
-          </div>
           <div>
             <button
               type="submit"
-              disabled={loading || loginSuccessMessage}
+              disabled={loading}
               className="w-full px-4 py-2 text-sm font-medium text-white bg-black border border-transparent rounded-md shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50"
             >
               {loading ? "Memproses..." : "Login"}

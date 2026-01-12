@@ -4,7 +4,9 @@ import { useState, useMemo, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
-import { TrashIcon, SparklesIcon, QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
+import { TrashIcon, SparklesIcon, QuestionMarkCircleIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
+import toast from 'react-hot-toast';
+import AIChat from "@/app/components/dashboard/AIChat";
 
 const EditNotePage = () => {
   const router = useRouter();
@@ -26,7 +28,8 @@ const EditNotePage = () => {
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(null); // 'flashcards' or 'quiz'
+  const [isGenerating, setIsGenerating] = useState(null); 
+  const [isAiChatOpen, setIsAiChatOpen] = useState(false);
 
   useEffect(() => {
     if (!noteId) return;
@@ -76,10 +79,11 @@ const EditNotePage = () => {
         }),
       });
       if (!res.ok) throw new Error("Gagal menyimpan perubahan.");
-      // Maybe show a success toast in a real app
-      router.refresh(); // Refresh data on the page
+      toast.success('Catatan berhasil disimpan!');
+      router.refresh();
     } catch (err) {
       setError(err.message);
+      toast.error(err.message);
     } finally {
       setIsSaving(false);
     }
@@ -109,26 +113,25 @@ const EditNotePage = () => {
   
           if (type === 'flashcards') {
               requestBody = { noteId: parseInt(noteId) };
-          } else { // type === 'quiz'
+          } else { 
               requestBody = { sourceType: 'note', sourceValue: noteId };
           }
   
           const res = await fetch(url, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(requestBody), // Corrected placement of comma for object property
+              body: JSON.stringify(requestBody), 
           });
   
           if (!res.ok) {
               const errData = await res.json();
-              throw new Error(errData.message || `Gagal membuat ${type}`);        }
+              throw new Error(errData.message || `Gagal membuat ${type}`);
+          }
         
-        // On success, redirect to the appropriate page
         if (type === 'quiz') {
             const { quizId } = await res.json();
             router.push(`/dashboard/quiz/${quizId}`);
         } else {
-             // For flashcards, maybe just refresh or go to a flashcard viewer page
             router.push(`/dashboard/flashcards?noteId=${noteId}`);
         }
 
@@ -157,9 +160,18 @@ const EditNotePage = () => {
             <div className="flex space-x-2">
                 <button
                     type="button"
+                    onClick={() => setIsAiChatOpen(true)}
+                    className="flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
+                    title="Tanya AI tentang catatan ini"
+                >
+                    <ChatBubbleLeftRightIcon className="w-5 h-5 mr-2"/>
+                    Tanya AI
+                </button>
+                <button
+                    type="button"
                     onClick={() => handleGenerate('flashcards')}
                     disabled={isGenerating}
-                    className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                    className="flex items-center px-4 py-2 text-sm font-medium text-white bg-teal-600 rounded-md hover:bg-teal-700 disabled:opacity-50 whitespace-nowrap"
                     title="Buat Flashcard dari Catatan Ini"
                 >
                     <SparklesIcon className="w-5 h-5 mr-2"/>
@@ -169,7 +181,7 @@ const EditNotePage = () => {
                     type="button"
                     onClick={() => handleGenerate('quiz')}
                     disabled={isGenerating}
-                    className="flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:opacity-50"
+                    className="flex items-center px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-md hover:bg-amber-700 disabled:opacity-50 whitespace-nowrap"
                     title="Buat Kuis dari Catatan Ini"
                 >
                     <QuestionMarkCircleIcon className="w-5 h-5 mr-2"/>
@@ -231,6 +243,7 @@ const EditNotePage = () => {
             </div>
         </div>
       </form>
+      {isAiChatOpen && <AIChat noteContent={content} onClose={() => setIsAiChatOpen(false)} />}
     </div>
   );
 };

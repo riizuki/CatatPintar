@@ -3,8 +3,6 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import prisma from '@/lib/prisma';
 
-// GET /api/notes - Get all notes for a user
-// Query params: ?recent=true, ?folderId=<id>
 export async function GET(request) {
   const session = await getServerSession(authOptions);
 
@@ -15,7 +13,7 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const getRecent = searchParams.get('recent');
   const folderId = searchParams.get('folderId');
-  const searchTerm = searchParams.get('search'); // Get search term
+  const searchTerm = searchParams.get('search');
 
   const whereClause = {
     userId: session.user.id,
@@ -40,7 +38,7 @@ export async function GET(request) {
   };
 
   if (getRecent === 'true') {
-    findOptions.take = 5; // Or any number you prefer for "recent"
+    findOptions.take = 5;
   }
 
   try {

@@ -4,15 +4,15 @@ import { PlusIcon } from "@heroicons/react/24/outline";
 import { useState, useEffect } from "react";
 import CreateQuizModal from "@/app/components/dashboard/CreateQuizModal";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // Import useRouter
-import { ArrowLeftIcon } from "@heroicons/react/24/outline"; // Import ArrowLeftIcon
+import { useRouter } from "next/navigation";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
 const QuizPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const router = useRouter(); // Initialize useRouter
+  const router = useRouter();
 
   useEffect(() => {
     const fetchQuizzes = async () => {
@@ -34,13 +34,12 @@ const QuizPage = () => {
 
   return (
     <>
-      {/* The notes prop will be removed when we refactor the modal itself */}
       <CreateQuizModal isOpen={isModalOpen} onClose={() => {
           setIsModalOpen(false);
       }} notes={[]} />
       <div className="p-8">
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center"> {/* New wrapper div for back button and title */}
+          <div className="flex items-center">
             <button onClick={() => router.back()} className="mr-4 p-2 rounded-full hover:bg-gray-100">
                 <ArrowLeftIcon className="w-6 h-6 text-black"/>
             </button>

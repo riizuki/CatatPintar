@@ -38,9 +38,8 @@ export async function PUT(request) {
 
     try {
         const body = await request.json();
-        const { fullName, email, password } = body; // Keep password for direct storage
+        const { fullName, email, password } = body;
 
-        // Basic validation
         if (!fullName || !email) {
             return NextResponse.json({ message: 'Full name and email are required' }, { status: 400 });
         }
