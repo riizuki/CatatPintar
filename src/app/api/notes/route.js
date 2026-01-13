@@ -38,7 +38,7 @@ export async function GET(request) {
   };
 
   if (getRecent === 'true') {
-    findOptions.take = 5;
+    findOptions.take = 8;
   }
 
   try {

@@ -38,15 +38,6 @@ export async function POST(request) {
             return NextResponse.json({ message: 'Note not found or access denied' }, { status: 404 });
         }
         
-        // Check if flashcards already exist for this note to prevent duplicates
-        const existingFlashcards = await prisma.flashcard.count({
-            where: { noteId: parseInt(noteId) }
-        });
-
-        if (existingFlashcards > 0) {
-            return NextResponse.json({ message: 'Flashcards already exist for this note.' }, { status: 409 });
-        }
-
         const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
         const prompt = `
@@ -77,11 +68,16 @@ export async function POST(request) {
             backText: fc.back,
         }));
 
-        await prisma.flashcard.createMany({
-            data: flashcardData,
+        const transactionResult = await prisma.$transaction(async (tx) => {
+            await tx.flashcard.deleteMany({
+                where: { noteId: parseInt(noteId), userId: session.user.id },
+            });
+            return await tx.flashcard.createMany({
+                data: flashcardData,
+            });
         });
 
-        return NextResponse.json(flashcardData, { status: 201 });
+        return NextResponse.json({ count: transactionResult.count }, { status: 201 });
 
     } catch (error) {
         console.error('Error generating flashcards:', error);

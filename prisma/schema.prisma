@@ -99,6 +99,7 @@ model QuizResult {
   quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, quizId])
   @@map("quiz_results")
 }
 

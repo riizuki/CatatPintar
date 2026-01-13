@@ -5,54 +5,11 @@ import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
 import hljs from 'highlight.js';
-import 'highlight.js/styles/monokai.css';
+import 'highlight.js/styles/github.css';
 import { TrashIcon, SparklesIcon, QuestionMarkCircleIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import toast from 'react-hot-toast';
 import AIChat from "@/app/components/dashboard/AIChat";
 import ConfirmationModal from "../../../../components/dashboard/ConfirmationModal";
-
-if (typeof window !== 'undefined') {
-  window.hljs = hljs;
-}
-
-const modules = {
-  toolbar: [
-    [{ header: "1" }, { header: "2" }, { font: [] }],
-    [{ size: [] }],
-    ["bold", "italic", "underline", "strike", "blockquote"],
-    [
-      { list: "ordered" },
-      { list: "bullet" },
-      { indent: "-1" },
-      { indent: "+1" },
-    ],
-    ["link", "image", "video"],
-    ["code-block"],
-    ["clean"],
-  ],
-  clipboard: {
-    matchVisual: true,
-  },
-  syntax: true,
-};
-
-const formats = [
-  "header",
-  "font",
-  "size",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "blockquote",
-  "list",
-  "bullet",
-  "indent",
-  "link",
-  "image",
-  "video",
-  "code-block",
-];
 
 const EditNotePage = () => {
   const router = useRouter();
@@ -190,6 +147,32 @@ const EditNotePage = () => {
     }
   };
 
+  const modules = useMemo(
+    () => ({
+      toolbar: [
+        [{ header: "1" }, { header: "2" }, { font: [] }],
+        [{ size: [] }],
+        ["bold", "italic", "underline", "strike", "blockquote"],
+        [
+          { list: "ordered" },
+          { list: "bullet" },
+          { indent: "-1" },
+          { indent: "+1" },
+        ],
+        ["link", "image", "video"],
+        ["code-block"],
+        ["clean"],
+      ],
+      clipboard: {
+        matchVisual: true,
+      },
+      syntax: {
+        highlight: (text) => hljs.highlightAuto(text).value,
+      },
+    }),
+    []
+  );
+
   if (loading) return <div className="p-8">Memuat...</div>;
   if (error && !note) return <div className="p-8 text-red-500">Kesalahan: {error}</div>;
 
@@ -253,7 +236,6 @@ const EditNotePage = () => {
           className="bg-white text-black"
           style={{ height: "100%", marginBottom: "50px" }}
           modules={modules}
-          formats={formats}
         />
         <div className="mt-8">
           <label htmlFor="folder" className="block text-sm font-medium text-black">Folder</label>

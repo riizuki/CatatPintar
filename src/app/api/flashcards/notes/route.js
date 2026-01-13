@@ -14,7 +14,7 @@ export async function GET(request) {
             where: {
                 userId: session.user.id,
                 flashcards: {
-                    some: {}, // Ensures that the note has at least one flashcard
+                    some: {},
                 },
             },
             select: {
@@ -22,7 +22,7 @@ export async function GET(request) {
                 title: true,
             },
             orderBy: {
-                updatedAt: 'desc', // Or createdAt, depending on preference
+                updatedAt: 'desc'
             },
         });
 

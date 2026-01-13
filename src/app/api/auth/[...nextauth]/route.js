@@ -25,7 +25,6 @@ export const authOptions = {
           return null;
         }
 
-        // Plaintext password comparison (insecure, as requested)
         const isPasswordValid = credentials.password === user.password;
 
         if (!isPasswordValid) {

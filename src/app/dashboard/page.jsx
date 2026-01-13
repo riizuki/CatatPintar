@@ -73,7 +73,7 @@ function DashboardContent() {
               value={searchTerm} 
               onChange={(e) => setSearchTerm(e.target.value)} 
               autoComplete="off"
-              className="pl-10 pr-4 py-2 text-black placeholder-gray-500 border border-gray-300 rounded-md focus:outline-none focus:ring-black focus:border-black"
+              className="pl-10 pr-4 py-2 text-black placeholder-gray-500 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black"
             />
           </div>
           <Link
@@ -93,9 +93,11 @@ function DashboardContent() {
           Folder
         </h2>
         {loading ? (
-            <SkeletonLoader type="folder" count={3} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <SkeletonLoader type="folder" count={3} />
+            </div>
         ) : folders.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {folders.map((folder) => (
               <Link
                 key={folder.id}
@@ -128,8 +130,8 @@ function DashboardContent() {
         {loading ? (
             <SkeletonLoader type="note" count={3} />
         ) : recentNotes.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {recentNotes.map((note) => (
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {recentNotes.slice(0, 3).map((note) => (
               <Link
                 key={note.id}
                 href={`/dashboard/notes/${note.id}/edit`}
@@ -147,16 +149,17 @@ function DashboardContent() {
             ))}
           </div>
         ) : (
-          <p className="text-gray-500">Tidak ada catatan terbaru.</p>
+          <p className="text-gray-500">Tidak ada catatan terbaru. Buat catatan baru sekarang!</p>
         )}
       </div>
 
       <h2 className="text-2xl font-semibold text-black mb-4">Semua Catatan</h2>
       {loading ? (
-            <SkeletonLoader type="note" count={6} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <SkeletonLoader type="note" count={6} />
+            </div>
       ) : notes.length > 0 ? (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {notes.map((note) => (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">          {notes.map((note) => (
             <Link
               key={note.id}
               href={`/dashboard/notes/${note.id}/edit`}
@@ -174,7 +177,7 @@ function DashboardContent() {
           ))}
         </div>
       ) : (
-        <p className="text-gray-500">Anda belum membuat catatan apa pun.</p>
+        <p className="text-gray-500">Anda belum membuat catatan apa pun. Mulai buat catatan pertama Anda!</p>
       )}
     </div>
   );
@@ -187,5 +190,3 @@ export default function Dashboard() {
         </Suspense>
     )
 }
-
-

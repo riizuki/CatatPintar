@@ -1,5 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 const itemVariants = {
   hidden: { opacity: 0, y: 50 },
@@ -8,26 +9,32 @@ const itemVariants = {
 
 const CTA = () => (
   <motion.section
-    className="bg-gray-900 text-white"
+    className="bg-gradient-to-r from-[#00A2D8] to-[#4CC1EE] text-white py-20 lg:py-28 relative overflow-hidden" // Vibrant gradient background
     variants={itemVariants}
   >
-    <div className="container mx-auto px-40 py-24 text-center">
-      <h2 className="text-3xl md:text-4xl font-semibold mb-4">
+    {/* Optional: Add some subtle background shapes/patterns */}
+    <div className="absolute inset-0 z-0 opacity-10">
+      <div className="w-48 h-48 bg-white rounded-full absolute -top-12 -left-12"></div>
+      <div className="w-32 h-32 bg-white rounded-full absolute -bottom-8 -right-8"></div>
+    </div>
+
+    <div className="container mx-auto px-32 text-center relative z-10">
+      <h2 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">
         Siap Mengubah Cara Belajarmu?
       </h2>
 
-      <p className="text-white/70 text-lg mb-8 max-w-2xl mx-auto">
+      <p className="text-white text-lg lg:text-xl mb-10 max-w-3xl mx-auto">
         Bergabunglah dengan CatatPintar sekarang dan rasakan kemudahan
-        belajar dengan bantuan AI.
+        belajar dengan bantuan AI yang revolusioner.
       </p>
 
-      <a
-        href="#"
-        className="inline-block px-8 py-4 bg-white text-gray-900 rounded-lg
-  font-medium hover:bg-gray-100 transition"
+      <Link
+        href="/register" // Link to registration page
+        className="inline-block px-10 py-5 bg-white text-[#00A2D8] rounded-full
+        font-bold text-xl hover:bg-gray-100 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
       >
         Mulai Sekarang, Gratis!
-      </a>
+      </Link>
     </div>
   </motion.section>
 );

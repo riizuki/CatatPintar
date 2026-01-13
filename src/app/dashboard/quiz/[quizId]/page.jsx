@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeftIcon, CheckIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, CheckIcon, XMarkIcon, LightBulbIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 
 const QuizTakingPage = () => {
     const params = useParams();
@@ -19,26 +19,48 @@ const QuizTakingPage = () => {
     const [error, setError] = useState("");
     const [uiMessage, setUiMessage] = useState(""); // New state for UI messages
 
+    const [aiAnalysis, setAiAnalysis] = useState(""); // State for AI analysis
+    const [isAnalyzing, setIsAnalyzing] = useState(false); // Loading state for analysis
+
     useEffect(() => {
         if (!quizId) return;
-        const fetchQuiz = async () => {
+
+        const fetchData = async () => {
             setLoading(true);
+            setError("");
             try {
-                const res = await fetch(`/api/quizzes/${quizId}`);
-                if (!res.ok) {
-                    const errData = await res.json();
-                    if (res.status === 404) router.push('/dashboard/quiz'); // Redirect if quiz not found
+                const [quizRes, resultRes] = await Promise.all([
+                    fetch(`/api/quizzes/${quizId}`),
+                    fetch(`/api/quizzes/${quizId}/result`),
+                ]);
+
+                if (!quizRes.ok) {
+                    const errData = await quizRes.json();
+                    if (quizRes.status === 404) router.push('/dashboard/quiz');
                     throw new Error(errData.message || "Gagal memuat kuis.");
                 }
-                const data = await res.json();
-                setQuiz(data);
+                const quizData = await quizRes.json();
+                setQuiz(quizData);
+
+                if (resultRes.ok) {
+                    const resultData = await resultRes.json();
+                    // Structure result to match what handleSubmit provides
+                    setResult({
+                        score: resultData.score,
+                        correctAnswers: quizData.questions.map(q => ({
+                            questionId: q.id,
+                            correctAnswer: q.correctAnswer,
+                        })),
+                    });
+                }
+
             } catch (err) {
                 setError(err.message);
             } finally {
                 setLoading(false);
             }
         };
-        fetchQuiz();
+        fetchData();
     }, [quizId, router]);
 
     const handleSelectAnswer = (questionId, option) => {
@@ -68,14 +90,6 @@ const QuizTakingPage = () => {
 
             if (!res.ok) {
                  const errData = await res.json();
-                 // If already taken, handle displaying the existing result
-                 if (res.status === 409) {
-                     // The backend should ideally return the existing result here.
-                     // For now, we'll just display a message and prevent submission.
-                     setUiMessage(errData.message || "Kuis ini sudah Anda kerjakan.");
-                     setIsSubmitting(false); // Make sure button is enabled
-                     return;
-                 }
                 throw new Error(errData.message || "Gagal mengirimkan jawaban.");
             }
             
@@ -88,6 +102,44 @@ const QuizTakingPage = () => {
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const handleAnalyzeWeaknesses = async () => {
+        setIsAnalyzing(true);
+        setAiAnalysis("");
+        setError("");
+        try {
+            const res = await fetch(`/api/quizzes/${quizId}/analyze`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userAnswers: Object.entries(answers).map(([questionId, answer]) => ({
+                        questionId: parseInt(questionId),
+                        selectedAnswer: answer,
+                    }))
+                })
+            });
+
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.message || "Gagal mendapatkan analisis.");
+            }
+            const data = await res.json();
+            setAiAnalysis(data.analysis);
+        } catch (err) {
+            setError(err.message);
+            setUiMessage(err.message);
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
+
+    const handleRetakeQuiz = () => {
+        setResult(null); // Clear result to go back to quiz taking view
+        setAnswers({}); // Clear answers
+        setAiAnalysis(""); // Clear analysis
+        setUiMessage(""); // Clear messages
+        setError(""); // Clear errors
     };
     
     if (loading) return <div className="p-8">Memuat Kuis...</div>;
@@ -102,8 +154,33 @@ const QuizTakingPage = () => {
                  <div className="text-center mb-12">
                     <h1 className="text-4xl font-bold text-black">Hasil Kuis</h1>
                     <p className="text-2xl mt-4 text-black">Skor Anda: <span className="font-bold text-blue-600">{result.score}%</span></p>
+                    <div className="mt-8 flex justify-center space-x-4">
+                        <button
+                            onClick={handleAnalyzeWeaknesses}
+                            disabled={isAnalyzing}
+                            className="flex items-center px-6 py-3 text-lg font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:bg-indigo-400"
+                        >
+                            {isAnalyzing ? 'Menganalisis...' : <><LightBulbIcon className="w-6 h-6 mr-2" />Analisis Kelemahan</>}
+                        </button>
+                        <button
+                            onClick={handleRetakeQuiz}
+                            className="flex items-center px-6 py-3 text-lg font-medium text-black bg-gray-200 rounded-md hover:bg-gray-300"
+                        >
+                            <ArrowPathIcon className="w-6 h-6 mr-2" />Coba Lagi
+                        </button>
+                    </div>
                 </div>
-                <div className="space-y-8">
+
+                {aiAnalysis && (
+                    <div className="mt-12 p-6 bg-blue-50 rounded-lg shadow-md border border-blue-200">
+                        <h2 className="text-2xl font-bold text-blue-800 mb-4 flex items-center">
+                            <LightBulbIcon className="w-7 h-7 mr-3 text-blue-600" />Saran Analisis AI
+                        </h2>
+                        <p className="text-blue-900 leading-relaxed whitespace-pre-wrap">{aiAnalysis}</p>
+                    </div>
+                )}
+
+                <div className="space-y-8 mt-12">
                     {quiz.questions.map((q, index) => {
                         const userAnswer = answers[q.id];
                         const correctAnswer = correctAnswersMap.get(q.id);
@@ -163,7 +240,7 @@ const QuizTakingPage = () => {
                                                                         className={`p-3 rounded-md cursor-pointer transition-colors ${
                                                                             answers[q.id] === opt
                                                                             ? 'bg-blue-100 border-blue-500 text-black'
-                                                                            : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-black'
+                                                                            : 'bg-gray-50 hover:bg-gray-100 border-gray-100 text-black'
                                                                         } border`}                                >
                                     {opt}. {q[`option${opt}`]}
                                 </div>

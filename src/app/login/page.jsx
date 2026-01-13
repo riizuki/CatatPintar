@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense, useRef } from "react";
 import { signIn } from "next-auth/react";
 import toast from 'react-hot-toast';
+import Image from "next/image"; // Import Image component
 
 function LoginPageContent() {
   const router = useRouter();
@@ -55,12 +56,19 @@ function LoginPageContent() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-2xl shadow-md">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-6">
+      <div className="w-full max-w-lg p-8 space-y-8 bg-white/70 backdrop-blur-lg rounded-xl shadow-xl border border-gray-200">
         <div className="text-center">
-          <h1 className="text-3xl font-semibold text-black">Login</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Selamat datang kembali! Silakan masukkan detail Anda.
+            <Image 
+                src="/img/logo.png"
+                alt="CatatPintar Logo"
+                width={64}
+                height={64}
+                className="mx-auto mb-4"
+            />
+          <h1 className="text-4xl font-extrabold text-gray-900">Selamat Datang!</h1>
+          <p className="mt-2 text-base text-gray-700">
+            Silakan login untuk melanjutkan petualangan belajarmu.
           </p>
         </div>
         
@@ -68,60 +76,56 @@ function LoginPageContent() {
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-black"
+              className="block text-sm font-semibold text-gray-800 mb-2"
             >
               Alamat Email
             </label>
-            <div className="mt-1">
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="off"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="block w-full px-3 py-2 text-black placeholder-gray-500 border border-gray-300 rounded-md shadow-sm appearance-none focus:outline-none focus:ring-black focus:border-black sm:text-sm"
-              />
-            </div>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="off"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-all duration-200 sm:text-sm"
+            />
           </div>
           <div>
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-black"
+              className="block text-sm font-semibold text-gray-800 mb-2"
             >
               Kata Sandi
             </label>
-            <div className="mt-1">
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="off"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="block w-full px-3 py-2 text-black placeholder-gray-500 border border-gray-300 rounded-md shadow-sm appearance-none focus:outline-none focus:ring-black focus:border-black sm:text-sm"
-              />
-            </div>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="off"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-all duration-200 sm:text-sm"
+            />
           </div>
-          {error && <p className="text-sm text-red-500">{error}</p>}
+          {error && <p className="text-sm text-red-500 text-center">{error}</p>}
           <div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-4 py-2 text-sm font-medium text-white bg-black border border-transparent rounded-md shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50"
+              className="w-full px-4 py-3 text-base font-bold text-white bg-[#00A2D8] rounded-lg shadow-md hover:bg-[#008EB2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] disabled:opacity-50 transition-all duration-200"
             >
               {loading ? "Memproses..." : "Login"}
             </button>
           </div>
         </form>
-        <div className="text-sm text-center">
-          <p className="text-gray-600">
+        <div className="text-sm text-center mt-6">
+          <p className="text-gray-700">
             Belum punya akun?{" "}
             <Link
               href="/register"
-              className="font-medium text-black hover:text-gray-800"
+              className="font-bold text-[#00A2D8] hover:text-[#008EB2] transition-colors"
             >
               Daftar sekarang
             </Link>

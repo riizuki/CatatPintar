@@ -4,6 +4,8 @@ import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
+import hljs from "highlight.js";
+import "highlight.js/styles/github.css";
 
 const NewNotePage = () => {
   const router = useRouter();
@@ -63,6 +65,24 @@ const NewNotePage = () => {
     }
   };
 
+  const modules = useMemo(
+    () => ({
+      toolbar: [
+        [{ header: [1, 2, 3, 4, 5, 6, false] }],
+        ["bold", "italic", "underline", "strike"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        ["link", "image", "video"],
+        ["blockquote", "code-block"],
+        [{ align: [] }],
+        ["clean"],
+      ],
+      syntax: {
+        highlight: (text) => hljs.highlightAuto(text).value,
+      },
+    }),
+    []
+  );
+
   return (
     <div className="p-8">
       <form onSubmit={handleCreateNote}>
@@ -79,6 +99,7 @@ const NewNotePage = () => {
           theme="snow"
           value={content}
           onChange={setContent}
+          modules={modules}
           className="bg-white text-black"
           style={{ height: "400px", marginBottom: "50px" }}
         />

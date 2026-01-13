@@ -23,21 +23,7 @@ export async function POST(request, { params }) {
             return NextResponse.json({ message: 'Quiz not found or access denied' }, { status: 404 });
         }
         
-        // 2. Check if already taken
-        const existingResult = await prisma.quizResult.findFirst({
-            where: { quizId: parseInt(quizId), userId: session.user.id },
-        });
-
-        if (existingResult) {
-            // If already taken, return the existing result data for review
-            const reviewData = quiz.questions.map(q => ({
-                questionId: q.id,
-                correctAnswer: q.correctAnswer,
-            }));
-            return NextResponse.json({ score: existingResult.score, correctAnswers: reviewData }, { status: 200 });
-        }
-
-        // 3. Get user answers from request body
+        // 2. Get user answers from request body
         const body = await request.json();
         const { answers } = body; // Expected format: [{ questionId: 1, answer: 'A' }, ...]
 
@@ -45,12 +31,12 @@ export async function POST(request, { params }) {
             return NextResponse.json({ message: 'Invalid answers format.' }, { status: 400 });
         }
 
-        // 4. Compare answers and calculate score
+        // 3. Compare answers and calculate score
         let correctCount = 0;
-        const correctAnswers = new Map(quiz.questions.map(q => [q.id, q.correctAnswer]));
+        const correctAnswersMap = new Map(quiz.questions.map(q => [q.id, q.correctAnswer]));
         
         answers.forEach(userAnswer => {
-            const correctAnswer = correctAnswers.get(userAnswer.questionId);
+            const correctAnswer = correctAnswersMap.get(userAnswer.questionId);
             if (correctAnswer && correctAnswer.toUpperCase() === userAnswer.answer.toUpperCase()) {
                 correctCount++;
             }
@@ -58,16 +44,23 @@ export async function POST(request, { params }) {
 
         const score = Math.round((correctCount / quiz.questions.length) * 100);
 
-        // 5. Save the result
-        await prisma.quizResult.create({
-            data: {
+        // 4. Save or update the result
+        await prisma.quizResult.upsert({
+            where: {
+                userId_quizId: {
+                    userId: session.user.id,
+                    quizId: parseInt(quizId)
+                }
+            },
+            update: { score: score, takenAt: new Date() }, // Update score and takenAt
+            create: {
                 quizId: parseInt(quizId),
                 userId: session.user.id,
                 score,
             },
         });
         
-        // 6. Return score and the correct answers for review
+        // 5. Return score and the correct answers for review
         const reviewData = quiz.questions.map(q => ({
             questionId: q.id,
             correctAnswer: q.correctAnswer,
