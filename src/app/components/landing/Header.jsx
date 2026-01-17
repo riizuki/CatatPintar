@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link"; // Import Link for better navigation
 
+
 const Header = () => (
   <header
     className="
@@ -22,6 +23,7 @@ const Header = () => (
       </div>
 
       <div className="flex items-center space-x-4">
+
         <Link
           href="/login"
           className="

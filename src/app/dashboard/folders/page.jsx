@@ -21,41 +21,45 @@ const FolderModal = ({ isOpen, onClose, onSave, editingFolder, isLoading }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/70 backdrop-blur-sm">
-      <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-md">
+      <div className="w-full max-w-lg p-8 bg-white rounded-2xl shadow-xl border border-gray-200">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-semibold text-black">
-            {editingFolder ? "Edit Folder" : "Buat Folder"}
+          <h2 className="text-2xl font-bold text-gray-800">
+            {editingFolder ? "Edit Folder" : "Buat Folder Baru"}
           </h2>
-          <button onClick={onClose} disabled={isLoading}>
+          <button onClick={onClose} disabled={isLoading} className="p-2 rounded-full hover:bg-gray-100">
             <XMarkIcon className="w-6 h-6 text-gray-500" />
           </button>
         </div>
         <form onSubmit={handleSubmit} autoComplete="off">
-          <div className="space-y-6">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-black">
-                Nama Folder
-              </label>
-              <div className="mt-1">
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="block w-full px-3 py-2 placeholder-gray-500 text-black border border-gray-300 rounded-md shadow-sm appearance-none focus:outline-none focus:ring-black focus:border-black sm:text-sm"
-                />
-              </div>
-            </div>
+          <div className="space-y-2">
+            <label htmlFor="name" className="text-base font-medium text-gray-700">
+              Nama Folder
+            </label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="block w-full px-4 py-3 text-gray-800 bg-gray-50 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-colors duration-300"
+            />
           </div>
-          <div className="mt-8 flex justify-end">
+          <div className="mt-8 flex justify-end space-x-4">
+            <button
+                type="button"
+                onClick={onClose}
+                disabled={isLoading}
+                className="px-6 py-2.5 text-base font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all"
+            >
+                Batal
+            </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-white bg-black border border-transparent rounded-md shadow-sm sm:w-auto hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50"
+              className="px-6 py-2.5 text-base font-semibold text-white bg-[#00A2D8] rounded-lg shadow-md hover:bg-[#008EB2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] disabled:opacity-50 transition-all"
             >
-              {isLoading ? "Menyimpan..." : (editingFolder ? "Simpan Perubahan" : "Buat Folder")}
+              {isLoading ? "Menyimpan..." : (editingFolder ? "Simpan" : "Buat")}
             </button>
           </div>
         </form>
@@ -108,7 +112,7 @@ const FoldersPage = () => {
       });
       if (!res.ok) throw new Error(`Gagal ${isEditing ? 'memperbarui' : 'membuat'} folder.`);
       
-      await fetchFolders(); // Refetch folders to update the list
+      await fetchFolders();
       setIsModalOpen(false);
       setEditingFolder(null);
     } catch (err) {
@@ -172,52 +176,76 @@ const FoldersPage = () => {
         <p>Anda yakin ingin menghapus folder <strong>{folderToDelete?.name}</strong>?</p>
         <p className="mt-2 text-sm text-gray-600">Semua catatan di dalamnya juga akan dihapus secara permanen. Tindakan ini tidak dapat diurungkan.</p>
       </ConfirmationModal>
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-semibold text-black">Folder</h1>
+      <div className="p-4 sm:p-6 md:p-8">
+        <header className="flex items-center justify-between mb-10">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">
+                Folder Saya
+            </h1>
+            <p className="text-gray-500 mt-1">
+                Kelola semua folder catatan Anda di sini.
+            </p>
+          </div>
           <button
             onClick={openCreateModal}
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-black border border-transparent rounded-md shadow-sm hover:bg-gray-800"
+            className="inline-flex items-center px-6 py-3 text-base font-semibold text-white bg-[#00A2D8] rounded-lg shadow-lg hover:bg-[#008EB2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] transition-all duration-300 transform hover:scale-105"
           >
             <PlusIcon className="w-5 h-5 mr-2" />
-            Buat Folder
+            <span>Buat Folder</span>
           </button>
-        </div>
+        </header>
 
         {error && <p className="text-red-500 mb-4">Kesalahan: {error}</p>}
 
         {loading ? (
-          <p>Memuat folder...</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="p-6 bg-white rounded-2xl border border-gray-200 animate-pulse">
+                    <div className="h-8 w-8 bg-gray-200 rounded-lg mb-4"></div>
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                </div>
+            ))}
+          </div>
         ) : folders.length === 0 ? (
-          <p className="text-gray-500">Belum ada folder yang dibuat. Klik "Buat Folder" untuk memulai.</p>
+          <div className="text-center py-20 px-6 bg-white rounded-2xl border-2 border-dashed border-gray-300">
+                <FolderIcon className="w-16 h-16 mx-auto text-gray-400"/>
+                <h3 className="mt-6 text-2xl font-bold text-gray-800">Folder Masih Kosong</h3>
+                <p className="mt-2 text-base text-gray-500">Ayo buat folder pertamamu untuk mengorganisir catatan!</p>
+                 <button
+                    onClick={openCreateModal}
+                    className="mt-8 inline-flex items-center px-6 py-3 text-base font-semibold text-white bg-[#00A2D8] rounded-lg shadow-lg hover:bg-[#008EB2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] transition-all"
+                >
+                    <PlusIcon className="w-5 h-5 mr-2" />
+                    Buat Folder
+                </button>
+            </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {folders.map((folder) => (
-              <div key={folder.id} className="relative group">
+              <div key={folder.id} className="relative group bg-white rounded-2xl border border-gray-200 hover:border-[#00A2D8] transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl">
                 <Link
                   href={`/dashboard/folders/${folder.id}`}
-                  className="block p-6 bg-gray-50 rounded-lg border border-gray-200 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
+                  className="block p-6"
                 >
-                  <FolderIcon className="w-8 h-8 mr-4 text-gray-400" />
-                  <div>
-                    <h3 className="text-lg font-semibold text-black truncate">{folder.name}</h3>
-                    <p className="mt-1 text-sm text-gray-600">{folder.noteCount} Catatan</p>
-                  </div>
+                  <FolderIcon className="w-10 h-10 mb-4 text-[#00A2D8]" />
+                  <h3 className="text-xl font-bold text-gray-800 truncate transition-colors">{folder.name}</h3>
+                  <p className="mt-1 text-sm text-gray-500">{folder.noteCount} Catatan</p>
                 </Link>
-                <div className="absolute top-3 right-3 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <button
                     onClick={(e) => { e.preventDefault(); handleEditFolder(folder); }}
-                    className="p-2 bg-white rounded-full shadow-sm hover:bg-gray-100"
+                    className="p-2.5 bg-gray-100 rounded-full hover:bg-gray-200"
                     title="Edit Folder"
                   >
-                    <PencilIcon className="w-4 h-4 text-gray-600"/>
+                    <PencilIcon className="w-5 h-5 text-gray-700"/>
                   </button>
                   <button
                     onClick={(e) => { e.preventDefault(); handleOpenDeleteModal(folder); }}
-                    className="p-2 bg-white rounded-full shadow-sm hover:bg-gray-100"
+                    className="p-2.5 bg-gray-100 rounded-full hover:bg-red-100"
                     title="Hapus Folder"
                   >
-                    <TrashIcon className="w-4 h-4 text-red-600"/>
+                    <TrashIcon className="w-5 h-5 text-red-600"/>
                   </button>
                 </div>
               </div>

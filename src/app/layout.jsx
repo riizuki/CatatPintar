@@ -15,8 +15,22 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={quicksand.className} suppressHydrationWarning>
+    <html lang="en" className={quicksand.className}>
+      <body suppressHydrationWarning>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                var darkMode = localStorage.getItem('darkMode');
+                if (darkMode === 'true' || (!darkMode && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              })();
+            `,
+          }}
+        />
         <Providers>
           <Toaster position="top-center" reverseOrder={false} />
           {children}

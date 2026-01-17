@@ -1,4 +1,5 @@
 "use client";
+
 import { motion } from "framer-motion";
 import Link from "next/link";
 
@@ -9,10 +10,9 @@ const itemVariants = {
 
 const CTA = () => (
   <motion.section
-    className="bg-gradient-to-r from-[#00A2D8] to-[#4CC1EE] text-white py-20 lg:py-28 relative overflow-hidden" // Vibrant gradient background
+    className="bg-gradient-to-r from-[#00A2D8] to-[#4CC1EE] text-white py-20 lg:py-28 relative overflow-hidden"
     variants={itemVariants}
   >
-    {/* Optional: Add some subtle background shapes/patterns */}
     <div className="absolute inset-0 z-0 opacity-10">
       <div className="w-48 h-48 bg-white rounded-full absolute -top-12 -left-12"></div>
       <div className="w-32 h-32 bg-white rounded-full absolute -bottom-8 -right-8"></div>
@@ -29,7 +29,7 @@ const CTA = () => (
       </p>
 
       <Link
-        href="/register" // Link to registration page
+        href="/register"
         className="inline-block px-10 py-5 bg-white text-[#00A2D8] rounded-full
         font-bold text-xl hover:bg-gray-100 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
       >

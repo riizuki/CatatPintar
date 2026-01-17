@@ -5,15 +5,15 @@ const FeatureCard = ({ headerImageSrc, title, description }) => (
   <article
     className="
       group
-      overflow-hidden rounded-xl // More rounded corners
-      border border-gray-100 // Lighter border
-      bg-white
-      shadow-lg // Subtle shadow
+      overflow-hidden rounded-xl 
+      border border-gray-100 dark:border-gray-800
+      bg-white dark:bg-gray-800
+      shadow-lg
       transition-all duration-300
       hover:-translate-y-2 hover:shadow-xl hover:border-[#4CC1EE] // More pronounced hover effect
     "
   >
-    <div className="relative h-48 w-full bg-gray-100 overflow-hidden"> 
+    <div className="relative h-48 w-full bg-gray-100 dark:bg-gray-700 overflow-hidden"> 
       <Image
         src={headerImageSrc}
         alt={`${title} header image`}
@@ -29,7 +29,7 @@ const FeatureCard = ({ headerImageSrc, title, description }) => (
       <h3
         className="
           mb-3 text-xl font-bold // More prominent title
-          text-gray-900
+          text-gray-900 dark:text-white
         "
       >
         {title}
@@ -38,7 +38,7 @@ const FeatureCard = ({ headerImageSrc, title, description }) => (
       <p
         className="
           text-base leading-relaxed // Slightly larger text
-          text-gray-600
+          text-gray-600 dark:text-gray-300
         "
       >
         {description}

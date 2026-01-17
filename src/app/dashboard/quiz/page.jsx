@@ -1,11 +1,10 @@
 "use client";
 
-import { PlusIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, ArrowLeftIcon, DocumentTextIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { useState, useEffect } from "react";
 import CreateQuizModal from "@/app/components/dashboard/CreateQuizModal";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
 const QuizPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,65 +31,99 @@ const QuizPage = () => {
     fetchQuizzes();
   }, []);
 
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+  };
+
   return (
     <>
       <CreateQuizModal isOpen={isModalOpen} onClose={() => {
           setIsModalOpen(false);
       }} notes={[]} />
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="p-4 sm:p-6 md:p-8">
+        <header className="flex items-center justify-between mb-10">
           <div className="flex items-center">
-            <button onClick={() => router.back()} className="mr-4 p-2 rounded-full hover:bg-gray-100">
-                <ArrowLeftIcon className="w-6 h-6 text-black"/>
+            <button onClick={() => router.back()} className="mr-4 p-2 rounded-full hover:bg-gray-100 transition-colors">
+                <ArrowLeftIcon className="w-6 h-6 text-gray-700"/>
             </button>
-            <h1 className="text-3xl font-semibold text-black">Kuis Saya</h1>
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">
+                  Kuis Saya
+              </h1>
+              <p className="text-gray-500 mt-1">
+                  Latih pengetahuan Anda dengan kuis-kuis menarik.
+              </p>
+            </div>
           </div>
           <button
             onClick={() => {
                 console.log("Create Quiz button clicked, setting isModalOpen to true");
                 setIsModalOpen(true);
             }}
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-black border border-transparent rounded-md shadow-sm hover:bg-gray-800"
+            className="inline-flex items-center px-6 py-3 text-base font-semibold text-white bg-[#00A2D8] rounded-lg shadow-lg hover:bg-[#008EB2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] transition-all duration-300 transform hover:scale-105"
           >
             <PlusIcon className="w-5 h-5 mr-2" />
-            Buat Kuis
+            <span>Buat Kuis</span>
           </button>
-        </div>
+        </header>
         
-        {loading && <p>Memuat riwayat kuis...</p>}
+        {loading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 3 }).map((_, index) => (
+                    <div key={index} className="p-6 bg-white rounded-2xl border border-gray-200 animate-pulse">
+                        <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
+                        <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
+                        <div className="h-10 bg-gray-200 rounded w-full"></div>
+                    </div>
+                ))}
+            </div>
+        )}
         {error && <p className="text-red-500">Kesalahan: {error}</p>}
         
         {!loading && !error && (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {quizzes.length > 0 ? (
               quizzes.map((quiz) => (
-                <div key={quiz.id} className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-black capitalize">
-                      {quiz.sourceType}: <span className="font-normal text-gray-700 truncate">{quiz.sourceValue}</span>
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Dibuat pada: {new Date(quiz.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    {quiz.result ? (
-                       <div className="text-right">
-                           <p className="font-semibold text-black">{quiz.result.score}%</p>
-                           <p className="text-sm text-gray-500">Dikerjakan pada: {new Date(quiz.result.takenAt).toLocaleDateString()}</p>
-                       </div>
-                    ) : (
-                      <p className="text-sm text-gray-500 italic">Belum dikerjakan</p>
+                <div key={quiz.id} className="group relative bg-white rounded-2xl border border-gray-200 hover:border-[#00A2D8] transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-gray-800 capitalize line-clamp-1">
+                      {quiz.sourceType}: <span className="font-normal text-gray-700">{quiz.sourceValue}</span>
+                    </h3>
+                    {quiz.result && (
+                        <CheckCircleIcon className="w-6 h-6 text-green-500" title="Kuis Selesai"/>
                     )}
-                    <Link href={`/dashboard/quiz/${quiz.id}`} className="px-4 py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-black">
-                      {quiz.result ? "Lihat Hasil" : "Kerjakan Kuis"}
-                    </Link>
                   </div>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Dibuat pada: {formatDate(quiz.createdAt)}
+                  </p>
+                  
+                  {quiz.result ? (
+                     <div className="flex items-center justify-between">
+                         <p className="text-2xl font-bold text-[#00A2D8]">{quiz.result.score}%</p>
+                         <p className="text-sm text-gray-500">Dikerjakan pada: {formatDate(quiz.result.takenAt)}</p>
+                     </div>
+                  ) : (
+                    <p className="text-base italic text-gray-500">Belum dikerjakan</p>
+                  )}
+                  <Link href={`/dashboard/quiz/${quiz.id}`} 
+                    className="mt-6 w-full inline-flex justify-center items-center px-5 py-2.5 text-base font-semibold text-white bg-[#00A2D8] rounded-lg shadow-md hover:bg-[#008EB2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] transition-all duration-300"
+                  >
+                    {quiz.result ? "Lihat Hasil" : "Kerjakan Kuis"}
+                  </Link>
                 </div>
               ))
             ) : (
-              <div className="text-center text-gray-500 py-10">
-                <p>Belum ada kuis yang dibuat.</p>
+              <div className="lg:col-span-3 text-center py-20 px-6 bg-white rounded-2xl border-2 border-dashed border-gray-300">
+                <DocumentTextIcon className="w-16 h-16 mx-auto text-gray-400"/>
+                <h3 className="mt-6 text-2xl font-bold text-gray-800">Belum Ada Kuis</h3>
+                <p className="mt-2 text-base text-gray-500">Buat kuis pertamamu dari catatan atau topik favoritmu!</p>
+                 <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="mt-8 inline-flex items-center px-6 py-3 text-base font-semibold text-white bg-[#00A2D8] rounded-lg shadow-lg hover:bg-[#008EB2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] transition-all"
+                >
+                    <PlusIcon className="w-5 h-5 mr-2" />
+                    Buat Kuis
+                </button>
               </div>
             )}
           </div>

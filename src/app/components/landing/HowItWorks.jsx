@@ -37,8 +37,7 @@ const HowItWorks = () => (
         {/* Decorative connecting line */}
         <div className="hidden md:block absolute left-1/2 top-1/2 w-full h-1 bg-[#00A2D8] transform -translate-x-1/2 -translate-y-1/2 rounded-full z-0"></div>
 
-        {/* Step 1 */}
-        <motion.div className="relative z-10 p-6 bg-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300" variants={itemVariants}>
+<motion.div className="relative z-10 p-6 bg-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300" variants={itemVariants}>
           <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-[#00A2D8] text-white rounded-full font-bold text-3xl border-4 border-[#4CC1EE]">
             1
           </div>
@@ -51,8 +50,7 @@ const HowItWorks = () => (
           </p>
         </motion.div>
 
-        {/* Step 2 */}
-        <motion.div className="relative z-10 p-6 bg-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300" variants={itemVariants}>
+<motion.div className="relative z-10 p-6 bg-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300" variants={itemVariants}>
           <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-purple-600 text-white rounded-full font-bold text-3xl border-4 border-purple-300">
             2
           </div>

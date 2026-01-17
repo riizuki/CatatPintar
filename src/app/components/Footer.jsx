@@ -2,12 +2,12 @@
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-800 text-white">
+    <footer className="bg-gray-800 text-white dark:bg-gray-900">
       <div className="container mx-auto px-32 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <h3 className="font-bold text-xl mb-4">CatatPintar</h3>
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-400 dark:text-gray-500 text-sm">
               Catatan kuliah, diperkuat AI. Belajar lebih cerdas, bukan lebih keras.
             </p>
           </div>
@@ -69,7 +69,7 @@ export default function Footer() {
             </div>
           </div>
         </div>
-        <div className="mt-16 pt-8 border-t border-gray-700 text-center text-sm text-gray-500"> {/* Adjusted border color */}
+        <div className="mt-16 pt-8 border-t border-gray-700 dark:border-gray-800 text-center text-sm text-gray-500"> {/* Adjusted border color */}
           <p>
             &copy; {new Date().getFullYear()} CatatPintar. All rights reserved.
           </p>
