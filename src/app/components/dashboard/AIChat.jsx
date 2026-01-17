@@ -1,14 +1,24 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { XMarkIcon, PaperAirplaneIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { useDashboard } from '../../../lib/contexts/DashboardContext';
 
-const AIChat = ({ noteContent, onClose }) => {
-  const [isOpen, setIsOpen] = useState(true);
+const AIChat = () => {
+  const { isAiSidebarOpen, setIsAiSidebarOpen, noteContext } = useDashboard();
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [explanation, setExplanation] = useState('');
+
+  useEffect(() => {
+    if (isAiSidebarOpen) {
+      setSearchTerm('');
+      setIsLoading(false);
+      setError('');
+      setExplanation('');
+    }
+  }, [isAiSidebarOpen]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -24,7 +34,7 @@ const AIChat = ({ noteContent, onClose }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           searchTerm,
-          context: noteContent,
+          context: noteContext.noteContent,
         }),
       });
 
@@ -42,26 +52,21 @@ const AIChat = ({ noteContent, onClose }) => {
     }
   };
 
-  if (!isOpen) {
-    return null;
-  }
-
   return (
-    <div className="fixed bottom-4 right-4 w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 flex flex-col">
-      <div className="flex justify-between items-center p-4 border-b border-gray-200">
+    <div 
+      className={`fixed top-0 right-0 h-full w-96 bg-white shadow-2xl border-l border-gray-200 flex flex-col transition-transform duration-500 ease-in-out z-50 ${isAiSidebarOpen ? 'transform translate-x-0' : 'transform translate-x-full'}`}
+    >
+      <div className="flex justify-between items-center p-4 border-b border-gray-200 flex-shrink-0">
         <h3 className="font-bold text-lg text-black flex items-center">
           <SparklesIcon className="w-6 h-6 mr-2 text-blue-500" />
           Tanya AI
         </h3>
-        <button onClick={() => {
-            setIsOpen(false)
-            if(onClose) onClose()
-        }} className="p-1 rounded-full hover:bg-gray-100">
+        <button onClick={() => setIsAiSidebarOpen(false)} className="p-1 rounded-full hover:bg-gray-100">
           <XMarkIcon className="w-6 h-6 text-gray-600" />
         </button>
       </div>
 
-      <div className="p-4 flex-grow overflow-y-auto h-80">
+      <div className="p-4 flex-grow overflow-y-auto">
         {isLoading && (
           <div className="flex items-center justify-center h-full">
             <p className="text-gray-500">AI sedang berpikir...</p>
@@ -79,7 +84,7 @@ const AIChat = ({ noteContent, onClose }) => {
         )}
       </div>
 
-      <form onSubmit={handleSearch} autoComplete="off" className="p-4 border-t border-gray-200">
+      <form onSubmit={handleSearch} autoComplete="off" className="p-4 border-t border-gray-200 flex-shrink-0">
         <div className="relative">
           <input
             type="text"

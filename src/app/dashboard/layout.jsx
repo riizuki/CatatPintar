@@ -14,6 +14,8 @@ import {
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import ConfirmationModal from "../components/dashboard/ConfirmationModal";
+import { DashboardProvider, useDashboard } from "../../lib/contexts/DashboardContext";
+import AIChat from "../components/dashboard/AIChat";
 
 const Sidebar = () => {
   const pathname = usePathname();
@@ -46,42 +48,48 @@ const Sidebar = () => {
       >
         <p>Apakah Anda yakin ingin keluar dari akun Anda?</p>
       </ConfirmationModal>
-      <div className="flex flex-col w-64 bg-gray-50 border-r border-gray-200">
-        <div className="p-4">
-          <h1 className="text-xl font-semibold text-black">CatatPintar</h1>
+      <div className="flex flex-col w-64 bg-white border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700 flex-shrink-0">
+        <div className="p-4 flex items-center space-x-2">
+          <Image 
+            src="/img/logo.png"
+            alt="CatatPintar Logo"
+            width={32}
+            height={32}
+          />
+          <h1 className="text-xl font-bold text-[#00A2D8]">CatatPintar</h1>
         </div>
         <nav className="flex-1 px-4 py-2 space-y-2">
           {navigation.map((item) => (
             <Link
               key={item.name}
               href={item.href}
-              className={`flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+              className={`flex items-center px-3 py-2 text-base font-medium rounded-lg ${
                 pathname === item.href
-                  ? "bg-gray-200 text-black"
-                  : "text-gray-700 hover:bg-gray-200"
+                  ? "bg-blue-50 text-[#00A2D8] dark:bg-blue-900/50"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
               }`}
-            >
+>
               <item.icon className="w-6 h-6 mr-3" />
               {item.name}
             </Link>
           ))}
         </nav>
-        <div className="mt-auto p-4 border-t border-gray-200">
+        <div className="mt-auto p-4 border-t border-gray-100 dark:border-gray-700">
           {session?.user && (
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <Image
                   src={`https://i.pravatar.cc/150?u=${session.user.email}`}
                   alt="User Avatar"
-                  width={32}
-                  height={32}
+                  width={40}
+                  height={40}
                   className="rounded-full mr-3"
                 />
                 <div>
-                  <p className="text-sm font-medium text-black truncate">
+                  <p className="text-sm font-semibold text-gray-800 truncate dark:text-gray-200">
                     {session.user.name}
                   </p>
-                  <p className="text-xs text-gray-500 truncate">
+                  <p className="text-xs text-gray-500 truncate dark:text-gray-400">
                     {session.user.email}
                   </p>
                 </div>
@@ -89,9 +97,9 @@ const Sidebar = () => {
               <button
                 onClick={() => setIsModalOpen(true)}
                 title="Keluar"
-                className="p-2 text-gray-500 rounded-md hover:bg-gray-200 hover:text-black"
+                className="p-2 text-gray-500 rounded-lg hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 dark:hover:text-red-400"
               >
-                <ArrowRightOnRectangleIcon className="w-5 h-5" />
+                <ArrowRightOnRectangleIcon className="w-6 h-6" />
               </button>
             </div>
           )}
@@ -100,6 +108,18 @@ const Sidebar = () => {
     </>
   );
 };
+
+const LayoutContent = ({ children }) => {
+  const { isAiSidebarOpen } = useDashboard();
+  return (
+    <div className="flex flex-1 overflow-hidden">
+        <main className={`flex-1 overflow-y-auto transition-margin-right duration-500 ease-in-out ${isAiSidebarOpen ? 'mr-96' : 'mr-0'}`}>
+          {children}
+        </main>
+        <AIChat />
+    </div>
+  )
+}
 
 export default function DashboardLayout({ children }) {
   const { status } = useSession();
@@ -113,18 +133,20 @@ export default function DashboardLayout({ children }) {
 
   if (status === "loading") {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <p>Memuat...</p>
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
+        <p className="dark:text-white">Memuat...</p>
       </div>
     );
   }
 
   if (status === "authenticated") {
     return (
-      <div className="flex h-screen bg-white">
-        <Sidebar />
-        <main className="flex-1 overflow-y-auto">{children}</main>
-      </div>
+      <DashboardProvider>
+        <div className="flex h-screen bg-custom-blue dark:bg-gray-900">
+          <Sidebar />
+          <LayoutContent>{children}</LayoutContent>
+        </div>
+      </DashboardProvider>
     );
   }
 

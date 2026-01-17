@@ -6,9 +6,12 @@ import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
 import hljs from "highlight.js";
 import "highlight.js/styles/github.css";
+import NoteEditorNavbar from "../../../components/dashboard/NoteEditorNavbar";
+import { useDashboard } from "../../../lib/contexts/DashboardContext";
 
 const NewNotePage = () => {
   const router = useRouter();
+  const { setNoteContext } = useDashboard();
 
   const ReactQuill = useMemo(
     () => dynamic(() => import("react-quill"), { ssr: false }),
@@ -34,7 +37,21 @@ const NewNotePage = () => {
       }
     };
     fetchFolders();
-  }, []);
+    
+    // Clear context on mount
+    setNoteContext({ noteId: null, noteContent: '' });
+
+    return () => {
+      // Clear context on unmount
+      setNoteContext({ noteId: null, noteContent: '' });
+    }
+  }, [setNoteContext]);
+  
+  // Update context when content changes
+  useEffect(() => {
+    setNoteContext(prev => ({...prev, noteContent: content}));
+  }, [content, setNoteContext]);
+
 
   const handleCreateNote = async (e) => {
     e.preventDefault();
@@ -68,14 +85,22 @@ const NewNotePage = () => {
   const modules = useMemo(
     () => ({
       toolbar: [
-        [{ header: [1, 2, 3, 4, 5, 6, false] }],
-        ["bold", "italic", "underline", "strike"],
-        [{ list: "ordered" }, { list: "bullet" }],
+        [{ header: "1" }, { header: "2" }, { font: [] }],
+        [{ size: [] }],
+        ["bold", "italic", "underline", "strike", "blockquote"],
+        [
+          { list: "ordered" },
+          { list: "bullet" },
+          { indent: "-1" },
+          { indent: "+1" },
+        ],
         ["link", "image", "video"],
-        ["blockquote", "code-block"],
-        [{ align: [] }],
+        ["code-block"],
         ["clean"],
       ],
+      clipboard: {
+        matchVisual: true,
+      },
       syntax: {
         highlight: (text) => hljs.highlightAuto(text).value,
       },
@@ -84,68 +109,74 @@ const NewNotePage = () => {
   );
 
   return (
-    <div className="p-8">
-      <form onSubmit={handleCreateNote}>
-        <div className="mb-8">
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full text-4xl font-bold bg-transparent text-black border-none focus:outline-none focus:ring-0"
-            placeholder="Judul Catatan"
-          />
-        </div>
-        <ReactQuill
-          theme="snow"
-          value={content}
-          onChange={setContent}
-          modules={modules}
-          className="bg-white text-black"
-          style={{ height: "400px", marginBottom: "50px" }}
-        />
-        <div className="mt-8">
-          <label
-            htmlFor="folder"
-            className="block text-sm font-medium text-black"
-          >
-            Folder
-          </label>
-          <div className="mt-1">
-            <select
-              id="folder"
-              name="folder"
-              value={folderId}
-              onChange={(e) => setFolderId(e.target.value)}
-              className="block w-full max-w-xs px-3 py-2 text-black border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black sm:text-sm"
-            >
-              <option value="">Tidak ada Folder</option>
-              {folders.map((folder) => (
-                <option key={folder.id} value={folder.id}>
-                  {folder.name}
-                </option>
-              ))}
-            </select>
+    <div>
+      <NoteEditorNavbar
+        isGenerating={null}
+        noteId={null} // No noteId on new page
+      />
+      <div className="p-8">
+        <form onSubmit={handleCreateNote}>
+          <div className="mb-8">
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full text-4xl font-bold bg-transparent text-black border-none focus:outline-none focus:ring-0"
+              placeholder="Judul Catatan"
+            />
           </div>
-        </div>
-        {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
-        <div className="mt-8 flex justify-end space-x-4">
-          <button
-            type="button"
-            onClick={() => router.push("/dashboard")}
-            disabled={loading}
-            className="px-4 py-2 text-sm font-medium text-black bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50"
-          >
-            Batal
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-800 disabled:opacity-50"
-          >
-            {loading ? "Membuat..." : "Buat Catatan"}
-          </button>
-        </div>
-      </form>
+          <ReactQuill
+            theme="snow"
+            value={content}
+            onChange={setContent}
+            modules={modules}
+            className="bg-white text-black"
+            style={{ height: "400px", marginBottom: "50px" }}
+          />
+          <div className="mt-8">
+            <label
+              htmlFor="folder"
+              className="block text-sm font-medium text-black"
+            >
+              Folder
+            </label>
+            <div className="mt-1">
+              <select
+                id="folder"
+                name="folder"
+                value={folderId}
+                onChange={(e) => setFolderId(e.target.value)}
+                className="block w-full max-w-xs px-3 py-2 text-black border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black sm:text-sm"
+              >
+                <option value="">Tidak ada Folder</option>
+                {folders.map((folder) => (
+                  <option key={folder.id} value={folder.id}>
+                    {folder.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
+          <div className="mt-8 flex justify-end space-x-4">
+            <button
+              type="button"
+              onClick={() => router.push("/dashboard")}
+              disabled={loading}
+              className="px-4 py-2 text-sm font-medium text-black bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-800 disabled:opacity-50"
+            >
+              {loading ? "Membuat..." : "Buat Catatan"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
