@@ -13,7 +13,7 @@ const NoteEditorNavbar = ({
   const generationDisabled = !noteId;
 
   return (
-    <div className="flex flex-col sm:flex-row justify-end items-center p-2 sm:p-4 border-b border-gray-200 bg-white dark:bg-gray-800 space-y-2 sm:space-y-0 sm:space-x-2">
+    <div className="flex flex-col sm:flex-row justify-end items-center p-2 sm:p-4 border-b border-gray-200 bg-white space-y-2 sm:space-y-0 sm:space-x-2">
       <button
         type="button"
         onClick={() => setIsAiSidebarOpen(true)}

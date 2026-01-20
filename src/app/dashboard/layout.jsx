@@ -285,8 +285,8 @@ export default function DashboardLayout({ children }) {
 
   if (status === "loading") {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
-        <p className="dark:text-white">Memuat...</p>
+      <div className="flex items-center justify-center h-screen bg-gray-50 ">
+        <p className="">Memuat...</p>
       </div>
     );
   }
@@ -294,7 +294,7 @@ export default function DashboardLayout({ children }) {
   if (status === "authenticated") {
     return (
       <DashboardProvider>
-        <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="flex h-screen bg-gray-50 -900">
           <Sidebar />
           <MobileSidebar isOpen={isMobileSidebarOpen} setIsOpen={setIsMobileSidebarOpen}/>
           <div className="flex flex-col flex-1 overflow-hidden">

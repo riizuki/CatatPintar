@@ -167,12 +167,12 @@ const QuizTakingPage = () => {
 
         return (
             <div className="p-6 md:p-8 max-w-4xl mx-auto min-h-screen">
-                <div className="text-center mb-12 bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 ring-1 ring-black/5 dark:ring-white/10">
-                    <h1 className="text-xl sm:text-2xl font-bold text-gray-500 dark:text-gray-400 mb-2">Skor Akhir</h1>
-                    <p className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-gray-800 dark:text-gray-100">
+                <div className="text-center mb-12 bg-white rounded-2xl p-6 sm:p-8 ring-1 ring-black/5">
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-500 mb-2">Skor Akhir</h1>
+                    <p className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-gray-800">
                         <span className="text-[#00A2D8]">{result.score}</span>%
                     </p>
-                    <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 mt-4">
+                    <p className="text-base sm:text-lg text-gray-600 mt-4">
                         Anda menjawab {result.correctAnswers.filter(a => a.correctAnswer === answers[a.questionId]).length} dari {quiz.questions.length} pertanyaan dengan benar.
                     </p>
                     <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
@@ -185,7 +185,7 @@ const QuizTakingPage = () => {
                         </button>
                         <button
                             onClick={handleRetakeQuiz}
-                            className="w-full sm:w-auto flex items-center justify-center px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-slate-700 rounded-lg shadow-md hover:bg-gray-200 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-all"
+                            className="w-full sm:w-auto flex items-center justify-center px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-medium text-gray-700 bg-gray-100 rounded-lg shadow-md hover:bg-gray-200-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-all"
                         >
                             <ArrowPathIcon className="w-5 h-5 mr-2" />Coba Lagi
                         </button>
@@ -193,13 +193,13 @@ const QuizTakingPage = () => {
                 </div>
 
                 {aiAnalysis && (
-                    <div className="mt-12 p-6 sm:p-8 bg-white dark:bg-slate-800 rounded-2xl ring-1 ring-black/5 dark:ring-white/10">
-                        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
+                    <div className="mt-12 p-6 sm:p-8 bg-white rounded-2xl ring-1 ring-black/5">
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 flex items-center">
                             <LightBulbIcon className="w-6 sm:w-7 h-6 sm:h-7 mr-3 text-sky-500" />Saran Analisis AI
                         </h2>
                         <div className="space-y-4">
                             {analysisParagraphs.map((paragraph, index) => (
-                                <p key={index} className="text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed">
+                                <p key={index} className="text-sm sm:text-base text-gray-700 leading-relaxed">
                                     {paragraph}
                                 </p>
                             ))}
@@ -208,21 +208,21 @@ const QuizTakingPage = () => {
                 )}
 
                 <div className="space-y-6 mt-12">
-                     <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100">Review Jawaban</h2>
+                     <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Review Jawaban</h2>
                     {quiz.questions.map((q, index) => {
                         const userAnswer = answers[q.id];
                         const correctAnswer = correctAnswersMap.get(q.id);
                         const isCorrect = userAnswer === correctAnswer;
 
                         const getOptionClass = (option) => {
-                            if (option === correctAnswer) return 'bg-green-100 dark:bg-green-800/30 border-green-500 dark:border-green-600 text-green-800 dark:text-green-300 font-semibold';
-                            if (option === userAnswer && !isCorrect) return 'bg-red-100 dark:bg-red-800/30 border-red-500 dark:border-red-600 text-red-800 dark:text-red-300 font-semibold';
-                            return 'bg-gray-50 dark:bg-slate-700/50 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300';
+                            if (option === correctAnswer) return 'bg-green-100/30 border-green-500 text-green-800 font-semibold';
+                            if (option === userAnswer && !isCorrect) return 'bg-red-100/30 border-red-500 text-red-800 font-semibold';
+                            return 'bg-gray-50/50 border-gray-200 text-gray-700';
                         };
 
                         return (
-                            <div key={q.id} className="p-4 sm:p-6 bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700">
-                                <p className="font-semibold text-lg sm:text-xl text-gray-800 dark:text-gray-100 mb-4">{index + 1}. {q.question}</p>
+                            <div key={q.id} className="p-4 sm:p-6 bg-white rounded-2xl border border-gray-200">
+                                <p className="font-semibold text-lg sm:text-xl text-gray-800 mb-4">{index + 1}. {q.question}</p>
                                 <div className="space-y-3">
                                     {['A', 'B', 'C', 'D'].map(opt => (
                                         <div key={opt} className={`p-3 sm:p-4 rounded-lg border-2 ${getOptionClass(opt)} flex justify-between items-center`}>

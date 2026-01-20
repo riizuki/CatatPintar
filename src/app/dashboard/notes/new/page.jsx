@@ -115,9 +115,9 @@ const NewNotePage = () => {
     <div>
       <NoteEditorNavbar
         isGenerating={null}
-        noteId={null} // No noteId on new page
+        noteId={null}
         onGenerateFlashcards={() => { /* Disabled for new notes */ }}
-        onGenerateQuiz={() => setIsCreateQuizModalOpen(true)} // Open modal for quiz
+        onGenerateQuiz={() => setIsCreateQuizModalOpen(true)}
       />
       <div className="p-8">
         <form onSubmit={handleCreateNote}>
