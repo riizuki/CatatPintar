@@ -1,0 +1,40 @@
+/* =========================
+   EMBLA CAROUSEL – CLEAN UI
+   ========================= */
+
+.embla {
+  overflow: hidden;
+  width: 100%; /* Ensure Embla takes full width */
+}
+
+/* Gunakan CSS variable supaya gampang di-tweak */
+:root {
+  --embla-gap: 1rem; /* Define gap for consistent spacing */
+}
+
+.embla__container {
+  display: flex;
+  flex-wrap: nowrap; /* Crucial for carousel to prevent stacking */
+  gap: var(--embla-gap); /* Spacing between slides */
+  padding: 0 var(--embla-gap); /* Padding for the container itself */
+}
+
+/* Slide default (mobile-first) */
+.embla__slide {
+  flex: 0 0 100%; /* Full width for mobile */
+  min-width: 0;
+}
+
+/* Tablet */
+@media (min-width: 768px) { /* md breakpoint */
+  .embla__slide {
+    flex: 0 0 calc(50% - var(--embla-gap) / 2); /* 2 slides per view with gap */
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) { /* lg breakpoint */
+  .embla__slide {
+    flex: 0 0 calc(33.333% - var(--embla-gap) * 2 / 3); /* 3 slides per view with gap */
+  }
+}

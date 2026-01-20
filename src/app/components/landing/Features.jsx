@@ -20,18 +20,18 @@ const itemVariants = {
 
 const Features = () => (
   <motion.section 
-    className="bg-white py-20 lg:py-28" // Brighter background, more vertical padding
+    className="bg-white py-20 lg:py-28 transition-colors duration-500" // Brighter background, more vertical padding
     initial="hidden"
     whileInView="visible" // Animate when in view
     viewport={{ once: true, amount: 0.3 }} // Only animate once, when 30% of item is visible
     variants={containerVariants}
   >
-    <div className="container mx-auto px-32">
+    <div className="container mx-auto px-6 md:px-32">
       <div className="text-center mb-16">
-        <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
+        <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4 transition-colors duration-500">
           Fitur <span className="text-[#4CC1EE]">Inti</span> Untuk Belajar Cerdas
         </h2>
-        <p className="text-lg text-gray-700 max-w-2xl mx-auto">
+        <p className="text-base md:text-lg text-gray-700 max-w-2xl mx-auto transition-colors duration-500">
           Alat yang kamu butuhkan untuk memahami materi lebih dalam.
         </p>
       </div>

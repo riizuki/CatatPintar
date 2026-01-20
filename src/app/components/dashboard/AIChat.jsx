@@ -45,6 +45,7 @@ const AIChat = () => {
 
       const data = await res.json();
       setExplanation(data.explanation);
+      setSearchTerm('');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -54,7 +55,7 @@ const AIChat = () => {
 
   return (
     <div 
-      className={`fixed top-0 right-0 h-full w-96 bg-white shadow-2xl border-l border-gray-200 flex flex-col transition-transform duration-500 ease-in-out z-50 ${isAiSidebarOpen ? 'transform translate-x-0' : 'transform translate-x-full'}`}
+      className={`fixed top-0 right-0 h-full w-96 bg-white  border-l border-gray-200 flex flex-col transition-transform duration-500 ease-in-out z-50 ${isAiSidebarOpen ? 'transform translate-x-0' : 'transform translate-x-full'}`}
     >
       <div className="flex justify-between items-center p-4 border-b border-gray-200 flex-shrink-0">
         <h3 className="font-bold text-lg text-black flex items-center">

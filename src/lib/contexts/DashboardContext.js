@@ -14,11 +14,19 @@ export const useDashboard = () => {
 
 export const DashboardProvider = ({ children }) => {
   const [isAiSidebarOpen, setIsAiSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [noteContext, setNoteContext] = useState({ noteId: null, noteContent: '' });
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(prev => !prev);
+  };
 
   const value = {
     isAiSidebarOpen,
     setIsAiSidebarOpen,
+    isSidebarOpen,
+    setIsSidebarOpen,
+    toggleSidebar,
     noteContext,
     setNoteContext,
   };

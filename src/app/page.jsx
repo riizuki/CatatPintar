@@ -21,7 +21,7 @@ const containerVariants = {
 
 export default function LandingPage() {
   return (
-    <div className="bg-white text-brand-gray font-sans dark:bg-gray-900 dark:text-gray-300">
+    <div className="min-h-screen bg-white text-brand-gray transition-colors duration-500">
       <Header />
 
       <motion.div

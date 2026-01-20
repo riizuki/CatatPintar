@@ -45,26 +45,26 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-6">
-      <div className="w-full max-w-lg p-8 space-y-8 bg-white/70 backdrop-blur-lg rounded-xl shadow-xl border border-gray-200"> 
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6">
+      <div className="w-full sm:max-w-md p-6 sm:p-8 space-y-6 sm:space-y-8 bg-white/70 backdrop-blur-lg rounded-xl shadow-xl border border-gray-200"> 
         <div className="text-center">
             <Image 
                 src="/img/logo.png"
                 alt="CatatPintar Logo"
-                width={64}
-                height={64}
-                className="mx-auto mb-4"
+                width={48}
+                height={48}
+                className="mx-auto mb-3 sm:mb-4"
             />
-          <h1 className="text-4xl font-extrabold text-gray-900">Daftar Akun Baru</h1>
-          <p className="mt-2 text-base text-gray-700">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900">Daftar Akun Baru</h1>
+          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-700">
             Mulai petualangan belajarmu bersama CatatPintar.
           </p>
         </div>
-        <form className="space-y-6" onSubmit={handleRegister} autoComplete="off">
+        <form className="space-y-4 sm:space-y-6" onSubmit={handleRegister} autoComplete="off">
           <div>
             <label
               htmlFor="name"
-              className="block text-sm font-semibold text-gray-800 mb-2"
+              className="block text-xs sm:text-sm font-semibold text-gray-800 mb-2"
             >
               Nama Lengkap
             </label>
@@ -76,13 +76,13 @@ export default function RegisterPage() {
               required
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-all duration-200 sm:text-sm"
+              className="block w-full px-3 py-2 text-sm sm:px-4 sm:py-3 sm:text-base bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-all duration-200"
             />
           </div>
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-semibold text-gray-800 mb-2"
+              className="block text-xs sm:text-sm font-semibold text-gray-800 mb-2"
             >
               Alamat Email
             </label>
@@ -94,13 +94,13 @@ export default function RegisterPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-all duration-200 sm:text-sm"
+              className="block w-full px-3 py-2 text-sm sm:px-4 sm:py-3 sm:text-base bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-all duration-200"
             />
           </div>
           <div>
             <label
               htmlFor="password"
-              className="block text-sm font-semibold text-gray-800 mb-2"
+              className="block text-xs sm:text-sm font-semibold text-gray-800 mb-2"
             >
               Kata Sandi
             </label>
@@ -112,21 +112,21 @@ export default function RegisterPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-all duration-200 sm:text-sm"
+              className="block w-full px-3 py-2 text-sm sm:px-4 sm:py-3 sm:text-base bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-all duration-200"
             />
           </div>
-           {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+           {error && <p className="text-xs sm:text-sm text-red-500 text-center">{error}</p>}
           <div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-4 py-3 text-base font-bold text-white bg-[#00A2D8] rounded-lg shadow-md hover:bg-[#008EB2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] disabled:opacity-50 transition-all duration-200"
+              className="w-full px-3 py-2 text-sm sm:px-4 sm:py-3 sm:text-base font-bold text-white bg-[#00A2D8] rounded-lg shadow-md hover:bg-[#008EB2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] disabled:opacity-50 transition-all duration-200"
             >
               {loading ? "Memproses..." : "Daftar"}
             </button>
           </div>
         </form>
-        <div className="text-sm text-center mt-6">
+        <div className="text-xs sm:text-sm text-center mt-4 sm:mt-6">
           <p className="text-gray-700">
             Sudah punya akun?{" "}
             <Link

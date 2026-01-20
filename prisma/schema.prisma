@@ -65,6 +65,8 @@ model Quiz {
   userId       Int      @map("user_id")
   sourceType   SourceType   @map("source_type")
   sourceValue  String   @map("source_value")
+  numQuestions Int      @map("num_questions")
+  difficulty   String?
   createdAt    DateTime @default(now()) @map("created_at")
 
   user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)

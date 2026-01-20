@@ -17,28 +17,31 @@ const itemVariants = {
 };
 
 const HowItWorks = () => (
-  <motion.section 
-    className="bg-gradient-to-br from-purple-50 to-blue-50 py-20 lg:py-28"
+  <motion.section
+    className="bg-gradient-to-br from-purple-50 to-blue-50 py-20 lg:py-28 transition-colors duration-500"
     initial="hidden"
     whileInView="visible"
     viewport={{ once: true, amount: 0.3 }}
     variants={containerVariants}
   >
-    <div className="container mx-auto px-36">
+    <div className="container mx-auto px-6 md:px-36">
       <div className="text-center mb-16">
-        <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
+        <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4 transition-colors duration-500">
           Bagaimana Caranya?
         </h2>
-        <p className="text-lg text-gray-700 max-w-2xl mx-auto">
+        <p className="text-base md:text-lg text-gray-700 max-w-2xl mx-auto transition-colors duration-500">
           Tiga langkah mudah untuk memulai petualangan belajarmu.
         </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center relative">
-        {/* Decorative connecting line */}
-        <div className="hidden md:block absolute left-1/2 top-1/2 w-full h-1 bg-[#00A2D8] transform -translate-x-1/2 -translate-y-1/2 rounded-full z-0"></div>
+        {/* Decorative connecting line for desktop */}
+        <div className="hidden md:block absolute left-0 top-1/3 w-full h-1 bg-gray-200 transform -translate-y-1/2 rounded-full z-0 transition-colors duration-500"></div>
 
-<motion.div className="relative z-10 p-6 bg-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300" variants={itemVariants}>
-          <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-[#00A2D8] text-white rounded-full font-bold text-3xl border-4 border-[#4CC1EE]">
+        <motion.div
+          className="relative z-10 p-6 bg-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300"
+          variants={itemVariants}
+        >
+          <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-blue-500 text-white rounded-full font-bold text-3xl border-4 border-blue-300">
             1
           </div>
           <h3 className="mb-3 text-xl font-bold text-gray-900">
@@ -50,8 +53,11 @@ const HowItWorks = () => (
           </p>
         </motion.div>
 
-<motion.div className="relative z-10 p-6 bg-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300" variants={itemVariants}>
-          <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-purple-600 text-white rounded-full font-bold text-3xl border-4 border-purple-300">
+        <motion.div
+          className="relative z-10 p-6 bg-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300"
+          variants={itemVariants}
+        >
+          <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-purple-500 text-white rounded-full font-bold text-3xl border-4 border-purple-300">
             2
           </div>
           <h3 className="mb-3 text-xl font-bold text-gray-900">
@@ -63,9 +69,11 @@ const HowItWorks = () => (
           </p>
         </motion.div>
 
-        {/* Step 3 */}
-        <motion.div className="relative z-10 p-6 bg-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300" variants={itemVariants}>
-          <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-green-600 text-white rounded-full font-bold text-3xl border-4 border-green-300">
+        <motion.div
+          className="relative z-10 p-6 bg-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300"
+          variants={itemVariants}
+        >
+          <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-green-500 text-white rounded-full font-bold text-3xl border-4 border-green-300">
             3
           </div>
           <h3 className="mb-3 text-xl font-bold text-gray-900">Uji Pemahamanmu</h3>

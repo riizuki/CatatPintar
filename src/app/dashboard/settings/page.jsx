@@ -104,7 +104,7 @@ const SettingsPage = () => {
 
   if (status === "loading" || loading) {
     return (
-      <div className="p-8 text-center">Memuat pengaturan...</div>
+      <div className="p-6 md:p-8 text-center">Memuat pengaturan...</div>
     );
   }
 
@@ -116,24 +116,24 @@ const SettingsPage = () => {
         onConfirm={handleLogout}
         title="Konfirmasi Keluar"
       >
-        <p>Apakah Anda yakin ingin keluar dari akun Anda?</p>
+        <p className="text-sm sm:text-base">Apakah Anda yakin ingin keluar dari akun Anda?</p>
       </ConfirmationModal>
-      <div className="p-4 sm:p-6 md:p-8">
+      <div className="p-6 md:p-8">
         <header className="mb-10">
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
                 Pengaturan Akun
             </h1>
-            <p className="text-gray-500 mt-1">
+            <p className="text-gray-500 mt-1 text-sm sm:text-base">
                 Kelola informasi profil, email, dan kata sandi Anda.
             </p>
         </header>
 
-        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+        <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-200">
           <form onSubmit={handleSaveChanges} className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-center">
               <label
                 htmlFor="name"
-                className="text-base font-medium text-gray-700"
+                className="text-sm sm:text-base font-medium text-gray-700"
               >
                 Nama Lengkap
               </label>
@@ -146,14 +146,14 @@ const SettingsPage = () => {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="block w-full px-4 py-3 text-gray-800 bg-gray-50 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-colors duration-300"
+                  className="block w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base text-gray-800 bg-gray-50 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-colors duration-300"
                 />
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-center">
               <label
                 htmlFor="email"
-                className="text-base font-medium text-gray-700"
+                className="text-sm sm:text-base font-medium text-gray-700"
               >
                 Alamat Email
               </label>
@@ -166,15 +166,15 @@ const SettingsPage = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full px-4 py-3 text-gray-800 bg-gray-50 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-colors duration-300"
+                  className="block w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base text-gray-800 bg-gray-50 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-colors duration-300"
                 />
               </div>
             </div>
              <div className="border-t-2 border-gray-100"></div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-center">
               <label
                 htmlFor="password"
-                className="text-base font-medium text-gray-700"
+                className="text-sm sm:text-base font-medium text-gray-700"
               >
                 Kata Sandi Baru
               </label>
@@ -186,14 +186,14 @@ const SettingsPage = () => {
                   autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full px-4 py-3 text-gray-800 bg-gray-50 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-colors duration-300"
+                  className="block w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base text-gray-800 bg-gray-50 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-colors duration-300"
                 />
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-center">
               <label
                 htmlFor="confirm-password"
-                className="text-base font-medium text-gray-700"
+                className="text-sm sm:text-base font-medium text-gray-700"
               >
                 Konfirmasi Kata Sandi
               </label>
@@ -205,23 +205,23 @@ const SettingsPage = () => {
                   autoComplete="new-password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="block w-full px-4 py-3 text-gray-800 bg-gray-50 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-colors duration-300"
+                  className="block w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base text-gray-800 bg-gray-50 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-colors duration-300"
                 />
               </div>
             </div>
             
-            <div className="mt-10 flex justify-between items-center">
+            <div className="mt-10 flex flex-col sm:flex-row justify-between items-center">
                 <button
                     onClick={() => setIsModalOpen(true)}
                     type="button"
-                    className="px-6 py-2 text-base font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-300"
+                    className="w-full sm:w-auto order-2 sm:order-1 mt-4 sm:mt-0 px-4 py-2 sm:px-6 text-sm sm:text-base font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-300"
                 >
                     Keluar Akun
                 </button>
                 <button
                     type="submit"
                     disabled={isSaving}
-                    className="px-8 py-3 text-base font-semibold text-white bg-[#00A2D8] rounded-lg shadow-md hover:bg-[#008EB2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] disabled:opacity-50 transition-all duration-300"
+                    className="w-full sm:w-auto order-1 sm:order-2 px-6 py-2.5 sm:px-8 sm:py-3 text-sm sm:text-base font-semibold text-white bg-[#00A2D8] rounded-lg shadow-md hover:bg-[#008EB2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] disabled:opacity-50 transition-all duration-300"
                 >
                     {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
                 </button>

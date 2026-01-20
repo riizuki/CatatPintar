@@ -24,10 +24,10 @@ export async function POST(request) {
 
     try {
         const body = await request.json();
-        const { sourceType, sourceValue } = body;
+        const { sourceType, sourceValue, numQuestions, difficulty } = body;
 
-        if (!sourceType || !sourceValue) {
-            return NextResponse.json({ message: 'sourceType and sourceValue are required' }, { status: 400 });
+        if (!sourceType || !sourceValue || !numQuestions) {
+            return NextResponse.json({ message: 'sourceType, sourceValue, and numQuestions are required' }, { status: 400 });
         }
 
         let contextText = '';
@@ -50,10 +50,11 @@ export async function POST(request) {
         const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
         const prompt = `
-            Based on the following text, create a multiple-choice quiz with exactly 5 questions.
+            Based on the following text, create a multiple-choice quiz with exactly ${numQuestions} questions.
+            ${sourceType === 'topic' && difficulty ? `The difficulty of the quiz should be ${difficulty}.` : ''}
             For each question, provide 4 options (A, B, C, D) and specify the correct answer.
             Return the output as a single, valid JSON array inside a JSON code block.
-            The JSON array should contain 5 objects, each representing a question.
+            The JSON array should contain ${numQuestions} objects, each representing a question.
             Each object must have the following properties: "question", "optionA", "optionB", "optionC", "optionD", "correctAnswer" (where the value is just the letter, e.g., "A").
 
             Here is the text:
@@ -77,6 +78,8 @@ export async function POST(request) {
                     userId: session.user.id,
                     sourceType,
                     sourceValue: sourceType === 'note' ? String(sourceValue) : contextText.substring(0, 255),
+                    numQuestions,
+                    difficulty: sourceType === 'topic' ? difficulty : null,
                 }
             });
 

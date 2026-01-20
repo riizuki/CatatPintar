@@ -6,8 +6,10 @@ import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
 import hljs from "highlight.js";
 import "highlight.js/styles/github.css";
+import "@/app/quill-editor.css";
 import NoteEditorNavbar from "../../../components/dashboard/NoteEditorNavbar";
-import { useDashboard } from "../../../lib/contexts/DashboardContext";
+import CreateQuizModal from "../../../components/dashboard/CreateQuizModal"
+import { useDashboard } from "../../../../lib/contexts/DashboardContext";
 
 const NewNotePage = () => {
   const router = useRouter();
@@ -24,6 +26,7 @@ const NewNotePage = () => {
   const [folders, setFolders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isCreateQuizModalOpen, setIsCreateQuizModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchFolders = async () => {
@@ -113,6 +116,8 @@ const NewNotePage = () => {
       <NoteEditorNavbar
         isGenerating={null}
         noteId={null} // No noteId on new page
+        onGenerateFlashcards={() => { /* Disabled for new notes */ }}
+        onGenerateQuiz={() => setIsCreateQuizModalOpen(true)} // Open modal for quiz
       />
       <div className="p-8">
         <form onSubmit={handleCreateNote}>
@@ -130,7 +135,7 @@ const NewNotePage = () => {
             value={content}
             onChange={setContent}
             modules={modules}
-            className="bg-white text-black"
+            className="quill-editor"
             style={{ height: "400px", marginBottom: "50px" }}
           />
           <div className="mt-8">
@@ -158,24 +163,30 @@ const NewNotePage = () => {
             </div>
           </div>
           {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
-          <div className="mt-8 flex justify-end space-x-4">
+          <div className="mt-8 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-4">
             <button
               type="button"
               onClick={() => router.push("/dashboard")}
               disabled={loading}
-              className="px-4 py-2 text-sm font-medium text-black bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50"
+              className="w-full sm:w-auto mt-2 sm:mt-0 px-4 py-2 text-sm font-medium text-black bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-800 disabled:opacity-50"
+              className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-800 disabled:opacity-50"
             >
               {loading ? "Membuat..." : "Buat Catatan"}
             </button>
           </div>
         </form>
+        <CreateQuizModal
+            isOpen={isCreateQuizModalOpen}
+            onClose={() => setIsCreateQuizModalOpen(false)}
+            preselectedSourceType="note"
+            preselectedSourceValue={null}
+        />
       </div>
     </div>
   );

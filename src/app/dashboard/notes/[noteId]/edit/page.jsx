@@ -4,13 +4,16 @@ import { useState, useMemo, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
+import "@/app/quill-editor.css";
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github.css';
 import { TrashIcon } from "@heroicons/react/24/outline";
 import toast from 'react-hot-toast';
 import ConfirmationModal from "../../../../components/dashboard/ConfirmationModal";
 import NoteEditorNavbar from "../../../../components/dashboard/NoteEditorNavbar";
+import CreateQuizModal from "../../../../components/dashboard/CreateQuizModal";
 import { useDashboard } from "../../../../../lib/contexts/DashboardContext";
+
 
 const EditNotePage = () => {
   const router = useRouter();
@@ -35,6 +38,7 @@ const EditNotePage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(null); 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isCreateQuizModalOpen, setIsCreateQuizModalOpen] = useState(false); // New state
 
   useEffect(() => {
     if (!noteId) return;
@@ -124,39 +128,29 @@ const EditNotePage = () => {
     }
   };
 
-      const handleGenerate = async (type) => {
-      setIsGenerating(type);
-      setError('');
-      try {
-          const url = type === 'flashcards' ? '/api/generate/flashcards' : '/api/generate/quiz';
-          let requestBody;
-  
-          if (type === 'flashcards') {
-              requestBody = { noteId: parseInt(noteId) };
-          } else { 
-              requestBody = { sourceType: 'note', sourceValue: noteId };
-          }
-  
-          const res = await fetch(url, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(requestBody), 
-          });
-  
-          if (!res.ok) {
-              const errData = await res.json();
-              throw new Error(errData.message || `Gagal membuat ${type}`);
-          }
-        
-        if (type === 'quiz') {
-            const { quizId } = await res.json();
-            router.push(`/dashboard/quiz/${quizId}`);
-        } else {
+  const handleGenerate = async (type) => {
+    setIsGenerating(type);
+    setError('');
+    try {
+        if (type === 'flashcards') {
+            const url = '/api/generate/flashcards';
+            const requestBody = { noteId: parseInt(noteId) };
+
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody), 
+            });
+
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.message || `Gagal membuat ${type}`);
+            }
             router.push(`/dashboard/flashcards?noteId=${noteId}`);
         }
-
     } catch (err) {
         setError(err.message);
+        toast.error(err.message);
     } finally {
         setIsGenerating(null);
     }
@@ -196,7 +190,7 @@ const EditNotePage = () => {
     <div>
       <NoteEditorNavbar
         onGenerateFlashcards={() => handleGenerate('flashcards')}
-        onGenerateQuiz={() => handleGenerate('quiz')}
+        onGenerateQuiz={() => setIsCreateQuizModalOpen(true)}
         isGenerating={isGenerating}
         noteId={noteId}
       />
@@ -209,6 +203,8 @@ const EditNotePage = () => {
         >
           <p>Anda yakin ingin menghapus catatan ini? Tindakan ini tidak dapat dibatalkan.</p>
         </ConfirmationModal>
+
+
         <form onSubmit={handleSaveChanges} autoComplete="off">
           <div className="flex justify-between items-start mb-8">
               <input
@@ -224,7 +220,7 @@ const EditNotePage = () => {
             theme="snow"
             value={content}
             onChange={setContent}
-            className="bg-white text-black"
+            className="quill-editor"
             style={{ height: "100%", marginBottom: "50px" }}
             modules={modules}
           />

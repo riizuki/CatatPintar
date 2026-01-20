@@ -3,7 +3,6 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Helper function to remove basic markdown
 function removeMarkdown(text) {
   text = text.replace(/###\s?/g, '');
   text = text.replace(/\*\*(.*?)\*\*/g, '$1');

@@ -24,19 +24,36 @@ const Hero = () => (
     className="relative pt-24 pb-32 lg:pt-36 lg:pb-48 bg-gradient-to-br from-blue-50 to-purple-50" // Adjusted for dark mode
     variants={itemVariants}
   >
-    <div className="container mx-auto px-36 grid md:grid-cols-2 gap-14 items-center">
+    <div className="container mx-auto px-6 md:px-36 grid md:grid-cols-2 gap-14 items-center">
+      {/* Image Content - Reordered for mobile first */}
+      <motion.div
+        className="flex justify-center md:justify-end order-1 md:order-2"
+        variants={floatingVariants}
+        animate="animate"
+      >
+        <Image
+          src="/img/logo.png" // Changed image to ai-card.png
+          alt="AI Mascot"
+          width={450} // Slightly larger image
+          height={450}
+          priority
+          className="w-full max-w-xs sm:max-w-sm md:max-w-md" // Removed shadow and rounded corners
+        />
+      </motion.div>
+
       {/* Text Content */}
       <motion.div
-        className="text-center md:text-left"
+        className="text-center md:text-left order-2 md:order-1"
       >
         <motion.h2
           variants={itemVariants}
           className="
-            text-4xl lg:text-6xl
+            text-4xl sm:text-5xl lg:text-6xl
             font-extrabold // Made bolder
             mb-5
             leading-tight
-            text-gray-900 // Adjusted for dark mode
+            text-gray-900
+            transition-colors duration-500
           "
         >
           Catatan Kuliah,
@@ -47,10 +64,11 @@ const Hero = () => (
           variants={itemVariants}
           className="
             text-lg lg:text-xl // Slightly larger text
-            text-gray-700 // Adjusted for dark mode
+            text-gray-700
             mb-8
             max-w-xl
             mx-auto md:mx-0
+            transition-colors duration-500
           "
         >
           Ubah caramu belajar. Catat, tanyakan hal yang belum jelas, dan
@@ -64,21 +82,6 @@ const Hero = () => (
         >
           Mulai Petualangan Belajarmu!
         </Link>
-      </motion.div>
-
-      <motion.div
-        className="flex jqustify-center md:justify-end"
-        variants={floatingVariants}
-        animate="animate"
-      >
-        <Image
-          src="/img/logo.png" // Changed image to ai-card.png
-          alt="AI Mascot"
-          width={450} // Slightly larger image
-          height={450}
-          priority
-          className="w-full max-w-sm md:max-w-md" // Removed shadow and rounded corners
-        />
       </motion.div>
     </div>
   </motion.main>
