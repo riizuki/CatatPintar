@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import prisma from '@/lib/prisma';
 
-// GET /api/quizzes - Get all quizzes for the logged-in user
 export async function GET(request) {
   const session = await getServerSession(authOptions);
 
@@ -20,7 +19,6 @@ export async function GET(request) {
         createdAt: 'desc',
       },
       include: {
-        // Include the result if the user has taken the quiz
         results: {
           where: {
             userId: session.user.id,
