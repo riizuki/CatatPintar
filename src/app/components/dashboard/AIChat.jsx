@@ -24,16 +24,18 @@ const AIChat = () => {
     e.preventDefault();
     if (!searchTerm.trim()) return;
 
-    setIsLoading(true);
+    const currentSearchTerm = searchTerm;
+    setSearchTerm('');
     setError('');
     setExplanation('');
+    setIsLoading(true);
 
     try {
       const res = await fetch('/api/generate/ai-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          searchTerm,
+          searchTerm: currentSearchTerm,
           context: noteContext.noteContent,
         }),
       });
@@ -45,7 +47,6 @@ const AIChat = () => {
 
       const data = await res.json();
       setExplanation(data.explanation);
-      setSearchTerm('');
     } catch (err) {
       setError(err.message);
     } finally {

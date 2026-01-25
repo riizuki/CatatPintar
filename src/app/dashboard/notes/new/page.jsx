@@ -8,8 +8,9 @@ import hljs from "highlight.js";
 import "highlight.js/styles/github.css";
 import "@/app/quill-editor.css";
 import NoteEditorNavbar from "../../../components/dashboard/NoteEditorNavbar";
-import CreateQuizModal from "../../../components/dashboard/CreateQuizModal"
+import CreateQuizModal from "../../../components/dashboard/CreateQuizModal";
 import { useDashboard } from "../../../../lib/contexts/DashboardContext";
+import { toast } from "react-hot-toast";
 
 const NewNotePage = () => {
   const router = useRouter();
@@ -25,7 +26,6 @@ const NewNotePage = () => {
   const [folderId, setFolderId] = useState("");
   const [folders, setFolders] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [isCreateQuizModalOpen, setIsCreateQuizModalOpen] = useState(false);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ const NewNotePage = () => {
         const data = await res.json();
         setFolders(data);
       } catch (err) {
-        setError("Tidak dapat memuat folder. Silakan coba lagi nanti.");
+        toast.error("Tidak dapat memuat folder. Silakan coba lagi nanti.");
       }
     };
     fetchFolders();
@@ -59,7 +59,6 @@ const NewNotePage = () => {
   const handleCreateNote = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
     try {
       const res = await fetch("/api/notes", {
@@ -78,9 +77,10 @@ const NewNotePage = () => {
       }
 
       const newNote = await res.json();
+      toast.success('Catatan berhasil dibuat!');
       router.push(`/dashboard/notes/${newNote.id}/edit`);
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message);
       setLoading(false);
     }
   };
@@ -162,7 +162,6 @@ const NewNotePage = () => {
               </select>
             </div>
           </div>
-          {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
           <div className="mt-8 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-4">
             <button
               type="button"
