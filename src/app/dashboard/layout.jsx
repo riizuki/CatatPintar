@@ -40,7 +40,7 @@ const Sidebar = () => {
   ];
 
   const handleLogout = () => {
-    signOut({ callbackUrl: "/login?logout=success" });
+    signOut({ callbackUrl: "/" });
   };
 
   return (
@@ -162,7 +162,7 @@ const MobileSidebar = ({ isOpen, setIsOpen }) => {
     ];
   
     const handleLogout = () => {
-      signOut({ callbackUrl: "/login?logout=success" });
+      signOut({ callbackUrl: "/" });
     };
 
     return (

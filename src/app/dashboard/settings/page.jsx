@@ -99,7 +99,7 @@ const SettingsPage = () => {
   };
 
   const handleLogout = () => {
-    signOut({ callbackUrl: "/login" });
+    signOut({ callbackUrl: "/" });
   };
 
   if (status === "loading" || loading) {
