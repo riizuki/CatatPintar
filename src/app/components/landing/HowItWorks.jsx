@@ -5,86 +5,120 @@ const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.3,
-    },
+    transition: { staggerChildren: 0.4 },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 50 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  hidden: { opacity: 0, x: -50 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.6, type: "spring", stiffness: 100 } },
 };
 
 const HowItWorks = () => (
-  <motion.section
-    className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 py-20 lg:py-28 transition-colors duration-500"
-    initial="hidden"
-    whileInView="visible"
-    viewport={{ once: true, amount: 0.3 }}
-    variants={containerVariants}
-  >
-    <div className="container mx-auto px-6 md:px-36">
-      <div className="text-center mb-16">
-        <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 transition-colors duration-500">
-          Bagaimana Caranya?
-        </h2>
-        <p className="text-base md:text-lg text-gray-700 dark:text-gray-300 max-w-2xl mx-auto transition-colors duration-500">
-          Tiga langkah mudah untuk memulai petualangan belajarmu.
-        </p>
+  <section id="cara-kerja" className="relative py-24 lg:py-32 bg-white dark:bg-gray-900 transition-colors duration-500 overflow-hidden">
+    
+    {/* Abstract background elements */}
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-tr from-blue-100/40 to-blue-300/40 dark:from-blue-900/10 dark:to-blue-800/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <div className="container relative z-10 mx-auto px-6 md:px-8 max-w-5xl">
+      <div className="text-center mb-20">
+        <motion.h2 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 tracking-tight"
+        >
+          Tiga Langkah Menuju <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00A2D8] to-blue-700 dark:from-[#4CC1EE] dark:to-blue-400">Nilai Sempurna</span>
+        </motion.h2>
+        <motion.p 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.1 }}
+          className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto"
+        >
+          Alur kerja yang dirancang khusus agar Anda tidak perlu lagi menghabiskan waktu berjam-jam untuk merangkum secara manual.
+        </motion.p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center relative">
-        {/* Decorative connecting line for desktop */}
-        <div className="hidden md:block absolute left-0 top-1/3 w-full h-1 bg-gray-200 dark:bg-gray-700 transform -translate-y-1/2 rounded-full z-0 transition-colors duration-500"></div>
 
-        <motion.div
-          className="relative z-10 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300"
-          variants={itemVariants}
-        >
-          <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-blue-500 text-white rounded-full font-bold text-3xl border-4 border-blue-300 dark:border-blue-700">
-            1
-          </div>
-          <h3 className="mb-3 text-xl font-bold text-gray-900 dark:text-white transition-colors duration-500">
-            Catat dengan Mudah
-          </h3>
-          <p className="text-gray-700 dark:text-gray-300 text-base transition-colors duration-500">
-            Tulis semua materi penting dari kelasmu menggunakan editor
-            teks kami yang canggih dan intuitif.
-          </p>
-        </motion.div>
+      <motion.div 
+        className="relative"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.1 }}
+        variants={containerVariants}
+      >
+        {/* Animated vertical connecting line */}
+        <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-[#00A2D8]/20 via-blue-500/20 to-transparent dark:from-[#00A2D8]/10 dark:via-blue-500/10 md:-translate-x-1/2 rounded-full hidden sm:block">
+           <motion.div 
+             className="absolute top-0 left-0 w-full bg-gradient-to-b from-[#00A2D8] to-blue-700 rounded-full"
+             initial={{ height: "0%" }}
+             whileInView={{ height: "100%" }}
+             viewport={{ once: true }}
+             transition={{ duration: 2, ease: "easeInOut" }}
+           />
+        </div>
 
-        <motion.div
-          className="relative z-10 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300"
-          variants={itemVariants}
-        >
-          <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-purple-500 text-white rounded-full font-bold text-3xl border-4 border-purple-300 dark:border-purple-700">
-            2
+        <div className="space-y-12 md:space-y-24">
+          
+          {/* Step 1 */}
+          <div className="relative flex flex-col md:flex-row items-center justify-between group">
+            <div className="hidden md:block md:w-5/12"></div>
+            <motion.div variants={itemVariants} className="w-full md:w-5/12 flex md:justify-end text-left md:text-right">
+              <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl p-8 rounded-3xl border border-gray-200/50 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300 ml-12 md:ml-0 group-hover:-translate-y-1">
+                <div className="text-[#00A2D8] font-bold text-lg mb-2">Langkah 1</div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Catat Semuanya</h3>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  Gunakan editor kaya fitur kami untuk mencatat saat kuliah berlangsung. Tambahkan highlight, rumus, hingga blok kode dengan mudah.
+                </p>
+              </div>
+            </motion.div>
+            {/* Center Node */}
+            <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 w-12 h-12 rounded-full bg-white dark:bg-gray-900 border-4 border-[#00A2D8] flex items-center justify-center shadow-lg shadow-blue-500/30 z-10">
+              <span className="text-[#00A2D8] font-bold">1</span>
+            </div>
           </div>
-          <h3 className="mb-3 text-xl font-bold text-gray-900 dark:text-white transition-colors duration-500">
-            Tanya AI Pintar
-          </h3>
-          <p className="text-gray-700 dark:text-gray-300 text-base transition-colors duration-500">
-            Ada yang kurang jelas? Pilih bagian teks dan biarkan AI
-            menjelaskannya untukmu secara instan.
-          </p>
-        </motion.div>
 
-        <motion.div
-          className="relative z-10 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300"
-          variants={itemVariants}
-        >
-          <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-green-500 text-white rounded-full font-bold text-3xl border-4 border-green-300 dark:border-green-700">
-            3
+          {/* Step 2 */}
+          <div className="relative flex flex-col md:flex-row items-center justify-between group">
+            <motion.div variants={{ hidden: { opacity: 0, x: 50 }, visible: { opacity: 1, x: 0, transition: { duration: 0.6, type: "spring" } } }} className="w-full md:w-5/12 text-left order-2 md:order-1 mt-6 md:mt-0">
+              <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl p-8 rounded-3xl border border-gray-200/50 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300 ml-12 md:ml-0 group-hover:-translate-y-1">
+                <div className="text-blue-500 font-bold text-lg mb-2">Langkah 2</div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Minta Bantuan AI</h3>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  Ada materi yang terlalu rumit? Sorot teksnya, dan asisten AI kami akan menyederhanakannya seperti sedang diajari oleh teman sebaya.
+                </p>
+              </div>
+            </motion.div>
+            <div className="hidden md:block md:w-5/12 order-3"></div>
+            {/* Center Node */}
+            <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 w-12 h-12 rounded-full bg-white dark:bg-gray-900 border-4 border-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30 z-10 order-1 md:order-2">
+              <span className="text-blue-500 font-bold">2</span>
+            </div>
           </div>
-          <h3 className="mb-3 text-xl font-bold text-gray-900 dark:text-white transition-colors duration-500">Uji Pemahamanmu</h3>
-          <p className="text-gray-700 dark:text-gray-300 text-base transition-colors duration-500">
-            Siap untuk ujian? Buat kuis dari catatanmu dan uji pemahamanmu
-            secara instan dengan fitur kuis otomatis.
-          </p>
-        </motion.div>
-      </div>
+
+          {/* Step 3 */}
+          <div className="relative flex flex-col md:flex-row items-center justify-between group">
+            <div className="hidden md:block md:w-5/12"></div>
+            <motion.div variants={itemVariants} className="w-full md:w-5/12 flex md:justify-end text-left md:text-right">
+              <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl p-8 rounded-3xl border border-gray-200/50 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300 ml-12 md:ml-0 group-hover:-translate-y-1">
+                <div className="text-green-500 font-bold text-lg mb-2">Langkah 3</div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Uji Dirimu Sendiri</h3>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  Tekan satu tombol, dan seluruh catatanmu akan diubah menjadi kuis interaktif atau Flashcard. Evaluasi apakah kamu benar-benar siap ujian.
+                </p>
+              </div>
+            </motion.div>
+            {/* Center Node */}
+            <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 w-12 h-12 rounded-full bg-white dark:bg-gray-900 border-4 border-green-500 flex items-center justify-center shadow-lg shadow-green-500/30 z-10">
+              <span className="text-green-500 font-bold">3</span>
+            </div>
+          </div>
+
+        </div>
+      </motion.div>
     </div>
-  </motion.section>
+  </section>
 );
 
 export default HowItWorks;

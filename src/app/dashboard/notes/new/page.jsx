@@ -40,18 +40,16 @@ const NewNotePage = () => {
       }
     };
     fetchFolders();
-    
+
     setNoteContext({ noteId: null, noteContent: '' });
 
     return () => {
-      // Clear context on unmount
       setNoteContext({ noteId: null, noteContent: '' });
     }
   }, [setNoteContext]);
-  
-  // Update context when content changes
+
   useEffect(() => {
-    setNoteContext(prev => ({...prev, noteContent: content}));
+    setNoteContext(prev => ({ ...prev, noteContent: content }));
   }, [content, setNoteContext]);
 
 
@@ -180,10 +178,10 @@ const NewNotePage = () => {
           </div>
         </form>
         <CreateQuizModal
-            isOpen={isCreateQuizModalOpen}
-            onClose={() => setIsCreateQuizModalOpen(false)}
-            preselectedSourceType="note"
-            preselectedSourceValue={null}
+          isOpen={isCreateQuizModalOpen}
+          onClose={() => setIsCreateQuizModalOpen(false)}
+          preselectedSourceType="note"
+          preselectedSourceValue={null}
         />
       </div>
     </div>

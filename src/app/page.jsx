@@ -8,6 +8,7 @@ import Features from "./components/landing/Features";
 import HowItWorks from "./components/landing/HowItWorks";
 import CTA from "./components/landing/CTA";
 import Testimonials from "./components/landing/Testimonials";
+import ScrollToTop from "./components/landing/ScrollToTop";
 
 const containerVariants = {
   hidden: { opacity: 1 },
@@ -36,6 +37,7 @@ export default function LandingPage() {
         <CTA />
       </motion.div>
 
+      <ScrollToTop />
       <Footer />
     </div>
   );
