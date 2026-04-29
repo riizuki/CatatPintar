@@ -7,28 +7,25 @@ export async function POST(request) {
     const { fullName, email, password } = body;
 
     if (!fullName || !email || !password) {
-      return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ message: 'Salah satu Input Masih Kosong' }, { status: 400 });
     }
 
-    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
 
     if (existingUser) {
-      return NextResponse.json({ message: 'User with this email already exists' }, { status: 409 });
+      return NextResponse.json({ message: 'User dengan email ini sudah ada' }, { status: 409 });
     }
 
-    // Create the user with a plaintext password
     const user = await prisma.user.create({
       data: {
         fullName,
         email,
-        password: password, // Storing password in plaintext as requested
+        password: password,
       },
     });
 
-    // Don't return the password in the response
     const { password: _, ...userWithoutPassword } = user;
 
     return NextResponse.json(userWithoutPassword, { status: 201 });

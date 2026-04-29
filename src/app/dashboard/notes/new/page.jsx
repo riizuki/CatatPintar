@@ -41,7 +41,6 @@ const NewNotePage = () => {
     };
     fetchFolders();
     
-    // Clear context on mount
     setNoteContext({ noteId: null, noteContent: '' });
 
     return () => {

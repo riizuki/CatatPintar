@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import ThemeToggle from "../ThemeToggle";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -11,8 +12,8 @@ const Header = () => {
     <header
       className="
         sticky top-0 z-50
-        bg-white/90 backdrop-blur-md
-        border-b border-gray-200
+        bg-white/90 dark:bg-gray-900/90 backdrop-blur-md
+        border-b border-gray-200 dark:border-gray-800
         transition-colors duration-500
       "
     >
@@ -25,10 +26,11 @@ const Header = () => {
             height={32}
             priority
           />
-          <h1 className="text-xl font-semibold text-gray-900">CatatPintar</h1>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white transition-colors duration-500">CatatPintar</h1>
         </div>
 
         <div className="hidden md:flex items-center space-x-4">
+          <ThemeToggle />
           <Link
             href="/login"
             className="
@@ -45,10 +47,11 @@ const Header = () => {
           </Link>
         </div>
 
-        <div className="md:hidden flex items-center">
+        <div className="md:hidden flex items-center space-x-4">
+          <ThemeToggle />
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="text-gray-900 focus:outline-none"
+            className="text-gray-900 dark:text-white focus:outline-none transition-colors duration-500"
           >
             <svg
               className="w-6 h-6"
@@ -58,10 +61,10 @@ const Header = () => {
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+               strokeLinecap="round"
+               strokeLinejoin="round"
+               strokeWidth={2}
+               d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
               />
             </svg>
           </button>

@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import prisma from '@/lib/prisma';
 
-// GET /api/flashcards?noteId=<id> - Get all flashcards for a specific note
 export async function GET(request) {
   const session = await getServerSession(authOptions);
 
@@ -19,7 +18,6 @@ export async function GET(request) {
   }
 
   try {
-    // First, verify the user owns the note associated with the flashcards
     const note = await prisma.note.findFirst({
         where: {
             id: parseInt(noteId),
@@ -31,7 +29,6 @@ export async function GET(request) {
         return NextResponse.json({ message: 'Note not found or access denied' }, { status: 404 });
     }
 
-    // If ownership is confirmed, fetch the flashcards
     const flashcards = await prisma.flashcard.findMany({
       where: {
         noteId: parseInt(noteId),

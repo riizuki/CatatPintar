@@ -2,12 +2,11 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import prisma from '@/lib/prisma';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI } from '@google/generative-ai';         
 
 // Initialize the Google Generative AI client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Helper function to extract JSON from the AI's response
 function extractJson(text) {
     const jsonMatch = text.match(/```json([\s\S]*?)```/);
     if (!jsonMatch) {
@@ -37,9 +36,11 @@ export async function POST(request) {
             const note = await prisma.note.findFirst({
                 where: { id: noteId, userId: session.user.id },
             });
+
             if (!note) {
                 return NextResponse.json({ message: 'Note not found or access denied' }, { status: 404 });
             }
+            
             contextText = note.content;
         } else if (sourceType === 'topic') {
             contextText = sourceValue;

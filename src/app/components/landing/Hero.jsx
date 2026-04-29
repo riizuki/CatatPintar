@@ -21,7 +21,7 @@ const floatingVariants = {
 
 const Hero = () => (
   <motion.main
-    className="relative pt-24 pb-32 lg:pt-36 lg:pb-48 bg-gradient-to-br from-blue-50 to-purple-50" // Adjusted for dark mode
+    className="relative pt-24 pb-32 lg:pt-36 lg:pb-48 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 transition-colors duration-500" // Adjusted for dark mode
     variants={itemVariants}
   >
     <div className="container mx-auto px-6 md:px-36 grid md:grid-cols-2 gap-14 items-center">
@@ -52,7 +52,7 @@ const Hero = () => (
             font-extrabold // Made bolder
             mb-5
             leading-tight
-            text-gray-900
+            text-gray-900 dark:text-white
             transition-colors duration-500
           "
         >
@@ -64,7 +64,7 @@ const Hero = () => (
           variants={itemVariants}
           className="
             text-lg lg:text-xl // Slightly larger text
-            text-gray-700
+            text-gray-700 dark:text-gray-300
             mb-8
             max-w-xl
             mx-auto md:mx-0

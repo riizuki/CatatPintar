@@ -24,14 +24,14 @@ const Testimonials = () => {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.3 }}
-      className="bg-white py-16 md:py-20 lg:py-28"
+      className="bg-white dark:bg-gray-900 py-16 md:py-20 lg:py-28 transition-colors duration-500"
     >
       <div className="container mx-auto px-6 md:px-16 lg:px-32">
         <div className="text-center mb-12 md:mb-16">
-          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 transition-colors duration-500">
             Apa Kata <span className="text-[#4CC1EE]">Mereka</span>?
           </h2>
-          <p className="text-base md:text-lg text-gray-700 max-w-2xl mx-auto">
+          <p className="text-base md:text-lg text-gray-700 dark:text-gray-300 max-w-2xl mx-auto transition-colors duration-500">
             Cerita nyata dari mahasiswa berbagai jurusan yang merasakan langsung
             manfaat CatatPintar dalam proses belajar mereka.
           </p>
@@ -40,9 +40,9 @@ const Testimonials = () => {
         <div className="grid gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3 lg:gap-12">
           <motion.div
             variants={itemVariants}
-            className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300 p-6 md:p-8"
+            className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300 p-6 md:p-8"
           >
-            <p className="text-gray-700 text-base md:text-lg leading-relaxed mb-6">
+            <p className="text-gray-700 dark:text-gray-300 text-base md:text-lg leading-relaxed mb-6 transition-colors duration-500">
               “Sejak menggunakan CatatPintar, cara saya belajar berubah total.
               Catatan jadi lebih rapi, mudah dipahami, dan fitur kuis instan
               sangat membantu saya mengulang materi sebelum ujian tanpa stres.”
@@ -56,10 +56,10 @@ const Testimonials = () => {
                 className="rounded-full border-2 border-[#4CC1EE] w-10 h-10 md:w-14 md:h-14"
               />
               <div>
-                <p className="font-semibold text-gray-900 text-sm md:text-base">
+                <p className="font-semibold text-gray-900 dark:text-white text-sm md:text-base transition-colors duration-500">
                   Anonim
                 </p>
-                <p className="text-gray-500 text-xs md:text-sm">
+                <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm transition-colors duration-500">
                   Mahasiswa Teknik Informatika
                 </p>
               </div>
@@ -68,9 +68,9 @@ const Testimonials = () => {
 
           <motion.div
             variants={itemVariants}
-            className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300 p-6 md:p-8"
+            className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300 p-6 md:p-8"
           >
-            <p className="text-gray-700 text-base md:text-lg leading-relaxed mb-6">
+            <p className="text-gray-700 dark:text-gray-300 text-base md:text-lg leading-relaxed mb-6 transition-colors duration-500">
               “Materi kedokteran sangat padat dan penuh istilah. Dengan bantuan
               CatatPintar dan fitur AI-nya, saya bisa memahami konsep dengan
               lebih cepat dan tidak hanya menghafal, tapi benar-benar mengerti.”
@@ -84,10 +84,10 @@ const Testimonials = () => {
                 className="rounded-full border-2 border-[#4CC1EE] w-10 h-10 md:w-14 md:h-14"
               />
               <div>
-                <p className="font-semibold text-gray-900 text-sm md:text-base">
+                <p className="font-semibold text-gray-900 dark:text-white text-sm md:text-base transition-colors duration-500">
                   Anonim
                 </p>
-                <p className="text-gray-500 text-xs md:text-sm">
+                <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm transition-colors duration-500">
                   Mahasiswa Kedokteran
                 </p>
               </div>
@@ -96,9 +96,9 @@ const Testimonials = () => {
 
           <motion.div
             variants={itemVariants}
-            className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300 p-6 md:p-8"
+            className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300 p-6 md:p-8"
           >
-            <p className="text-gray-700 text-base md:text-lg leading-relaxed mb-6">
+            <p className="text-gray-700 dark:text-gray-300 text-base md:text-lg leading-relaxed mb-6 transition-colors duration-500">
               “Saya sangat terbantu dengan editor catatan yang fleksibel dan
               mudah digunakan. Semua ide, referensi, dan rangkuman bisa saya
               susun dengan rapi, membuat proses belajar jauh lebih terstruktur.”
@@ -112,10 +112,10 @@ const Testimonials = () => {
                 className="rounded-full border-2 border-[#4CC1EE] w-10 h-10 md:w-14 md:h-14"
               />
               <div>
-                <p className="font-semibold text-gray-900 text-sm md:text-base">
+                <p className="font-semibold text-gray-900 dark:text-white text-sm md:text-base transition-colors duration-500">
                   Anonim
                 </p>
-                <p className="text-gray-500 text-xs md:text-sm">
+                <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm transition-colors duration-500">
                   Mahasiswa Desain Komunikasi Visual
                 </p>
               </div>
