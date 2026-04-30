@@ -49,7 +49,7 @@ export async function POST(request, { params }) {
         });
 
         if (incorrectQuestions.length === 0) {
-            return NextResponse.json({ analysis: "Excellent! You answered all questions correctly. No specific weaknesses found for this quiz." });
+            return NextResponse.json({ analysis: "Luar biasa! Kamu berhasil menjawab semua pertanyaan dengan benar. Pertahankan kerja bagusmu dan terus semangat belajar!" });
         }
 
         const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });

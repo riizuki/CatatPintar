@@ -3,7 +3,8 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { ArrowLeftIcon, ArrowRightIcon, DocumentTextIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, ArrowRightIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { DocumentTextIcon } from "@heroicons/react/24/solid";
 
 // A more modern take on the flashcard page
 function FlashcardsDisplay() {
@@ -76,48 +77,55 @@ function FlashcardsDisplay() {
         setTimeout(() => setCurrentIndex(prev => (prev - 1 + flashcards.length) % flashcards.length), 150);
     };
 
-    if (loading) return <div className="p-8 text-center text-gray-500 ">Memuat...</div>;
+    if (loading) return (
+        <div className="flex items-center justify-center h-[calc(100vh-100px)]">
+            <div className="w-10 h-10 border-4 border-gray-200 border-t-[#00A2D8] rounded-full animate-spin"></div>
+        </div>
+    );
 
     // SCENARIO 1: SET SELECTION VIEW
     if (!noteId) {
         return (
-            <div className="p-4 sm:p-6 md:p-8">
-                <header className="flex items-center justify-between mb-10">
+            <div className="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto min-h-screen">
+                <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-6 rounded-3xl border border-gray-200/50 dark:border-gray-700/50">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 ">
+                        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white flex items-center">
+                            <SparklesIcon className="w-8 h-8 mr-3 text-[#00A2D8] dark:text-[#4CC1EE]"/>
                             Pilih Set Flashcard
                         </h1>
-                        <p className="text-gray-500  mt-1 text-sm sm:text-base">
+                        <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm sm:text-base">
                             Pilih salah satu catatan untuk memulai sesi belajarmu.
                         </p>
                     </div>
                 </header>
                 
-                {error && <p className="text-red-500 mb-4">{error}</p>}
+                {error && <p className="text-rose-500 bg-rose-50 dark:bg-rose-900/20 px-6 py-3 rounded-xl mb-6">{error}</p>}
 
                 {notesWithFlashcards.length === 0 && !error ? (
-                    <div className="text-center py-16 sm:py-20 px-6 bg-white /50 rounded-2xl border border-gray-200 ">
-                        <SparklesIcon className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-sky-400"/>
-                        <h3 className="mt-6 text-lg sm:text-2xl font-bold text-gray-800 ">Belum Ada Flashcard</h3>
-                        <p className="mt-2 text-sm sm:text-base text-gray-500 ">Buat flashcard dari catatanmu untuk memulai belajar dengan metode ini.</p>
+                    <div className="text-center py-16 sm:py-20 px-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-md rounded-3xl border border-dashed border-gray-300 dark:border-gray-700">
+                        <SparklesIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600"/>
+                        <h3 className="mt-6 text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Belum Ada Flashcard</h3>
+                        <p className="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400">Buat flashcard dari catatanmu untuk memulai belajar dengan metode ini.</p>
                          <button
                             onClick={() => router.push('/dashboard')}
-                            className="mt-8 inline-flex items-center px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-[#00A2D8] rounded-lg shadow-lg hover:bg-[#008EB2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] transition-all"
+                            className="mt-8 inline-flex items-center px-6 py-3 text-sm font-bold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl transition-all transform hover:-translate-y-1"
                         >
                             Kembali ke Beranda
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {notesWithFlashcards.map(n => (
                             <Link 
                                 key={n.id} 
                                 href={`/dashboard/flashcards?noteId=${n.id}`} 
-                                className="block p-4 sm:p-6 bg-white  rounded-2xl border border-gray-200  transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl group"
+                                className="block p-6 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 transform hover:-translate-y-2 hover:border-[#00A2D8]/50 group"
                             >
-                                <DocumentTextIcon className="w-8 h-8 sm:w-10 sm:h-10 mb-4 text-gray-300  group-hover:text-[#00A2D8] -sky-400 transition-colors"/>
-                                <h2 className="text-base sm:text-lg font-bold text-gray-800  truncate transition-colors">{n.title}</h2>
-                                <p className="mt-2 text-xs sm:text-sm font-semibold text-gray-400  group-hover:text-[#00A2D8] -sky-400 transition-colors">Mulai Belajar →</p>
+                                <div className="inline-flex p-3 rounded-2xl mb-4 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 text-gray-500 dark:text-gray-400 border border-gray-200/50 dark:border-gray-700/50 transition-transform group-hover:scale-110">
+                                    <DocumentTextIcon className="w-8 h-8"/>
+                                </div>
+                                <h2 className="text-lg font-bold text-gray-900 dark:text-white truncate transition-colors mb-2">{n.title}</h2>
+                                <p className="text-sm font-bold text-[#00A2D8] dark:text-[#4CC1EE] opacity-0 group-hover:opacity-100 transition-opacity">Mulai Belajar →</p>
                             </Link>
                         ))}
                     </div>
@@ -130,28 +138,29 @@ function FlashcardsDisplay() {
 
     // SCENARIO 2: FLIPPER VIEW
     return (
-        <div className="p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
-            <div className="w-full max-w-2xl">
-                 <header className="mb-8 text-center flex items-center justify-between">
-                    <button onClick={() => router.push('/dashboard/flashcards')} className="p-2 rounded-full hover:bg-gray-100">
-                        <ArrowLeftIcon className="w-6 h-6 text-gray-700" />
+        <div className="p-4 sm:p-6 md:p-10 flex flex-col items-center justify-center min-h-screen">
+            <div className="w-full max-w-3xl">
+                 <header className="mb-12 text-center flex items-center justify-between bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-6 rounded-3xl border border-gray-200/50 dark:border-gray-700/50 relative">
+                    <button onClick={() => router.push('/dashboard/flashcards')} className="absolute left-6 p-3 bg-white/80 dark:bg-gray-700/80 backdrop-blur rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                        <ArrowLeftIcon className="w-6 h-6 text-gray-700 dark:text-gray-300" />
                     </button>
-                    <div className="flex-grow">
-                        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800  truncate">
+                    <div className="flex-grow px-16">
+                        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white truncate">
                             {note?.title}
                         </h1>
-                        <p className="text-gray-500  mt-2 text-sm sm:text-base">Kartu {currentIndex + 1} dari {flashcards.length}</p>
+                        <div className="inline-flex items-center mt-3 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-[#00A2D8] dark:text-[#4CC1EE] text-sm font-bold rounded-full">
+                            Kartu {currentIndex + 1} dari {flashcards.length}
+                        </div>
                     </div>
-                    <div className="w-10"></div>
                  </header>
 
                 {error && (
                     <div className="text-center py-16 sm:py-20 px-6 bg-white /20 rounded-2xl border-2 border-dashed border-red-300 /50">
-                        <h3 className="text-lg sm:text-2xl font-bold text-red-600 ">Terjadi Kesalahan</h3>
-                        <p className="mt-2 text-sm sm:text-base text-gray-500 ">{error}</p>
+                        <h3 className="text-lg sm:text-2xl font-bold text-red-600">Terjadi Kesalahan</h3>
+                        <p className="mt-2 text-sm sm:text-base text-gray-500">{error}</p>
                          <button
                             onClick={() => router.push('/dashboard/notes/' + noteId + '/edit')}
-                            className="mt-8 inline-flex items-center px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-red-600 rounded-lg shadow-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all"
+                            className="mt-8 inline-flex items-center px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all"
                         >
                             Buka Editor Catatan
                         </button>
@@ -161,39 +170,43 @@ function FlashcardsDisplay() {
                 {!error && flashcards.length > 0 && (
                     <>
                         <div 
-                            className="relative w-full h-64 sm:h-80 perspective-1000 cursor-pointer group"
+                            className="relative w-full h-80 sm:h-96 md:h-[400px] perspective-1000 cursor-pointer group"
                             onClick={() => setIsFlipped(!isFlipped)}
                         >
                             <div 
-                                className={`relative w-full h-full transition-transform duration-700 ease-in-out transform-style-3d ${isFlipped ? 'rotate-y-180' : ''}`}
+                                className={`relative w-full h-full transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] transform-style-3d ${isFlipped ? 'rotate-y-180' : ''}`}
                             >
                                 {/* Front of Card - Redesigned */}
-                                <div className="absolute w-full h-full backface-hidden flex flex-col items-center justify-center p-6 sm:p-8 bg-white  rounded-2xl ring-1 ring-black/5  shadow-xl">
-                                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-center text-gray-800 ">{currentCard.frontText}</p>
-                                    <span className="absolute bottom-4 sm:bottom-6 text-xs text-gray-400  opacity-0 group-hover:opacity-100 transition-opacity">Klik untuk melihat jawaban</span>
+                                <div className="absolute w-full h-full backface-hidden flex flex-col items-center justify-center p-8 sm:p-12 bg-white dark:bg-gray-800 rounded-[3rem] border border-gray-100 dark:border-gray-700">
+                                    <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-center text-gray-900 dark:text-white leading-tight">{currentCard.frontText}</p>
+                                    <span className="absolute bottom-8 text-sm font-medium text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">Klik untuk membalik kartu</span>
                                 </div>
                                 {/* Back of Card - Redesigned */}
-                                <div className="absolute w-full h-full backface-hidden rotate-y-180 flex items-center justify-center p-6 sm:p-8 bg-gradient-to-br from-sky-400 to-blue-500 text-white rounded-2xl shadow-xl">
-                                    <p className="text-lg sm:text-xl lg:text-2xl text-center font-medium">{currentCard.backText}</p>
+                                <div className="absolute w-full h-full backface-hidden rotate-y-180 flex items-center justify-center p-8 sm:p-12 bg-[#00A2D8] text-white rounded-[3rem]">
+                                    <p className="text-xl sm:text-2xl md:text-3xl text-center font-bold leading-relaxed">{currentCard.backText}</p>
                                 </div>
                             </div>
                         </div>
                         
-                        <div className="flex justify-between items-center mt-8">
+                        <div className="flex justify-between items-center mt-12 px-4 sm:px-10">
                             <button 
                                 onClick={goToPrev} 
-                                className="flex items-center justify-center w-24 sm:w-36 py-2 sm:py-3 text-xs sm:text-base font-semibold text-gray-600  bg-transparent rounded-lg hover:bg-gray-100 -700 transition-all"
+                                className="flex items-center justify-center w-36 py-3.5 text-sm font-bold text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 backdrop-blur rounded-2xl hover:bg-white dark:hover:bg-gray-700 border border-gray-200/50 dark:border-gray-700/50 transition-all transform hover:-translate-y-1"
                             >
-                                <ArrowLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2"/>
+                                <ArrowLeftIcon className="w-5 h-5 mr-2"/>
                                 Sebelumnya
                             </button>
-                            <p className="text-xs sm:text-sm font-semibold text-gray-500  hidden sm:block">Klik kartu untuk membalik</p>
+                            <div className="flex space-x-2">
+                                {flashcards.map((_, idx) => (
+                                    <div key={idx} className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === currentIndex ? 'w-6 bg-[#00A2D8]' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
+                                ))}
+                            </div>
                             <button 
                                 onClick={goToNext} 
-                                className="flex items-center justify-center w-24 sm:w-36 py-2 sm:py-3 text-xs sm:text-base font-semibold text-gray-600  bg-transparent rounded-lg hover:bg-gray-100 -700 transition-all"
+                                className="flex items-center justify-center w-36 py-3.5 text-sm font-bold text-white bg-[#00A2D8] rounded-2xl transition-all transform hover:-translate-y-1"
                             >
                                 Selanjutnya
-                                <ArrowRightIcon className="w-4 h-4 sm:w-5 sm:h-5 ml-2"/>
+                                <ArrowRightIcon className="w-5 h-5 ml-2"/>
                             </button>
                         </div>
                     </>
@@ -206,7 +219,7 @@ function FlashcardsDisplay() {
 // Wrap the component in Suspense as it uses useSearchParams
 export default function FlashcardsPage() {
     return (
-        <Suspense fallback={<div className="p-8 text-center text-gray-500 ">Memuat...</div>}>
+        <Suspense fallback={<div className="p-8 text-center text-gray-500">Memuat...</div>}>
             <FlashcardsDisplay />
         </Suspense>
     );

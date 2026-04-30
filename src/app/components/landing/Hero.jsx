@@ -35,7 +35,7 @@ const Hero = () => {
           className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-8 leading-[1.1]"
         >
           Catatan Kuliah, <br className="hidden sm:block" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00A2D8] to-blue-700 dark:from-[#4CC1EE] dark:to-blue-400">
+          <span className="text-[#00A2D8] dark:text-[#4CC1EE]">
             Diperkuat AI.
           </span>
         </motion.h1>

@@ -24,9 +24,9 @@ const Header = () => {
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className={`max-w-7xl mx-auto rounded-full transition-all duration-500 border ${scrolled
-            ? "bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-gray-200/50 dark:border-gray-700/50 shadow-lg py-2 px-4"
-            : "bg-transparent border-transparent py-4 px-2"
+        className={`max-w-7xl mx-auto transition-all duration-500 border rounded-full ${scrolled || isMenuOpen
+            ? "bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-gray-200/50 dark:border-gray-700/50 shadow-lg py-2 px-4"
+            : "bg-transparent border-transparent py-4 px-2 shadow-none"
           }`}
       >
         <div className="flex items-center justify-between">
@@ -41,7 +41,7 @@ const Header = () => {
                 className="relative z-10"
               />
             </div>
-            <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300">CatatPintar</h1>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">CatatPintar</h1>
           </Link>
 
           <div className="hidden md:flex items-center space-x-6">
@@ -53,7 +53,7 @@ const Header = () => {
               <ThemeToggle />
               <Link
                 href="/login"
-                className="px-5 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-[#00A2D8] to-[#4CC1EE] rounded-full hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 hover:-translate-y-0.5"
+                className="px-5 py-2.5 text-sm font-bold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-full hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
               >
                 Masuk
               </Link>
@@ -82,28 +82,29 @@ const Header = () => {
             </button>
           </div>
         </div>
-
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            className="md:hidden overflow-hidden"
-          >
-            <div className="pt-4 pb-2 space-y-2 border-t border-gray-200 dark:border-gray-700 mt-4">
-              <Link href="#fitur" className="block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">Fitur</Link>
-              <Link href="#cara-kerja" className="block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">Cara Kerja</Link>
-              <div className="pt-2">
-                <Link
-                  href="/login"
-                  className="block w-full text-center px-5 py-3 text-sm font-bold text-white bg-gradient-to-r from-[#00A2D8] to-[#4CC1EE] rounded-xl hover:shadow-lg transition-all duration-300"
-                >
-                  Masuk Sekarang
-                </Link>
-              </div>
-            </div>
-          </motion.div>
-        )}
       </motion.div>
+
+      {/* Mobile Menu Dropdown */}
+      {isMenuOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="md:hidden mt-3 mx-auto max-w-7xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 shadow-xl rounded-3xl overflow-hidden px-4 py-4"
+        >
+          <div className="space-y-2">
+            <Link href="#fitur" onClick={() => setIsMenuOpen(false)} className="block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">Fitur</Link>
+            <Link href="#cara-kerja" onClick={() => setIsMenuOpen(false)} className="block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">Cara Kerja</Link>
+            <div className="pt-2 border-t border-gray-200 dark:border-gray-700 mt-2">
+              <Link
+                href="/login"
+                className="block w-full text-center px-5 py-3 mt-2 text-sm font-bold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl hover:shadow-lg transition-all duration-300"
+              >
+                Masuk Sekarang
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+      )}
     </header>
   );
 };

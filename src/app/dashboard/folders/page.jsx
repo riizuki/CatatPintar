@@ -1,72 +1,11 @@
 "use client";
 
-import { FolderIcon, PlusIcon, XMarkIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, XMarkIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { FolderIcon } from "@heroicons/react/24/solid";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import FolderModal from "../../components/dashboard/FolderModal";
 import ConfirmationModal from "../../components/dashboard/ConfirmationModal";
-
-const FolderModal = ({ isOpen, onClose, onSave, editingFolder, isLoading }) => {
-  const [name, setName] = useState("");
-
-  useEffect(() => {
-    setName(editingFolder ? editingFolder.name : "");
-  }, [editingFolder]);
-
-  if (!isOpen) return null;
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave({ name, id: editingFolder ? editingFolder.id : null });
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/70 backdrop-blur-sm p-4">
-      <div className="w-full max-w-lg p-6 sm:p-8 bg-white rounded-2xl shadow-xl border border-gray-200">
-        <div className="flex items-center justify-between mb-6 sm:mb-8">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
-            {editingFolder ? "Edit Folder" : "Buat Folder Baru"}
-          </h2>
-          <button onClick={onClose} disabled={isLoading} className="p-2 rounded-full hover:bg-gray-100">
-            <XMarkIcon className="w-6 h-6 text-gray-500" />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} autoComplete="off">
-          <div className="space-y-2">
-            <label htmlFor="name" className="text-sm sm:text-base font-medium text-gray-700">
-              Nama Folder
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="block w-full px-3 py-2 sm:px-4 sm:py-3 text-gray-800 bg-gray-50 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-colors duration-300"
-            />
-          </div>
-          <div className="mt-6 sm:mt-8 flex justify-end space-x-2 sm:space-x-4">
-            <button
-                type="button"
-                onClick={onClose}
-                disabled={isLoading}
-                className="px-4 py-2 text-sm sm:px-6 sm:py-2.5 sm:text-base font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all"
-            >
-                Batal
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="px-4 py-2 text-sm sm:px-6 sm:py-2.5 sm:text-base font-semibold text-white bg-[#00A2D8] rounded-lg shadow-md hover:bg-[#008EB2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] disabled:opacity-50 transition-all"
-            >
-              {isLoading ? "Menyimpan..." : (editingFolder ? "Simpan" : "Buat")}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
 
 const FoldersPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -177,80 +116,92 @@ const FoldersPage = () => {
         <p className="text-sm sm:text-base">Anda yakin ingin menghapus folder <strong>{folderToDelete?.name}</strong>?</p>
         <p className="mt-2 text-xs sm:text-sm text-gray-600">Semua catatan di dalamnya juga akan dihapus secara permanen. Tindakan ini tidak dapat diurungkan.</p>
       </ConfirmationModal>
-      <div className="p-4 sm:p-6 md:p-8">
-        <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10">
+      <div className="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto min-h-screen">
+        <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-6 rounded-3xl border border-gray-200/50 dark:border-gray-700/50">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white flex items-center">
+                <div className="p-2 bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/40 dark:to-blue-900/10 rounded-xl mr-4 border border-blue-200/50 dark:border-blue-700/50">
+                  <FolderIcon className="w-7 h-7 text-[#00A2D8] dark:text-[#4CC1EE]"/>
+                </div>
                 Folder Saya
             </h1>
-            <p className="text-gray-500 mt-1 text-sm sm:text-base">
-                Kelola semua folder catatan Anda di sini.
+            <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm sm:text-base">
+                Kelola dan organisir semua catatan Anda ke dalam folder.
             </p>
           </div>
           <button
             onClick={openCreateModal}
-            className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 text-sm sm:px-6 sm:py-3 sm:text-base font-semibold text-white bg-[#00A2D8] rounded-lg shadow-lg hover:bg-[#008EB2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] transition-all duration-300 transform hover:scale-105"
+            className="mt-4 sm:mt-0 inline-flex items-center px-6 py-3 text-sm sm:text-base font-bold text-[#00A2D8] bg-blue-50 dark:bg-[#00A2D8]/10 rounded-xl hover:bg-blue-100 dark:hover:bg-[#00A2D8]/20 focus:outline-none transition-all duration-300 transform hover:scale-105"
           >
             <PlusIcon className="w-5 h-5 mr-2" />
-            <span>Buat Folder</span>
+            <span>Buat Folder Baru</span>
           </button>
         </header>
 
         {error && <p className="text-red-500 mb-4">Kesalahan: {error}</p>}
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="p-4 sm:p-6 bg-white rounded-2xl border border-gray-200">
-                    <div className="h-8 w-8 sm:h-10 sm:w-10 bg-gray-200 rounded-lg mb-4"></div>
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                <div key={index} className="p-6 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-700/50 animate-pulse">
+                    <div className="h-14 w-14 bg-gray-200 dark:bg-gray-700 rounded-2xl mb-4"></div>
+                    <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-md w-3/4 mb-2 mt-2"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-md w-1/2 mt-3"></div>
                 </div>
             ))}
           </div>
         ) : folders.length === 0 ? (
-          <div className="text-center py-16 sm:py-20 px-6 bg-white rounded-2xl border-2 border-dashed border-gray-300">
-                <FolderIcon className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-gray-400"/>
-                <h3 className="mt-6 text-lg sm:text-2xl font-bold text-gray-800">Folder Masih Kosong</h3>
-                <p className="mt-2 text-sm sm:text-base text-gray-500">Ayo buat folder pertamamu untuk mengorganisir catatan!</p>
+          <div className="text-center py-16 sm:py-20 px-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-md rounded-3xl border border-dashed border-gray-300 dark:border-gray-700 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-50/50 dark:to-gray-900/50 pointer-events-none"></div>
+                <div className="w-24 h-24 mx-auto bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-3xl flex items-center justify-center mb-6 border border-gray-200/50 dark:border-gray-700/50 relative z-10">
+                  <FolderIcon className="w-12 h-12 text-gray-400 dark:text-gray-500"/>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white relative z-10">Folder Masih Kosong</h3>
+                <p className="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400 relative z-10">Ayo buat folder pertamamu untuk mengorganisir catatan!</p>
                  <button
                     onClick={openCreateModal}
-                    className="mt-8 inline-flex items-center px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm font-semibold text-white bg-[#00A2D8] rounded-lg shadow-lg hover:bg-[#008EB2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] transition-all"
+                    className="mt-8 inline-flex items-center px-6 py-3 text-sm sm:text-base font-bold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl transition-all transform hover:-translate-y-1"
                 >
-                    <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    Buat Folder
+                    <PlusIcon className="w-5 h-5 mr-2" />
+                    Buat Folder Baru
                 </button>
             </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {folders.map((folder) => (
-              <div key={folder.id} className="relative group bg-white rounded-2xl border border-gray-200 hover:border-[#00A2D8] transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {folders.map((folder, index) => {
+              const colorClass = "text-[#00A2D8] bg-[#00A2D8]/10 group-hover:border-[#00A2D8]/50";
+
+              return (
+              <div key={folder.id} className={`relative group bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 transform hover:-translate-y-2 ${colorClass.split(' ')[2]}`}>
                 <Link
                   href={`/dashboard/folders/${folder.id}`}
-                  className="block p-4 sm:p-6"
+                  className="block p-6"
                 >
-                  <FolderIcon className="w-8 h-8 sm:w-10 sm:h-10 mb-4 text-[#00A2D8]" />
-                  <h3 className="text-base sm:text-lg font-bold text-gray-800 truncate transition-colors">{folder.name}</h3>
-                  <p className="mt-1 text-xs sm:text-sm text-gray-500">{folder.noteCount} Catatan</p>
+                  <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-gradient-to-tl from-[#00A2D8]/10 to-transparent rounded-full blur-2xl group-hover:from-[#00A2D8]/20 transition-all pointer-events-none"></div>
+                  <div className={`inline-flex p-3 rounded-2xl mb-4 transition-transform group-hover:scale-110 border border-blue-200/50 dark:border-blue-700/50 bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/40 dark:to-blue-900/10 text-[#00A2D8] relative z-10`}>
+                    <FolderIcon className="w-10 h-10" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate transition-colors">{folder.name}</h3>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{folder.noteCount} item tersimpan</p>
                 </Link>
-                <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex space-x-1 sm:space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <button
                     onClick={(e) => { e.preventDefault(); handleEditFolder(folder); }}
-                    className="p-2 sm:p-2.5 bg-gray-100 rounded-full hover:bg-gray-200"
+                    className="p-2 bg-white/80 dark:bg-gray-700/80 backdrop-blur rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600"
                     title="Edit Folder"
                   >
-                    <PencilIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700"/>
+                    <PencilIcon className="w-4 h-4 text-gray-700 dark:text-gray-300"/>
                   </button>
                   <button
                     onClick={(e) => { e.preventDefault(); handleOpenDeleteModal(folder); }}
-                    className="p-2 sm:p-2.5 bg-gray-100 rounded-full hover:bg-red-100"
+                    className="p-2 bg-white/80 dark:bg-gray-700/80 backdrop-blur rounded-xl hover:bg-red-50 dark:hover:bg-red-900/40"
                     title="Hapus Folder"
                   >
-                    <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-600"/>
+                    <TrashIcon className="w-4 h-4 text-red-500"/>
                   </button>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         )}
       </div>

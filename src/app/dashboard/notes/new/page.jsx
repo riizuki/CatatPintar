@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
 import hljs from "highlight.js";
-import "highlight.js/styles/github.css";
+import "highlight.js/styles/atom-one-dark.css";
 import "@/app/quill-editor.css";
 import NoteEditorNavbar from "../../../components/dashboard/NoteEditorNavbar";
 import CreateQuizModal from "../../../components/dashboard/CreateQuizModal";
@@ -14,7 +14,7 @@ import { toast } from "react-hot-toast";
 
 const NewNotePage = () => {
   const router = useRouter();
-  const { setNoteContext } = useDashboard();
+  const { setNoteContext, isAiSidebarOpen } = useDashboard();
 
   const ReactQuill = useMemo(
     () => dynamic(() => import("react-quill"), { ssr: false }),
@@ -85,17 +85,20 @@ const NewNotePage = () => {
   const modules = useMemo(
     () => ({
       toolbar: [
-        [{ header: "1" }, { header: "2" }, { font: [] }],
-        [{ size: [] }],
-        ["bold", "italic", "underline", "strike", "blockquote"],
+        [{ header: [1, 2, 3, 4, 5, 6, false] }, { font: [] }],
+        [{ size: ["small", false, "large", "huge"] }],
+        ["bold", "italic", "underline", "strike"],
+        [{ color: [] }, { background: [] }],
+        [{ script: "sub" }, { script: "super" }],
+        ["blockquote", "code-block"],
         [
           { list: "ordered" },
           { list: "bullet" },
           { indent: "-1" },
           { indent: "+1" },
         ],
+        [{ align: [] }],
         ["link", "image", "video"],
-        ["code-block"],
         ["clean"],
       ],
       clipboard: {
@@ -116,65 +119,66 @@ const NewNotePage = () => {
         onGenerateFlashcards={() => { /* Disabled for new notes */ }}
         onGenerateQuiz={() => setIsCreateQuizModalOpen(true)}
       />
-      <div className="p-8">
-        <form onSubmit={handleCreateNote}>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <form onSubmit={handleCreateNote} className="space-y-6">
           <div className="mb-8">
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full text-4xl font-bold bg-transparent text-black border-none focus:outline-none focus:ring-0"
-              placeholder="Judul Catatan"
+              className="w-full text-4xl md:text-5xl font-extrabold bg-transparent text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-gray-700 border-none focus:outline-none focus:ring-0 px-0 transition-colors"
+              placeholder="Judul Catatan..."
             />
           </div>
-          <ReactQuill
-            theme="snow"
-            value={content}
-            onChange={setContent}
-            modules={modules}
-            className="quill-editor"
-            style={{ height: "400px", marginBottom: "50px" }}
-          />
-          <div className="mt-8">
-            <label
-              htmlFor="folder"
-              className="block text-sm font-medium text-black"
-            >
-              Folder
-            </label>
-            <div className="mt-1">
-              <select
-                id="folder"
-                name="folder"
-                value={folderId}
-                onChange={(e) => setFolderId(e.target.value)}
-                className="block w-full max-w-xs px-3 py-2 text-black border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black sm:text-sm"
-              >
-                <option value="">Tidak ada Folder</option>
-                {folders.map((folder) => (
-                  <option key={folder.id} value={folder.id}>
-                    {folder.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded-2xl border border-gray-200/50 dark:border-gray-800/50 mb-24">
+            <ReactQuill
+              theme="snow"
+              value={content}
+              onChange={setContent}
+              modules={modules}
+              className="quill-editor modern-quill"
+              style={{ minHeight: "60vh" }}
+            />
           </div>
-          <div className="mt-8 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-4">
-            <button
-              type="button"
-              onClick={() => router.push("/dashboard")}
-              disabled={loading}
-              className="w-full sm:w-auto mt-2 sm:mt-0 px-4 py-2 text-sm font-medium text-black bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-800 disabled:opacity-50"
-            >
-              {loading ? "Membuat..." : "Buat Catatan"}
-            </button>
+          {/* Floating Action Bar */}
+          <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 w-full max-w-[95%] sm:max-w-[90%] md:w-auto z-40 transition-all duration-300 ${isAiSidebarOpen ? 'md:right-[400px] md:max-w-[calc(100vw-700px)]' : 'md:right-8 md:max-w-[calc(100vw-320px)]'}`}>
+            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 sm:gap-4 p-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl transition-all">
+              <div className="flex items-center w-full sm:w-auto gap-3">
+                <label htmlFor="folder" className="hidden sm:block text-sm font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap ml-2">
+                  Folder:
+                </label>
+                <select
+                  id="folder"
+                  name="folder"
+                  value={folderId}
+                  onChange={(e) => setFolderId(e.target.value)}
+                  className="block w-full sm:w-48 px-4 py-2.5 text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A2D8]/50 transition-colors"
+                >
+                  <option value="">Tanpa Folder</option>
+                  {folders.map((folder) => (
+                    <option key={folder.id} value={folder.id}>{folder.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => router.push("/dashboard")}
+                  disabled={loading}
+                  className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/50 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-medium text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl disabled:opacity-50 transition-all transform hover:-translate-y-0.5"
+                >
+                  {loading ? "Menyimpan..." : "Buat Catatan"}
+                </button>
+              </div>
+            </div>
           </div>
         </form>
         <CreateQuizModal

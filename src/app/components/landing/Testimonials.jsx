@@ -51,7 +51,7 @@ const Testimonials = () => {
             viewport={{ once: true }}
             className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 tracking-tight"
           >
-            Apa Kata <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00A2D8] to-blue-700 dark:from-[#4CC1EE] dark:to-blue-400">Mereka</span>?
+            Apa Kata <span className="text-[#00A2D8] dark:text-[#4CC1EE]">Mereka</span>?
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}

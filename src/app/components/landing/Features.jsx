@@ -33,7 +33,7 @@ const Features = () => (
         className="text-center mb-16 md:mb-24"
       >
         <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white mb-6 tracking-tight">
-          Dirancang untuk <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00A2D8] to-blue-700 dark:from-[#4CC1EE] dark:to-blue-400">Pelajar Modern</span>
+          Dirancang untuk <span className="text-[#00A2D8] dark:text-[#4CC1EE]">Pelajar Modern</span>
         </h2>
         <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
           Kumpulan alat cerdas yang terintegrasi penuh untuk membantu Anda mencerna informasi, menyimpan pengetahuan, dan menguji diri sendiri.

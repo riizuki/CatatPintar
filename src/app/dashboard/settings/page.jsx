@@ -17,6 +17,7 @@ const SettingsPage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(""); 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     if (status === "loading") return; 
@@ -98,13 +99,16 @@ const SettingsPage = () => {
     }
   };
 
-  const handleLogout = () => {
-    signOut({ callbackUrl: "/" });
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    await signOut({ callbackUrl: "/" });
   };
 
   if (status === "loading" || loading) {
     return (
-      <div className="p-6 md:p-8 text-center">Memuat pengaturan...</div>
+      <div className="flex items-center justify-center h-[calc(100vh-100px)]">
+        <div className="w-10 h-10 border-4 border-gray-200 border-t-[#00A2D8] rounded-full animate-spin"></div>
+      </div>
     );
   }
 
@@ -115,66 +119,72 @@ const SettingsPage = () => {
         onClose={() => setIsModalOpen(false)}
         onConfirm={handleLogout}
         title="Konfirmasi Keluar"
+        isMutating={isLoggingOut}
       >
         <p className="text-sm sm:text-base">Apakah Anda yakin ingin keluar dari akun Anda?</p>
       </ConfirmationModal>
-      <div className="p-6 md:p-8">
-        <header className="mb-10">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+      <div className="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto min-h-screen">
+        <header className="mb-10 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-6 rounded-3xl border border-gray-200/50 dark:border-gray-700/50">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
                 Pengaturan Akun
             </h1>
-            <p className="text-gray-500 mt-1 text-sm sm:text-base">
+            <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm sm:text-base">
                 Kelola informasi profil, email, dan kata sandi Anda.
             </p>
         </header>
 
-        <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-200">
+        <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl p-6 sm:p-10 rounded-3xl border border-gray-200/50 dark:border-gray-700/50">
           <form onSubmit={handleSaveChanges} className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-center">
-              <label
-                htmlFor="name"
-                className="text-sm sm:text-base font-medium text-gray-700"
-              >
-                Nama Lengkap
-              </label>
-              <div className="md:col-span-2">
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  autoComplete="name"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="block w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base text-gray-800 bg-gray-50 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-colors duration-300"
-                />
-              </div>
+            <div className="space-y-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">Informasi Dasar</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-center">
+                  <label
+                    htmlFor="name"
+                    className="text-sm sm:text-base font-bold text-gray-700 dark:text-gray-300"
+                  >
+                    Nama Lengkap
+                  </label>
+                  <div className="md:col-span-2">
+                    <input
+                      id="name"
+                      name="name"
+                      type="text"
+                      autoComplete="name"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="block w-full px-4 py-3 text-sm sm:text-base text-gray-900 dark:text-white bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A2D8]/50 focus:border-[#00A2D8] transition-all"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-center">
+                  <label
+                    htmlFor="email"
+                    className="text-sm sm:text-base font-bold text-gray-700 dark:text-gray-300"
+                  >
+                    Alamat Email
+                  </label>
+                  <div className="md:col-span-2">
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      autoComplete="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="block w-full px-4 py-3 text-sm sm:text-base text-gray-900 dark:text-white bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A2D8]/50 focus:border-[#00A2D8] transition-all"
+                    />
+                  </div>
+                </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-center">
-              <label
-                htmlFor="email"
-                className="text-sm sm:text-base font-medium text-gray-700"
-              >
-                Alamat Email
-              </label>
-              <div className="md:col-span-2">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base text-gray-800 bg-gray-50 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-colors duration-300"
-                />
-              </div>
-            </div>
-             <div className="border-t-2 border-gray-100"></div>
+            
+            <div className="space-y-6 pt-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">Keamanan</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-center">
               <label
                 htmlFor="password"
-                className="text-sm sm:text-base font-medium text-gray-700"
+                className="text-sm sm:text-base font-bold text-gray-700 dark:text-gray-300"
               >
                 Kata Sandi Baru
               </label>
@@ -186,14 +196,15 @@ const SettingsPage = () => {
                   autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base text-gray-800 bg-gray-50 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-colors duration-300"
+                  className="block w-full px-4 py-3 text-sm sm:text-base text-gray-900 dark:text-white bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A2D8]/50 focus:border-[#00A2D8] transition-all"
+                  placeholder="Kosongkan jika tidak ingin mengubah"
                 />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-center">
               <label
                 htmlFor="confirm-password"
-                className="text-sm sm:text-base font-medium text-gray-700"
+                className="text-sm sm:text-base font-bold text-gray-700 dark:text-gray-300"
               >
                 Konfirmasi Kata Sandi
               </label>
@@ -205,23 +216,25 @@ const SettingsPage = () => {
                   autoComplete="new-password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="block w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base text-gray-800 bg-gray-50 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-transparent transition-colors duration-300"
+                  className="block w-full px-4 py-3 text-sm sm:text-base text-gray-900 dark:text-white bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A2D8]/50 focus:border-[#00A2D8] transition-all"
+                  placeholder="Konfirmasi kata sandi baru"
                 />
               </div>
             </div>
+            </div>
             
-            <div className="mt-10 flex flex-col sm:flex-row justify-between items-center">
+            <div className="mt-12 flex flex-col sm:flex-row justify-between items-center gap-4">
                 <button
                     onClick={() => setIsModalOpen(true)}
                     type="button"
-                    className="w-full sm:w-auto order-2 sm:order-1 mt-4 sm:mt-0 px-4 py-2 sm:px-6 text-sm sm:text-base font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-300"
+                    className="w-full sm:w-auto order-2 sm:order-1 px-6 py-3 text-sm sm:text-base font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/40 focus:outline-none transition-all duration-300"
                 >
                     Keluar Akun
                 </button>
                 <button
                     type="submit"
                     disabled={isSaving}
-                    className="w-full sm:w-auto order-1 sm:order-2 px-6 py-2.5 sm:px-8 sm:py-3 text-sm sm:text-base font-semibold text-white bg-[#00A2D8] rounded-lg shadow-md hover:bg-[#008EB2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] disabled:opacity-50 transition-all duration-300"
+                    className="w-full sm:w-auto order-1 sm:order-2 px-8 py-3 text-sm sm:text-base font-bold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl focus:outline-none disabled:opacity-50 transition-all duration-300 transform hover:-translate-y-1"
                 >
                     {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
                 </button>

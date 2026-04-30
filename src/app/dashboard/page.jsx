@@ -1,11 +1,14 @@
 "use client";
 
-import { MagnifyingGlassIcon, PlusIcon, FolderIcon, DocumentTextIcon, ClockIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, PlusIcon, ClockIcon, SparklesIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { FolderIcon, DocumentTextIcon } from "@heroicons/react/24/solid";
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { motion } from "framer-motion";
 
 import SkeletonLoader from "@/app/components/dashboard/SkeletonLoader";
+import FolderModal from "@/app/components/dashboard/FolderModal";
 
 const getGreeting = () => {
     const hour = new Date().getHours();
@@ -13,6 +16,19 @@ const getGreeting = () => {
     if (hour < 15) return "Selamat Siang";
     if (hour < 18) return "Selamat Sore";
     return "Selamat Malam";
+};
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
 };
 
 function DashboardContent() {
@@ -24,6 +40,8 @@ function DashboardContent() {
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [greeting, setGreeting] = useState("");
+  const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
+  const [isMutating, setIsMutating] = useState(false);
 
   useEffect(() => {
     setGreeting(getGreeting());
@@ -67,176 +85,278 @@ function DashboardContent() {
     return () => clearTimeout(debounceFetch);
   }, [searchTerm]);
 
+  const handleSaveFolder = async (folderData) => {
+    setIsMutating(true);
+    setError("");
+    try {
+      const res = await fetch("/api/folders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: folderData.name }),
+      });
+      if (!res.ok) throw new Error("Gagal membuat folder.");
+      
+      const foldersRes = await fetch("/api/folders");
+      const foldersData = await foldersRes.json();
+      setFolders(foldersData);
+      
+      setIsFolderModalOpen(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsMutating(false);
+    }
+  };
+
   return (
-    <div className="p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen">
-      <header className="mb-10">
-        <div className="flex justify-between items-center mb-4">
+    <div className="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto min-h-screen">
+      <FolderModal
+        isOpen={isFolderModalOpen}
+        onClose={() => setIsFolderModalOpen(false)}
+        onSave={handleSaveFolder}
+        isLoading={isMutating}
+      />
+      <motion.header 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-10"
+      >
+        {/* Dynamic Greeting Banner */}
+        <div className="relative overflow-hidden bg-[#00A2D8] rounded-3xl p-8 md:p-10 text-white mb-8 border border-white/20 dark:border-white/10">
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-20 rounded-full blur-2xl"></div>
+          <div className="absolute bottom-0 left-1/4 w-32 h-32 bg-blue-300 opacity-30 rounded-full blur-2xl"></div>
+          
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
-                    {greeting}, {session?.user?.name || "Kawan"}!
-                </h1>
-                <p className="text-gray-500 mt-1 text-sm sm:text-base">
-                    Mari kita mulai hari ini dengan produktif!
-                </p>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-sm font-medium mb-4 border border-white/20">
+                <SparklesIcon className="w-4 h-4" />
+                Workspace Aktif
+              </div>
+              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
+                {greeting}, {session?.user?.name || "Kawan"}!
+              </h1>
+              <p className="text-blue-50 text-base md:text-lg max-w-lg">
+                Siap mencerna informasi baru hari ini? Kami telah menyiapkan ruang kerjamu.
+              </p>
             </div>
+            
             <Link
                 href="/dashboard/notes/new"
-                className="hidden md:inline-flex items-center px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold text-white bg-[#00A2D8] rounded-lg shadow-lg hover:bg-[#008EB2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] transition-all duration-300 transform hover:scale-105"
+                className="inline-flex items-center justify-center px-6 py-3.5 text-base font-bold text-[#00A2D8] bg-white rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-all duration-300 transform hover:scale-105 group"
             >
-                <PlusIcon className="w-5 h-5 mr-2" />
-                <span>Buat Catatan</span>
+                <PlusIcon className="w-5 h-5 mr-2 transition-transform group-hover:rotate-90" />
+                <span>Buat Catatan Baru</span>
             </Link>
+          </div>
         </div>
-        <div className="relative">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-            <MagnifyingGlassIcon className="w-5 h-5 text-gray-400" />
-          </span>
-          <input
-            type="text"
-            placeholder="Cari catatan atau folder..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            autoComplete="off"
-            className="w-full pl-10 pr-4 py-2.5 text-base text-gray-800 bg-white border-2 border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A2D8] transition-all duration-300"
-          />
+
+        {/* Command Palette Search */}
+        <div className="relative max-w-2xl mx-auto -mt-14 z-20 px-4 md:px-0">
+          <div className="relative bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden group">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-4">
+              <MagnifyingGlassIcon className="w-6 h-6 text-gray-400 group-focus-within:text-[#00A2D8] transition-colors" />
+            </span>
+            <input
+              type="text"
+              placeholder="Cari catatan, folder, atau topik materi..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              autoComplete="off"
+              className="w-full pl-12 pr-4 py-4 text-base md:text-lg text-gray-800 dark:text-white bg-transparent focus:outline-none placeholder-gray-400"
+            />
+            {searchTerm && (
+              <span className="absolute inset-y-0 right-0 flex items-center pr-4">
+                <button onClick={() => setSearchTerm("")} className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 px-2 py-1 rounded-md hover:bg-gray-200">ESC</button>
+              </span>
+            )}
+          </div>
         </div>
-      </header>
+      </motion.header>
 
-      {error && <p className="text-red-500">Kesalahan: {error}</p>}
+      {error && (
+        <div className="p-4 bg-red-50 text-red-600 rounded-xl mb-8 border border-red-100">
+          Kesalahan: {error}
+        </div>
+      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <main className="md:col-span-2">
-          <section className="mb-12">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center">
-                <ClockIcon className="w-6 h-6 mr-2 text-[#00A2D8]"/>
-                Terakhir Dilihat
-            </h2>
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 lg:grid-cols-12 gap-8"
+      >
+        <div className="lg:col-span-8 space-y-10">
+          {/* Terakhir Dilihat (Recent Notes) */}
+          <motion.section variants={itemVariants}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                  <ClockIcon className="w-6 h-6 mr-3 text-[#00A2D8] dark:text-[#4CC1EE]"/>
+                  Lanjutkan Belajarmu
+              </h2>
+            </div>
+            
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <SkeletonLoader type="note" count={2} />
               </div>
             ) : recentNotes.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                 {recentNotes.slice(0, 2).map((note) => (
                   <Link
                     key={note.id}
                     href={`/dashboard/notes/${note.id}/edit`}
-                    className="p-4 sm:p-6 bg-white/50 backdrop-blur-lg rounded-2xl border border-gray-200 hover:shadow-2xl hover:border-[#00A2D8] transition-all duration-300 group transform hover:-translate-y-1"
+                    className="p-6 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 hover:border-[#00A2D8]/50 dark:hover:border-[#4CC1EE]/50 transition-all duration-300 group flex flex-col h-[160px]"
                   >
-                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-[#00A2D8] transition-colors line-clamp-2">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-[#00A2D8] dark:group-hover:text-[#4CC1EE] transition-colors line-clamp-2">
                       {note.title}
                     </h3>
-                    <p className="mt-2 text-xs sm:text-sm text-gray-600">
-                      Diedit pada: {new Date(note.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    </p>
+                    <div className="mt-auto flex items-center justify-between">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                        <ClockIcon className="w-4 h-4 mr-1 opacity-70" />
+                        {new Date(note.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                      </p>
+                      <div className="w-8 h-8 rounded-full bg-gray-50 dark:bg-gray-700 flex items-center justify-center group-hover:bg-[#00A2D8]/10 group-hover:text-[#00A2D8] transition-colors">
+                        <ChevronRightIcon className="w-4 h-4" />
+                      </div>
+                    </div>
                   </Link>
                 ))}
               </div>
             ) : (
-                <div className="text-center py-8 sm:py-10 px-6 bg-white rounded-2xl border border-dashed border-gray-300">
-                    <DocumentTextIcon className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-gray-400"/>
-                    <h3 className="mt-4 text-base sm:text-lg font-semibold text-gray-800">Belum Ada Catatan</h3>
-                    <p className="mt-1 text-xs sm:text-sm text-gray-500">Mulai buat catatan pertamamu sekarang juga!</p>
-                     <Link
+                <div className="text-center py-12 px-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-dashed border-gray-300 dark:border-gray-700 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-50/50 dark:to-gray-900/50 pointer-events-none"></div>
+                    <div className="w-20 h-20 mx-auto bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl flex items-center justify-center mb-5 border border-gray-200/50 dark:border-gray-700/50 relative z-10">
+                      <DocumentTextIcon className="w-10 h-10 text-gray-400 dark:text-gray-500"/>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 relative z-10">Meja Belajar Kosong</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 mb-6 relative z-10 max-w-xs mx-auto">Mulai perjalanan belajarmu dengan membuat catatan pertama.</p>
+                    <Link
                         href="/dashboard/notes/new"
-                        className="mt-4 inline-flex items-center px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm font-medium text-white bg-[#00A2D8] rounded-lg shadow-sm hover:bg-[#008EB2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8]"
+                        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-900 dark:bg-gray-100 dark:text-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
                     >
-                        <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                        Buat Catatan
+                        <PlusIcon className="w-4 h-4 mr-2" /> Buat Sekarang
                     </Link>
                 </div>
             )}
-          </section>
+          </motion.section>
           
-          <section>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center">
-                <DocumentTextIcon className="w-6 h-6 mr-2 text-[#00A2D8]"/>
-                Semua Catatan
-            </h2>
+          {/* Semua Catatan */}
+          <motion.section variants={itemVariants}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                  <div className="p-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg mr-3 border border-gray-200/50 dark:border-gray-700/50">
+                    <DocumentTextIcon className="w-5 h-5 text-gray-500 dark:text-gray-400"/>
+                  </div>
+                  Arsip Catatan
+              </h2>
+            </div>
             {loading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-                    <SkeletonLoader type="note" count={6} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <SkeletonLoader type="note" count={3} />
                 </div>
             ) : notes.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {notes.map((note) => (
                         <Link
                         key={note.id}
                         href={`/dashboard/notes/${note.id}/edit`}
-                        className="p-4 sm:p-6 bg-white rounded-2xl border border-gray-200 hover:shadow-xl hover:border-[#00A2D8] transition-all duration-300 group transform hover:-translate-y-1 flex flex-col justify-between h-full"
+                        className="p-5 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-300 group flex items-start gap-4 relative overflow-hidden"
                         >
-                        <div className="flex items-start">
-                            <DocumentTextIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 mr-4 mt-1"/>
-                            <div>
-                                <h3 className="text-base sm:text-lg font-bold text-gray-800 group-hover:text-[#00A2D8] transition-colors line-clamp-2">
-                                    {note.title}
-                                </h3>
-                                <p className="mt-2 text-xs sm:text-sm text-gray-500">
-                                    {new Date(note.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                </p>
-                            </div>
-                        </div>
+                          <div className="absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br from-gray-400/10 to-transparent rounded-full blur-xl group-hover:from-gray-400/20 transition-all"></div>
+                          <div className="p-3 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 text-gray-500 dark:text-gray-400 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0 relative z-10 border border-gray-200/50 dark:border-gray-700/50">
+                            <DocumentTextIcon className="w-7 h-7" />
+                          </div>
+                          <div className="min-w-0 flex-1 relative z-10">
+                              <h3 className="text-base font-bold text-gray-900 dark:text-white group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors truncate">
+                                  {note.title}
+                              </h3>
+                              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                  {new Date(note.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                              </p>
+                          </div>
                         </Link>
                     ))}
                 </div>
             ) : (
                 !loading && recentNotes.length > 0 &&
-                <p className="text-gray-500 text-sm sm:text-base">Tidak ada catatan lain.</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Tidak ada catatan lain yang tersedia.</p>
             )}
-          </section>
-        </main>
+          </motion.section>
+        </div>
 
-        <aside className="md:col-span-1">
-            <section className="mb-12">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center">
-                <FolderIcon className="w-6 h-6 mr-2 text-[#00A2D8]"/>
-                Folder Saya
-            </h2>
-            {loading ? (
-              <div className="space-y-4">
-                <SkeletonLoader type="folder" count={3} />
-              </div>
-            ) : folders.length > 0 ? (
-              <div className="space-y-4">
-                {folders.map((folder) => (
-                  <Link
-                    key={folder.id}
-                    href={`/dashboard/folders/${folder.id}`}
-                    className="flex items-center justify-between p-4 sm:p-4 bg-white rounded-2xl border border-gray-200 hover:shadow-xl hover:border-[#00A2D8] transition-all duration-300 group transform hover:-translate-y-1"
-                  >
-                    <div className="flex items-center min-w-0">
-                        <FolderIcon className="w-6 h-6 sm:w-8 sm:h-8 text-[#00A2D8] mr-4"/>
-                        <div className="min-w-0">
-                            <h3 className="text-base sm:text-lg font-bold text-gray-800 truncate group-hover:text-[#00A2D8] transition-colors line-clamp-1">
-                                {folder.name}
-                            </h3>
-                            <p className="text-xs sm:text-sm text-gray-500">
-                            {folder.noteCount} Catatan
-                            </p>
-                        </div>
+        {/* Sidebar Kanan (Folders) */}
+        <div className="lg:col-span-4">
+          <motion.aside variants={itemVariants} className="sticky top-24">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-gray-700/50 dark:">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center">
+                    <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg mr-3">
+                      <FolderIcon className="w-5 h-5 text-[#00A2D8] dark:text-[#4CC1EE]"/>
                     </div>
-                    <p className="text-xs sm:text-sm font-medium text-white bg-[#00A2D8] rounded-full px-1.5 py-0.5 sm:px-2 sm:py-1 flex-shrink-0">
-                      {folder.noteCount}
-                    </p>
-                  </Link>
-                ))}
+                    Koleksi Folder
+                </h2>
+                <button 
+                  onClick={() => setIsFolderModalOpen(true)}
+                  className="p-1.5 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                >
+                  <PlusIcon className="w-4 h-4" />
+                </button>
               </div>
-            ) : (
-                <div className="text-center py-8 sm:py-10 px-6 bg-white rounded-2xl border border-dashed border-gray-300">
-                    <FolderIcon className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-gray-400"/>
-                    <h3 className="mt-4 text-base sm:text-lg font-semibold text-gray-800">Folder Masih Kosong</h3>
-                    <p className="mt-1 text-xs sm:text-sm text-gray-500">Buat folder baru untuk mengorganisir catatanmu.</p>
+              
+              {loading ? (
+                <div className="space-y-4">
+                  <SkeletonLoader type="folder" count={4} />
                 </div>
-            )}
-            </section>
-        </aside>
-      </div>
-      <div className="md:hidden fixed bottom-4 right-4">
+              ) : folders.length > 0 ? (
+                <div className="space-y-3">
+                  {folders.map((folder, index) => {
+                    const colorClass = "text-[#00A2D8] bg-[#00A2D8]/10";
+
+                    return (
+                    <Link
+                      key={folder.id}
+                      href={`/dashboard/folders/${folder.id}`}
+                      className="flex items-center justify-between p-4 bg-gray-50/50 dark:bg-gray-900/50 rounded-2xl border border-transparent hover:border-blue-200 dark:hover:border-blue-800/50 hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 group relative overflow-hidden"
+                    >
+                      <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-gradient-to-r from-[#00A2D8]/10 to-transparent rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      <div className="flex items-center min-w-0 gap-4 relative z-10">
+                          <div className={`p-2.5 rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/40 dark:to-blue-900/10 text-[#00A2D8] group-hover:scale-110 transition-transform border border-blue-200/50 dark:border-blue-700/50`}>
+                            <FolderIcon className="w-6 h-6"/>
+                          </div>
+                          <div className="min-w-0">
+                              <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 truncate group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                                  {folder.name}
+                              </h3>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {folder.noteCount} item
+                              </p>
+                          </div>
+                      </div>
+                      <ChevronRightIcon className="w-4 h-4 text-gray-300 dark:text-gray-600 group-hover:text-gray-500 dark:group-hover:text-gray-400 transition-colors" />
+                    </Link>
+                  )})}
+                </div>
+              ) : (
+                  <div className="text-center py-10 px-4">
+                      <div className="w-16 h-16 mx-auto bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl flex items-center justify-center mb-4 border border-gray-200/50 dark:border-gray-700/50">
+                        <FolderIcon className="w-8 h-8 text-gray-400 dark:text-gray-500"/>
+                      </div>
+                      <p className="text-base font-bold text-gray-800 dark:text-gray-200">Belum Ada Folder</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Kelompokkan catatanmu agar rapi</p>
+                  </div>
+              )}
+            </div>
+          </motion.aside>
+        </div>
+      </motion.div>
+      
+      {/* Mobile FAB */}
+      <div className="md:hidden fixed bottom-6 right-6 z-40">
         <Link
             href="/dashboard/notes/new"
-            className="inline-flex items-center p-3 text-base font-semibold text-white bg-[#00A2D8] rounded-full shadow-lg hover:bg-[#008EB2] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] transition-all duration-300 transform hover:scale-105"
+            className="flex items-center justify-center w-14 h-14 text-white bg-[#00A2D8] rounded-full )] hover:bg-[#008EB2] focus:outline-none transition-transform hover:scale-110 active:scale-95"
         >
-            <PlusIcon className="w-5 h-5" />
+            <PlusIcon className="w-6 h-6" />
         </Link>
       </div>
     </div>
@@ -245,7 +365,11 @@ function DashboardContent() {
 
 export default function Dashboard() {
     return (
-        <Suspense fallback={<div className="p-8">Memuat...</div>}>
+        <Suspense fallback={
+          <div className="flex items-center justify-center h-full">
+            <div className="w-10 h-10 border-4 border-gray-200 border-t-[#00A2D8] rounded-full animate-spin"></div>
+          </div>
+        }>
             <DashboardContent />
         </Suspense>
     )

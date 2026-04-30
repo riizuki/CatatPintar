@@ -13,24 +13,24 @@ const NoteEditorNavbar = ({
   const generationDisabled = !noteId;
 
   return (
-    <div className="flex flex-col sm:flex-row justify-end items-center p-2 sm:p-4 border-b border-gray-200 bg-white space-y-2 sm:space-y-0 sm:space-x-2">
+    <div className="flex flex-col sm:flex-row justify-end items-center p-3 sm:p-5 border-b border-gray-200/50 dark:border-gray-800/50 bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl space-y-3 sm:space-y-0 sm:space-x-3 transition-colors">
       <button
         type="button"
         onClick={() => setIsAiSidebarOpen(true)}
-        className="w-full sm:w-auto flex items-center justify-center sm:justify-start px-3 py-2 text-sm font-medium text-white bg-[#00A2D8] rounded-md hover:bg-[#008EB2] whitespace-nowrap"
+        className="w-full sm:w-auto flex items-center justify-center sm:justify-start px-5 py-2.5 text-sm font-bold text-white bg-[#00A2D8] rounded-xl hover:bg-[#008EB2] transition-all transform hover:-translate-y-0.5 whitespace-nowrap"
         title="Tanya AI tentang catatan ini"
       >
-        <ChatBubbleLeftRightIcon className="w-5 h-5 sm:mr-1" />
+        <ChatBubbleLeftRightIcon className="w-5 h-5 sm:mr-2" />
         <span className="hidden sm:inline">Tanya AI</span>
       </button>
       <button
         type="button"
         onClick={onGenerateFlashcards}
         disabled={generationDisabled || isGenerating === 'flashcards'}
-        className="w-full sm:w-auto flex items-center justify-center sm:justify-start px-3 py-2 text-sm font-medium text-white bg-[#00A2D8] rounded-md hover:bg-[#008EB2] disabled:opacity-50 whitespace-nowrap"
+        className="w-full sm:w-auto flex items-center justify-center sm:justify-start px-5 py-2.5 text-sm font-bold text-white bg-[#00A2D8] rounded-xl hover:bg-[#008EB2] disabled:opacity-50 transition-all transform hover:-translate-y-0.5 whitespace-nowrap"
         title={generationDisabled ? "Simpan catatan untuk membuat flashcard" : "Buat Flashcard dari Catatan Ini"}
       >
-        <SparklesIcon className="w-5 h-5 sm:mr-1" />
+        <SparklesIcon className="w-5 h-5 sm:mr-2" />
         <span className="hidden sm:inline">
           {isGenerating === 'flashcards' ? 'Membuat...' : 'Flashcard'}
         </span>

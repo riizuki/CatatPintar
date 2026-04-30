@@ -115,37 +115,33 @@ const CreateQuizModal = ({ isOpen, onClose, preselectedSourceType = null, presel
     }
   };
 
-  const renderContent = () => {
+    const renderContent = () => {
     switch (step) {
       case "selectNote":
         return (
-          <div>
-            <h3 className="text-lg sm:text-xl font-semibold text-black mb-4">Pilih Catatan</h3>
-            {isLoadingNotes && <p>Memuat catatan...</p>}
+          <div className="space-y-6">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Pilih Catatan</h3>
+            {isLoadingNotes && <p className="text-gray-500 dark:text-gray-400">Memuat catatan...</p>}
             {preselectedSourceType === "note" ? (
-                <div className="p-3 sm:p-4 rounded-lg border-2 bg-blue-100 border-[#00A2D8] ring-2 ring-[#00A2D8]/50 cursor-not-allowed">
-                    <p className="font-medium text-black truncate text-sm sm:text-base">Catatan ID: {preselectedSourceValue}</p>
+                <div className="p-4 rounded-xl border-2 bg-blue-50 dark:bg-blue-900/20 border-[#00A2D8] text-[#00A2D8] dark:text-[#4CC1EE] cursor-not-allowed">
+                    <p className="font-bold text-sm sm:text-base">Catatan ID: {preselectedSourceValue}</p>
                 </div>
             ) : (
-                <div className="space-y-2 max-h-60 overflow-y-auto p-1">
+                <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
                 {notes.map((note) => (
                     <div
                     key={note.id}
                     onClick={() => setSelectedNoteId(note.id)}
-                    className={`p-3 sm:p-4 rounded-lg cursor-pointer border-2 transition-all ${
-                        selectedNoteId === note.id
-                        ? "bg-blue-100 border-[#00A2D8] ring-2 ring-[#00A2D8]/50"
-                        : "bg-gray-100 hover:bg-gray-200 border-gray-200"
-                    }`}
+                    className={`p-4 rounded-xl cursor-pointer border-2 transition-all duration-300 ${ selectedNoteId === note.id ? "bg-blue-50 dark:bg-blue-900/20 border-[#00A2D8] text-[#00A2D8] dark:text-[#4CC1EE] " : "bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200" }`}
                     >
-                    <p className="font-medium text-black truncate text-sm sm:text-base">{note.title}</p>
+                    <p className="font-bold text-sm sm:text-base truncate">{note.title}</p>
                     </div>
                 ))}
                 </div>
             )}
-            <div className="mt-4">
-                <label htmlFor="numQuestions" className="block text-sm font-medium text-gray-700">Jumlah Pertanyaan</label>
-                <select id="numQuestions" value={numQuestions} onChange={(e) => setNumQuestions(Number(e.target.value))} className="mt-1 block w-full px-3 py-2 sm:px-4 sm:py-3 text-black border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#00A2D8] focus:border-[#00A2D8] sm:text-sm">
+            <div className="mt-6">
+                <label htmlFor="numQuestions" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Jumlah Pertanyaan</label>
+                <select id="numQuestions" value={numQuestions} onChange={(e) => setNumQuestions(Number(e.target.value))} className="block w-full px-4 py-3 text-gray-900 dark:text-white bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A2D8]/50 focus:border-[#00A2D8] transition-all">
                     <option>5</option>
                     <option>10</option>
                     <option>15</option>
@@ -156,20 +152,24 @@ const CreateQuizModal = ({ isOpen, onClose, preselectedSourceType = null, presel
         );
       case "enterTopic":
         return (
-          <div>
-            <h3 className="text-lg sm:text-xl font-semibold text-black mb-4">Masukkan Topik</h3>
-            <div className="space-y-4">
-                <input
-                type="text"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                placeholder="cth., 'Dasar-dasar Pembelajaran Mesin'"
-                className="w-full px-3 py-2 sm:px-4 sm:py-3 placeholder-gray-500 text-black border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:border-[#00A2D8] text-sm sm:text-base"
-                autoComplete="off"
-                />
+          <div className="space-y-6">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Masukkan Topik</h3>
+            <div className="space-y-6">
                 <div>
-                    <label htmlFor="numQuestions" className="block text-sm font-medium text-gray-700">Jumlah Pertanyaan</label>
-                    <select id="numQuestions" value={numQuestions} onChange={(e) => setNumQuestions(Number(e.target.value))} className="mt-1 block w-full px-3 py-2 sm:px-4 sm:py-3 text-black border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#00A2D8] focus:border-[#00A2D8] sm:text-sm">
+                    <label htmlFor="topic" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Topik Kuis</label>
+                    <input
+                    id="topic"
+                    type="text"
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                    placeholder="cth., 'Dasar-dasar Pembelajaran Mesin'"
+                    className="block w-full px-4 py-3 placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A2D8]/50 focus:border-[#00A2D8] transition-all"
+                    autoComplete="off"
+                    />
+                </div>
+                <div>
+                    <label htmlFor="numQuestions" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Jumlah Pertanyaan</label>
+                    <select id="numQuestions" value={numQuestions} onChange={(e) => setNumQuestions(Number(e.target.value))} className="block w-full px-4 py-3 text-gray-900 dark:text-white bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A2D8]/50 focus:border-[#00A2D8] transition-all">
                         <option>5</option>
                         <option>10</option>
                         <option>15</option>
@@ -177,8 +177,8 @@ const CreateQuizModal = ({ isOpen, onClose, preselectedSourceType = null, presel
                     </select>
                 </div>
                 <div>
-                    <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700">Tingkat Kesulitan</label>
-                    <select id="difficulty" value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className="mt-1 block w-full px-3 py-2 sm:px-4 sm:py-3 text-black border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#00A2D8] focus:border-[#00A2D8] sm:text-sm">
+                    <label htmlFor="difficulty" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Tingkat Kesulitan</label>
+                    <select id="difficulty" value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className="block w-full px-4 py-3 text-gray-900 dark:text-white bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A2D8]/50 focus:border-[#00A2D8] transition-all">
                         <option>Mudah</option>
                         <option>Sedang</option>
                         <option>Sulit</option>
@@ -191,21 +191,25 @@ const CreateQuizModal = ({ isOpen, onClose, preselectedSourceType = null, presel
       default:
         return (
           <div className="text-center">
-            <h3 className="text-xl sm:text-2xl font-bold text-black mb-2">Buat Kuis Baru</h3>
-            <p className="text-gray-500 mb-8 text-sm sm:text-base">Pilih sumber untuk membuat kuis Anda.</p>
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white mb-2">Buat Kuis Baru</h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-8 text-sm sm:text-base">Pilih sumber untuk membuat kuis Anda.</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button 
                 onClick={() => { setSourceType('note'); setStep("selectNote");}} 
-                className="flex flex-col items-center justify-center p-4 sm:p-6 text-base sm:text-lg font-semibold text-black bg-gray-50 rounded-lg border-2 border-gray-200 hover:bg-gray-100 hover:border-[#00A2D8] transition-all"
+                className="group flex flex-col items-center justify-center p-6 sm:p-8 font-bold text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-gray-200/50 dark:border-gray-700/50 hover:border-[#00A2D8]/50 dark:hover:border-[#4CC1EE]/50 transition-all duration-300 transform hover:-translate-y-1"
               >
-                <DocumentTextIcon className="w-8 h-8 sm:w-10 sm:h-10 mb-3 text-gray-500" />
+                <div className="p-4 rounded-2xl mb-4 bg-gray-50 dark:bg-gray-900/50 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20 transition-colors">
+                    <DocumentTextIcon className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400 dark:text-gray-500 group-hover:text-[#00A2D8] dark:group-hover:text-[#4CC1EE] transition-colors" />
+                </div>
                 Buat dari Catatan
               </button>
               <button 
                 onClick={() => { setSourceType('topic'); setStep("enterTopic");}} 
-                className="flex flex-col items-center justify-center p-4 sm:p-6 text-base sm:text-lg font-semibold text-black bg-gray-50 rounded-lg border-2 border-gray-200 hover:bg-gray-100 hover:border-[#00A2D8] transition-all"
+                className="group flex flex-col items-center justify-center p-6 sm:p-8 font-bold text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-gray-200/50 dark:border-gray-700/50 hover:border-[#00A2D8]/50 dark:hover:border-[#4CC1EE]/50 transition-all duration-300 transform hover:-translate-y-1"
               >
-                <SparklesIcon className="w-8 h-8 sm:w-10 sm:h-10 mb-3 text-[#00A2D8]" />
+                <div className="p-4 rounded-2xl mb-4 bg-sky-50 dark:bg-sky-900/20 transition-colors group-hover:scale-110 transform duration-300">
+                    <SparklesIcon className="w-8 h-8 sm:w-10 sm:h-10 text-[#00A2D8] dark:text-[#4CC1EE]" />
+                </div>
                 Buat dengan AI
               </button>
             </div>
@@ -223,7 +227,7 @@ const CreateQuizModal = ({ isOpen, onClose, preselectedSourceType = null, presel
                 <button
                 onClick={handleGenerateQuiz}
                 disabled={isSubmitDisabled}
-                className="w-full sm:w-auto px-6 py-2.5 text-sm font-bold text-white bg-[#00A2D8] rounded-lg disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-[#008EB2]"
+                className="w-full sm:w-auto px-8 py-3.5 text-sm sm:text-base font-bold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl disabled:from-gray-400 disabled:to-gray-500 disabled: disabled:cursor-not-allowed transition-all transform hover:-translate-y-0.5 disabled:hover:translate-y-0"
                 >
                 {isGenerating ? 'Membuat...' : 'Buat Kuis'}
                 </button>
@@ -238,23 +242,23 @@ const CreateQuizModal = ({ isOpen, onClose, preselectedSourceType = null, presel
   }
 
   return (
-    <div className={`fixed inset-0 z-50 flex items-center justify-center bg-gray-900/70 backdrop-blur-sm p-4 ${isOpen ? '' : 'hidden'}`}>
-      <div className="w-full max-w-md sm:max-w-lg p-6 sm:p-8 bg-white rounded-2xl shadow-xl">
-        <div className="flex justify-between items-center mb-4">
+    <div className={`fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-md p-4 transition-all ${isOpen ? '' : 'hidden'}`}>
+      <div className="w-full max-w-md sm:max-w-2xl p-6 sm:p-10 bg-white dark:bg-gray-800 rounded-3xl border border-gray-200/50 dark:border-gray-700/50">
+        <div className="flex justify-between items-center mb-6">
             {(step !== 'selectType' && !preselectedSourceType) && (
-                <button onClick={() => setStep('selectType')} className="p-2 rounded-full hover:bg-gray-100">
-                    <ArrowLeftIcon className="w-6 h-6 text-gray-500" />
+                <button onClick={() => setStep('selectType')} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <ArrowLeftIcon className="w-6 h-6 text-gray-500 dark:text-gray-400" />
                 </button>
             )}
             <div className="flex-grow"></div>
-            <button onClick={handleClose} className="p-1 rounded-full hover:bg-gray-200 ml-auto">
-                <XMarkIcon className="w-6 h-6 text-gray-500" />
+            <button onClick={handleClose} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ml-auto">
+                <XMarkIcon className="w-6 h-6 text-gray-500 dark:text-gray-400" />
             </button>
         </div>
         <div>
           {renderContent()}
         </div>
-        {error && <p className="text-sm text-red-500 mt-4">{error}</p>}
+        {error && <p className="text-sm font-bold text-rose-500 mt-4 bg-rose-50 dark:bg-rose-900/20 p-3 rounded-xl">{error}</p>}
         {renderFooter()}
       </div>
     </div>
