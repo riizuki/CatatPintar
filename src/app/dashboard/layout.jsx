@@ -21,6 +21,8 @@ import { DashboardProvider, useDashboard } from "../../lib/contexts/DashboardCon
 import AIChat from "../components/dashboard/AIChat";
 import { motion, AnimatePresence } from "framer-motion";
 import ThemeToggle from "../components/ThemeToggle";
+import { useLanguage } from "../../lib/contexts/LanguageContext";
+import { dashboardTranslations } from "../../locales/dashboard";
 
 const Sidebar = () => {
   const pathname = usePathname();
@@ -29,16 +31,19 @@ const Sidebar = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { isSidebarOpen, toggleSidebar } = useDashboard();
 
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language];
+
   const navigation = [
-    { name: "Beranda", href: "/dashboard", icon: HomeIcon },
-    { name: "Folder", href: "/dashboard/folders", icon: FolderIcon },
-    { name: "Kuis", href: "/dashboard/quiz", icon: QuestionMarkCircleIcon },
+    { name: t.sidebar.home, href: "/dashboard", icon: HomeIcon },
+    { name: t.sidebar.folders, href: "/dashboard/folders", icon: FolderIcon },
+    { name: t.sidebar.quiz, href: "/dashboard/quiz", icon: QuestionMarkCircleIcon },
     {
-      name: "Flashcard",
+      name: t.sidebar.flashcards,
       href: "/dashboard/flashcards",
       icon: RectangleStackIcon,
     },
-    { name: "Pengaturan", href: "/dashboard/settings", icon: CogIcon },
+    { name: t.sidebar.settings, href: "/dashboard/settings", icon: CogIcon },
   ];
 
   const handleLogout = async () => {
@@ -52,10 +57,10 @@ const Sidebar = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onConfirm={handleLogout}
-        title="Konfirmasi Keluar"
+        title={t.logoutModal.title}
         isMutating={isLoggingOut}
       >
-        <p className="text-gray-700 dark:text-gray-300">Apakah Anda yakin ingin keluar dari akun Anda?</p>
+        <p className="text-gray-700 dark:text-gray-300">{t.logoutModal.message}</p>
       </ConfirmationModal>
       <motion.div
         initial={{ width: isSidebarOpen ? 260 : 88 }}
@@ -184,16 +189,19 @@ const MobileSidebar = ({ isOpen, setIsOpen }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language];
+
   const navigation = [
-    { name: "Beranda", href: "/dashboard", icon: HomeIcon },
-    { name: "Folder", href: "/dashboard/folders", icon: FolderIcon },
-    { name: "Kuis", href: "/dashboard/quiz", icon: QuestionMarkCircleIcon },
+    { name: t.sidebar.home, href: "/dashboard", icon: HomeIcon },
+    { name: t.sidebar.folders, href: "/dashboard/folders", icon: FolderIcon },
+    { name: t.sidebar.quiz, href: "/dashboard/quiz", icon: QuestionMarkCircleIcon },
     {
-      name: "Flashcard",
+      name: t.sidebar.flashcards,
       href: "/dashboard/flashcards",
       icon: RectangleStackIcon,
     },
-    { name: "Pengaturan", href: "/dashboard/settings", icon: CogIcon },
+    { name: t.sidebar.settings, href: "/dashboard/settings", icon: CogIcon },
   ];
 
   const handleLogout = async () => {
@@ -207,10 +215,10 @@ const MobileSidebar = ({ isOpen, setIsOpen }) => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onConfirm={handleLogout}
-        title="Konfirmasi Keluar"
+        title={t.logoutModal.title}
         isMutating={isLoggingOut}
       >
-        <p className="text-gray-700 dark:text-gray-300">Apakah Anda yakin ingin keluar dari akun Anda?</p>
+        <p className="text-gray-700 dark:text-gray-300">{t.logoutModal.message}</p>
       </ConfirmationModal>
       <AnimatePresence>
         {isOpen && (
@@ -250,10 +258,6 @@ const MobileSidebar = ({ isOpen, setIsOpen }) => {
                 })}
               </nav>
               <div className="p-5 border-t border-gray-100 dark:border-gray-800/50 bg-gray-50/50 dark:bg-gray-800/20">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Tema Gelap</span>
-                  <ThemeToggle />
-                </div>
                 {session?.user && (
                   <div className="flex items-center justify-between">
                     <div className="flex items-center min-w-0">
@@ -298,6 +302,9 @@ const MobileSidebar = ({ isOpen, setIsOpen }) => {
 };
 
 const Header = ({ onMenuClick }) => {
+  const { language, toggleLanguage } = useLanguage();
+  const t = dashboardTranslations[language];
+
   return (
     <header className="flex items-center justify-between h-16 px-4 md:px-8 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50 sticky top-0 z-30">
       <div className="flex items-center md:hidden">
@@ -310,12 +317,16 @@ const Header = ({ onMenuClick }) => {
       </div>
       <div className="hidden md:flex flex-1"></div>
       
-      <div className="flex items-center justify-end">
-        <div className="flex items-center bg-gray-50 dark:bg-gray-900/50 p-1.5 rounded-xl border border-gray-200/50 dark:border-gray-700/50">
-            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 mr-3 ml-2 hidden sm:block">Mode Tema</span>
-            <ThemeToggle />
-        </div>
-        <button onClick={onMenuClick} className="md:hidden p-2 ml-3 bg-gray-50 dark:bg-gray-900 rounded-lg text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-gray-800">
+      <div className="flex items-center justify-end space-x-2 md:space-x-3">
+        <button 
+          onClick={toggleLanguage}
+          className="flex items-center justify-center w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-900/50 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors font-bold text-sm border border-gray-200/50 dark:border-gray-700/50"
+          title="Ganti Bahasa / Change Language"
+        >
+          {language.toUpperCase()}
+        </button>
+        <ThemeToggle />
+        <button onClick={onMenuClick} className="md:hidden flex items-center justify-center w-10 h-10 bg-gray-50 dark:bg-gray-900/50 rounded-xl text-gray-600 dark:text-gray-300 border border-gray-200/50 dark:border-gray-700/50">
           <Bars3Icon className="w-6 h-6" />
         </button>
       </div>

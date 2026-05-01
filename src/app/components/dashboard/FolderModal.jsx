@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
+import { useLanguage } from "../../../lib/contexts/LanguageContext";
+import { dashboardTranslations } from "../../../locales/dashboard";
+
 export default function FolderModal({ isOpen, onClose, onSave, editingFolder, isLoading }) {
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language];
   const [name, setName] = useState("");
 
   useEffect(() => {
@@ -20,7 +25,7 @@ export default function FolderModal({ isOpen, onClose, onSave, editingFolder, is
       <div className="w-full max-w-lg p-6 sm:p-8 bg-white dark:bg-gray-800 rounded-3xl border border-gray-200/50 dark:border-gray-700/50">
         <div className="flex items-center justify-between mb-6 sm:mb-8">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-            {editingFolder ? "Edit Folder" : "Buat Folder Baru"}
+            {editingFolder ? t.folders.modal.editTitle : t.folders.modal.createTitle}
           </h2>
           <button onClick={onClose} disabled={isLoading} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
             <XMarkIcon className="w-6 h-6 text-gray-500 dark:text-gray-400" />
@@ -29,7 +34,7 @@ export default function FolderModal({ isOpen, onClose, onSave, editingFolder, is
         <form onSubmit={handleSubmit} autoComplete="off">
           <div className="space-y-2">
             <label htmlFor="name" className="text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300">
-              Nama Folder
+              {t.folders.modal.folderName}
             </label>
             <input
               id="name"
@@ -48,14 +53,14 @@ export default function FolderModal({ isOpen, onClose, onSave, editingFolder, is
                 disabled={isLoading}
                 className="px-4 py-2 text-sm sm:px-6 sm:py-2.5 sm:text-base font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
             >
-                Batal
+                {t.folders.modal.cancel}
             </button>
             <button
               type="submit"
               disabled={isLoading}
               className="px-4 py-2 text-sm sm:px-6 sm:py-2.5 sm:text-base font-semibold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] disabled:opacity-50 transition-all transform hover:-translate-y-0.5"
             >
-              {isLoading ? "Menyimpan..." : (editingFolder ? "Simpan" : "Buat")}
+              {isLoading ? t.folders.modal.saving : (editingFolder ? t.folders.modal.save : t.folders.modal.create)}
             </button>
           </div>
         </form>

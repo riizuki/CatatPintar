@@ -5,9 +5,13 @@ import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { ArrowLeftIcon, ArrowRightIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import { DocumentTextIcon } from "@heroicons/react/24/solid";
+import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { dashboardTranslations } from "@/locales/dashboard";
 
 // A more modern take on the flashcard page
 function FlashcardsDisplay() {
+    const { language } = useLanguage();
+    const t = dashboardTranslations[language];
     const searchParams = useSearchParams();
     const router = useRouter();
     const noteId = searchParams.get('noteId');
@@ -91,10 +95,10 @@ function FlashcardsDisplay() {
                     <div>
                         <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white flex items-center">
                             <SparklesIcon className="w-8 h-8 mr-3 text-[#00A2D8] dark:text-[#4CC1EE]"/>
-                            Pilih Set Flashcard
+                            {t.flashcards.selectSet}
                         </h1>
                         <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm sm:text-base">
-                            Pilih salah satu catatan untuk memulai sesi belajarmu.
+                            {t.flashcards.selectSubtitle}
                         </p>
                     </div>
                 </header>
@@ -104,13 +108,13 @@ function FlashcardsDisplay() {
                 {notesWithFlashcards.length === 0 && !error ? (
                     <div className="text-center py-16 sm:py-20 px-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-md rounded-3xl border border-dashed border-gray-300 dark:border-gray-700">
                         <SparklesIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600"/>
-                        <h3 className="mt-6 text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Belum Ada Flashcard</h3>
-                        <p className="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400">Buat flashcard dari catatanmu untuk memulai belajar dengan metode ini.</p>
+                        <h3 className="mt-6 text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{t.flashcards.emptyTitle}</h3>
+                        <p className="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400">{t.flashcards.emptySubtitle}</p>
                          <button
                             onClick={() => router.push('/dashboard')}
                             className="mt-8 inline-flex items-center px-6 py-3 text-sm font-bold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl transition-all transform hover:-translate-y-1"
                         >
-                            Kembali ke Beranda
+                            {t.flashcards.backToHome}
                         </button>
                     </div>
                 ) : (
@@ -125,7 +129,7 @@ function FlashcardsDisplay() {
                                     <DocumentTextIcon className="w-8 h-8"/>
                                 </div>
                                 <h2 className="text-lg font-bold text-gray-900 dark:text-white truncate transition-colors mb-2">{n.title}</h2>
-                                <p className="text-sm font-bold text-[#00A2D8] dark:text-[#4CC1EE] opacity-0 group-hover:opacity-100 transition-opacity">Mulai Belajar →</p>
+                                <p className="text-sm font-bold text-[#00A2D8] dark:text-[#4CC1EE] opacity-0 group-hover:opacity-100 transition-opacity">{t.flashcards.startLearning}</p>
                             </Link>
                         ))}
                     </div>
@@ -149,20 +153,20 @@ function FlashcardsDisplay() {
                             {note?.title}
                         </h1>
                         <div className="inline-flex items-center mt-3 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-[#00A2D8] dark:text-[#4CC1EE] text-sm font-bold rounded-full">
-                            Kartu {currentIndex + 1} dari {flashcards.length}
+                            {t.flashcards.cardWord} {currentIndex + 1} {t.flashcards.cardOf} {flashcards.length}
                         </div>
                     </div>
                  </header>
 
                 {error && (
                     <div className="text-center py-16 sm:py-20 px-6 bg-white /20 rounded-2xl border-2 border-dashed border-red-300 /50">
-                        <h3 className="text-lg sm:text-2xl font-bold text-red-600">Terjadi Kesalahan</h3>
+                        <h3 className="text-lg sm:text-2xl font-bold text-red-600">{t.flashcards.errorOccurred}</h3>
                         <p className="mt-2 text-sm sm:text-base text-gray-500">{error}</p>
                          <button
                             onClick={() => router.push('/dashboard/notes/' + noteId + '/edit')}
                             className="mt-8 inline-flex items-center px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all"
                         >
-                            Buka Editor Catatan
+                            {t.flashcards.openEditor}
                         </button>
                     </div>
                 )}
@@ -179,7 +183,7 @@ function FlashcardsDisplay() {
                                 {/* Front of Card - Redesigned */}
                                 <div className="absolute w-full h-full backface-hidden flex flex-col items-center justify-center p-8 sm:p-12 bg-white dark:bg-gray-800 rounded-[3rem] border border-gray-100 dark:border-gray-700">
                                     <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-center text-gray-900 dark:text-white leading-tight">{currentCard.frontText}</p>
-                                    <span className="absolute bottom-8 text-sm font-medium text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">Klik untuk membalik kartu</span>
+                                    <span className="absolute bottom-8 text-sm font-medium text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">{t.flashcards.clickToFlip}</span>
                                 </div>
                                 {/* Back of Card - Redesigned */}
                                 <div className="absolute w-full h-full backface-hidden rotate-y-180 flex items-center justify-center p-8 sm:p-12 bg-[#00A2D8] text-white rounded-[3rem]">
@@ -194,7 +198,7 @@ function FlashcardsDisplay() {
                                 className="flex items-center justify-center w-36 py-3.5 text-sm font-bold text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 backdrop-blur rounded-2xl hover:bg-white dark:hover:bg-gray-700 border border-gray-200/50 dark:border-gray-700/50 transition-all transform hover:-translate-y-1"
                             >
                                 <ArrowLeftIcon className="w-5 h-5 mr-2"/>
-                                Sebelumnya
+                                {t.flashcards.prev}
                             </button>
                             <div className="flex space-x-2">
                                 {flashcards.map((_, idx) => (
@@ -205,7 +209,7 @@ function FlashcardsDisplay() {
                                 onClick={goToNext} 
                                 className="flex items-center justify-center w-36 py-3.5 text-sm font-bold text-white bg-[#00A2D8] rounded-2xl transition-all transform hover:-translate-y-1"
                             >
-                                Selanjutnya
+                                {t.flashcards.next}
                                 <ArrowRightIcon className="w-5 h-5 ml-2"/>
                             </button>
                         </div>

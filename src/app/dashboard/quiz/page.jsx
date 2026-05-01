@@ -6,8 +6,13 @@ import { useState, useEffect } from "react";
 import CreateQuizModal from "@/app/components/dashboard/CreateQuizModal";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { dashboardTranslations } from "@/locales/dashboard";
 
 const QuizPage = () => {
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language];
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -47,10 +52,10 @@ const QuizPage = () => {
             </button>
             <div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white flex items-center">
-                  Kuis Saya
+                  {t.quiz.title}
               </h1>
               <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm sm:text-base">
-                  Latih pengetahuan Anda dengan kuis-kuis menarik.
+                  {t.quiz.subtitle}
               </p>
             </div>
           </div>
@@ -59,7 +64,7 @@ const QuizPage = () => {
             className="mt-4 sm:mt-0 w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 text-sm sm:text-base font-bold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105"
           >
             <PlusIcon className="w-5 h-5 mr-2" />
-            <span>Buat Kuis Baru</span>
+            <span>{t.quiz.createQuiz}</span>
           </button>
         </header>
         
@@ -68,7 +73,7 @@ const QuizPage = () => {
                 <div className="w-10 h-10 border-4 border-gray-200 border-t-[#00A2D8] rounded-full animate-spin"></div>
             </div>
         )}
-        {error && <p className="text-red-500 bg-red-50 dark:bg-red-900/20 p-4 rounded-xl">Kesalahan: {error}</p>}
+        {error && <p className="text-red-500 bg-red-50 dark:bg-red-900/20 p-4 rounded-xl">{t.quiz.error} {error}</p>}
         
         {!loading && !error && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -81,7 +86,7 @@ const QuizPage = () => {
                         {quiz.sourceType}: <span className="font-normal opacity-80">{quiz.sourceValue}</span>
                         </h3>
                         {quiz.result && (
-                            <CheckCircleIcon className="w-6 h-6 text-emerald-500 flex-shrink-0" title="Kuis Selesai"/>
+                            <CheckCircleIcon className="w-6 h-6 text-emerald-500 flex-shrink-0" title={t.quiz.completed}/>
                         )}
                     </div>
                     <div className="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-lg w-fit">
@@ -92,10 +97,10 @@ const QuizPage = () => {
                     {quiz.result ? (
                        <div className="text-left mt-6">
                            <p className="text-4xl font-extrabold text-[#00A2D8] dark:text-[#4CC1EE]">{quiz.result.score}%</p>
-                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Dikerjakan: {formatDate(quiz.result.takenAt)}</p>
+                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{t.quiz.takenAt} {formatDate(quiz.result.takenAt)}</p>
                        </div>
                     ) : (
-                      <p className="text-sm italic text-gray-500 dark:text-gray-400 mt-6">Belum dikerjakan</p>
+                      <p className="text-sm italic text-gray-500 dark:text-gray-400 mt-6">{t.quiz.notTaken}</p>
                     )}
                   </div>
                   
@@ -103,7 +108,7 @@ const QuizPage = () => {
                     <Link href={`/dashboard/quiz/${quiz.id}`} 
                         className={`w-full inline-flex justify-center items-center px-4 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${quiz.result ? 'text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600' : 'text-white bg-[#00A2D8] hover:bg-[#008EB2] '}`}
                     >
-                        {quiz.result ? "Lihat Hasil" : "Mulai Kuis"}
+                        {quiz.result ? t.quiz.viewResult : t.quiz.startQuiz}
                     </Link>
                   </div>
                 </div>
@@ -114,14 +119,14 @@ const QuizPage = () => {
                 <div className="w-24 h-24 mx-auto bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-3xl flex items-center justify-center mb-6 border border-gray-200/50 dark:border-gray-700/50 relative z-10">
                   <DocumentTextIcon className="w-12 h-12 text-gray-400 dark:text-gray-500"/>
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white relative z-10">Belum Ada Kuis</h3>
-                <p className="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400 relative z-10">Buat kuis pertamamu dari catatan atau topik favoritmu!</p>
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white relative z-10">{t.quiz.emptyTitle}</h3>
+                <p className="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400 relative z-10">{t.quiz.emptySubtitle}</p>
                  <button
                     onClick={() => setIsModalOpen(true)}
                     className="mt-8 inline-flex items-center px-6 py-3 text-sm font-bold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl transition-all transform hover:-translate-y-1"
                 >
                     <PlusIcon className="w-5 h-5 mr-2" />
-                    Buat Kuis Baru
+                    {t.quiz.createQuiz}
                 </button>
               </div>
             )}

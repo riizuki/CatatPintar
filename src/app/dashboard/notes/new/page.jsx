@@ -11,8 +11,12 @@ import NoteEditorNavbar from "../../../components/dashboard/NoteEditorNavbar";
 import CreateQuizModal from "../../../components/dashboard/CreateQuizModal";
 import { useDashboard } from "../../../../lib/contexts/DashboardContext";
 import { toast } from "react-hot-toast";
+import { useLanguage } from "../../../../lib/contexts/LanguageContext";
+import { dashboardTranslations } from "../../../../locales/dashboard";
 
 const NewNotePage = () => {
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language];
   const router = useRouter();
   const { setNoteContext, isAiSidebarOpen } = useDashboard();
 
@@ -127,7 +131,7 @@ const NewNotePage = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full text-4xl md:text-5xl font-extrabold bg-transparent text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-gray-700 border-none focus:outline-none focus:ring-0 px-0 transition-colors"
-              placeholder="Judul Catatan..."
+              placeholder={t.notes.editor.titlePlaceholder}
             />
           </div>
           <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded-2xl border border-gray-200/50 dark:border-gray-800/50 mb-24">
@@ -145,7 +149,7 @@ const NewNotePage = () => {
             <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 sm:gap-4 p-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl transition-all">
               <div className="flex items-center w-full sm:w-auto gap-3">
                 <label htmlFor="folder" className="hidden sm:block text-sm font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap ml-2">
-                  Folder:
+                  {t.notes.editor.folder}
                 </label>
                 <select
                   id="folder"
@@ -154,7 +158,7 @@ const NewNotePage = () => {
                   onChange={(e) => setFolderId(e.target.value)}
                   className="block w-full sm:w-48 px-4 py-2.5 text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A2D8]/50 transition-colors"
                 >
-                  <option value="">Tanpa Folder</option>
+                  <option value="">{t.notes.editor.noFolder}</option>
                   {folders.map((folder) => (
                     <option key={folder.id} value={folder.id}>{folder.name}</option>
                   ))}
@@ -168,14 +172,14 @@ const NewNotePage = () => {
                   disabled={loading}
                   className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/50 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
                 >
-                  Batal
+                  {t.notes.editor.cancel}
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
                   className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-medium text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl disabled:opacity-50 transition-all transform hover:-translate-y-0.5"
                 >
-                  {loading ? "Menyimpan..." : "Buat Catatan"}
+                  {loading ? t.notes.editor.saving : t.notes.editor.createNote}
                 </button>
               </div>
             </div>

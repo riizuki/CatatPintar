@@ -12,9 +12,12 @@ import toast from 'react-hot-toast';
 import ConfirmationModal from "../../../../components/dashboard/ConfirmationModal";
 import NoteEditorNavbar from "../../../../components/dashboard/NoteEditorNavbar";
 import { useDashboard } from "../../../../../lib/contexts/DashboardContext";
-
+import { useLanguage } from "../../../../../lib/contexts/LanguageContext";
+import { dashboardTranslations } from "../../../../../locales/dashboard";
 
 const EditNotePage = () => {
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language];
   const router = useRouter();
   const params = useParams();
   const { noteId } = params;
@@ -186,7 +189,7 @@ const EditNotePage = () => {
       <div className="w-10 h-10 border-4 border-gray-200 border-t-[#00A2D8] rounded-full animate-spin"></div>
     </div>
   );
-  if (error && !note) return <div className="p-8 text-red-500 bg-red-50 rounded-xl m-8">Kesalahan: {error}</div>;
+  if (error && !note) return <div className="p-8 text-red-500 bg-red-50 rounded-xl m-8">{t.notes.editor.error} {error}</div>;
 
 
   return (
@@ -202,9 +205,9 @@ const EditNotePage = () => {
           isOpen={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}
           onConfirm={handleConfirmDelete}
-          title="Hapus Catatan"
+          title={t.notes.editor.deleteModalTitle}
         >
-          <p className="text-gray-600 dark:text-gray-300">Anda yakin ingin menghapus catatan ini? Tindakan ini tidak dapat dibatalkan.</p>
+          <p className="text-gray-600 dark:text-gray-300">{t.notes.editor.deleteModalText}</p>
         </ConfirmationModal>
 
         <form onSubmit={handleSaveChanges} autoComplete="off" className="space-y-6">
@@ -214,7 +217,7 @@ const EditNotePage = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full text-4xl md:text-5xl font-extrabold bg-transparent text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-gray-700 border-none focus:outline-none focus:ring-0 px-0 transition-colors"
-              placeholder="Judul Catatan..."
+              placeholder={t.notes.editor.titlePlaceholder}
             />
           </div>
 
@@ -239,14 +242,14 @@ const EditNotePage = () => {
                 className="flex items-center px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/40 disabled:opacity-50 transition-colors w-full sm:w-auto justify-center"
               >
                 <TrashIcon className="w-5 h-5 mr-2" />
-                {isDeleting ? 'Menghapus...' : 'Hapus'}
+                {isDeleting ? t.notes.editor.deleting : t.notes.editor.delete}
               </button>
 
               <div className="w-px h-8 bg-gray-200 dark:bg-gray-700 hidden sm:block mx-1"></div>
 
               <div className="flex items-center w-full sm:w-auto gap-3">
                 <label htmlFor="folder" className="hidden sm:block text-sm font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap ml-2">
-                  Folder:
+                  {t.notes.editor.folder}
                 </label>
                 <select
                   id="folder"
@@ -255,7 +258,7 @@ const EditNotePage = () => {
                   onChange={(e) => setFolderId(e.target.value)}
                   className="block w-full sm:w-40 px-4 py-2.5 text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A2D8]/50 transition-colors"
                 >
-                  <option value="">Tanpa Folder</option>
+                  <option value="">{t.notes.editor.noFolder}</option>
                   {folders.map((folder) => (
                     <option key={folder.id} value={folder.id}>{folder.name}</option>
                   ))}
@@ -268,14 +271,14 @@ const EditNotePage = () => {
                   onClick={() => router.push("/dashboard")}
                   className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/50 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                 >
-                  Batal
+                  {t.notes.editor.cancel}
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
                   className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-medium text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl disabled:opacity-50 transition-all transform hover:-translate-y-0.5"
                 >
-                  {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
+                  {isSaving ? t.notes.editor.saving : t.notes.editor.saveChanges}
                 </button>
               </div>
             </div>

@@ -10,12 +10,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import SkeletonLoader from "@/app/components/dashboard/SkeletonLoader";
 import FolderModal from "@/app/components/dashboard/FolderModal";
 
-const getGreeting = () => {
+import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { dashboardTranslations } from "@/locales/dashboard";
+
+const getGreeting = (t) => {
   const hour = new Date().getHours();
-  if (hour < 12) return "Selamat Pagi";
-  if (hour < 15) return "Selamat Siang";
-  if (hour < 18) return "Selamat Sore";
-  return "Selamat Malam";
+  if (hour < 12) return t.home.greeting.morning;
+  if (hour < 15) return t.home.greeting.afternoon;
+  if (hour < 18) return t.home.greeting.evening;
+  return t.home.greeting.night;
 };
 
 const containerVariants = {
@@ -43,8 +46,11 @@ function DashboardContent() {
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const [isMutating, setIsMutating] = useState(false);
 
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language];
+
   useEffect(() => {
-    setGreeting(getGreeting());
+    setGreeting(getGreeting(t));
     const fetchData = async () => {
       setError("");
       try {
@@ -82,7 +88,7 @@ function DashboardContent() {
     }, 300);
 
     return () => clearTimeout(debounceFetch);
-  }, [searchTerm]);
+  }, [searchTerm, language]);
 
   const handleSaveFolder = async (folderData) => {
     setIsMutating(true);
@@ -129,13 +135,13 @@ function DashboardContent() {
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-sm font-medium mb-4 border border-white/20">
                 <SparklesIcon className="w-4 h-4" />
-                Workspace Aktif
+                {t.home.activeWorkspace}
               </div>
               <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
-                {greeting}, {session?.user?.name || "Kawan"}!
+                {greeting}, {session?.user?.name || t.home.greeting.friend}!
               </h1>
               <p className="text-blue-50 text-base md:text-lg max-w-lg">
-                Siap mencerna informasi baru hari ini? Kami telah menyiapkan ruang kerjamu.
+                {t.home.readyToDigest}
               </p>
             </div>
 
@@ -144,7 +150,7 @@ function DashboardContent() {
               className="inline-flex items-center justify-center px-6 py-3.5 text-base font-bold text-[#00A2D8] bg-white rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-all duration-300 transform hover:scale-105 group"
             >
               <PlusIcon className="w-5 h-5 mr-2 transition-transform group-hover:rotate-90" />
-              <span>Buat Catatan Baru</span>
+              <span>{t.home.createNewNote}</span>
             </Link>
           </div>
         </div>
@@ -157,7 +163,7 @@ function DashboardContent() {
             </span>
             <input
               type="text"
-              placeholder="Cari catatan, folder, atau topik materi..."
+              placeholder={t.home.searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               autoComplete="off"
@@ -190,7 +196,7 @@ function DashboardContent() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
                 <ClockIcon className="w-6 h-6 mr-3 text-[#00A2D8] dark:text-[#4CC1EE]" />
-                Lanjutkan Belajarmu
+                {t.home.continueLearning}
               </h2>
             </div>
 
@@ -227,13 +233,13 @@ function DashboardContent() {
                 <div className="w-20 h-20 mx-auto bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl flex items-center justify-center mb-5 border border-gray-200/50 dark:border-gray-700/50 relative z-10">
                   <DocumentTextIcon className="w-10 h-10 text-gray-400 dark:text-gray-500" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 relative z-10">Meja Belajar Kosong</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 mb-6 relative z-10 max-w-xs mx-auto">Mulai perjalanan belajarmu dengan membuat catatan pertama.</p>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 relative z-10">{t.home.emptyDesk}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 mb-6 relative z-10 max-w-xs mx-auto">{t.home.startJourney}</p>
                 <Link
                   href="/dashboard/notes/new"
                   className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-900 dark:bg-gray-100 dark:text-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
                 >
-                  <PlusIcon className="w-4 h-4 mr-2" /> Buat Sekarang
+                  <PlusIcon className="w-4 h-4 mr-2" /> {t.home.createNow}
                 </Link>
               </div>
             )}
@@ -246,7 +252,7 @@ function DashboardContent() {
                 <div className="p-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg mr-3 border border-gray-200/50 dark:border-gray-700/50">
                   <DocumentTextIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                 </div>
-                Arsip Catatan
+                {t.home.noteArchive}
               </h2>
             </div>
             {isInitialLoad ? (
@@ -288,7 +294,7 @@ function DashboardContent() {
               </motion.div>
             ) : (
               !isInitialLoad && recentNotes.length > 0 &&
-              <p className="text-gray-500 dark:text-gray-400 text-sm">Tidak ada catatan lain yang tersedia.</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">{t.home.noOtherNotes}</p>
             )}
           </motion.section>
         </div>
@@ -302,7 +308,7 @@ function DashboardContent() {
                   <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg mr-3">
                     <FolderIcon className="w-5 h-5 text-[#00A2D8] dark:text-[#4CC1EE]" />
                   </div>
-                  Koleksi Folder
+                  {t.home.folderCollection}
                 </h2>
                 <button
                   onClick={() => setIsFolderModalOpen(true)}
@@ -337,7 +343,7 @@ function DashboardContent() {
                               {folder.name}
                             </h3>
                             <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {folder.noteCount} item
+                              {folder.noteCount} {folder.noteCount === 1 ? t.home.item : t.home.items}
                             </p>
                           </div>
                         </div>
@@ -351,8 +357,8 @@ function DashboardContent() {
                   <div className="w-16 h-16 mx-auto bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl flex items-center justify-center mb-4 border border-gray-200/50 dark:border-gray-700/50">
                     <FolderIcon className="w-8 h-8 text-gray-400 dark:text-gray-500" />
                   </div>
-                  <p className="text-base font-bold text-gray-800 dark:text-gray-200">Belum Ada Folder</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Kelompokkan catatanmu agar rapi</p>
+                  <p className="text-base font-bold text-gray-800 dark:text-gray-200">{t.home.noFoldersYet}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t.home.groupNotes}</p>
                 </div>
               )}
             </div>

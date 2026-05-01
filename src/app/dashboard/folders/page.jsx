@@ -6,8 +6,13 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import FolderModal from "../../components/dashboard/FolderModal";
 import ConfirmationModal from "../../components/dashboard/ConfirmationModal";
+import { useLanguage } from "../../../lib/contexts/LanguageContext";
+import { dashboardTranslations } from "../../../locales/dashboard";
 
 const FoldersPage = () => {
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language];
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [folders, setFolders] = useState([]);
   const [editingFolder, setEditingFolder] = useState(null);
@@ -110,11 +115,11 @@ const FoldersPage = () => {
         isOpen={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}
         onConfirm={handleConfirmDelete}
-        title="Hapus Folder"
+        title={t.folders.deleteModalTitle}
         isMutating={isMutating}
       >
-        <p className="text-sm sm:text-base">Anda yakin ingin menghapus folder <strong>{folderToDelete?.name}</strong>?</p>
-        <p className="mt-2 text-xs sm:text-sm text-gray-600">Semua catatan di dalamnya juga akan dihapus secara permanen. Tindakan ini tidak dapat diurungkan.</p>
+        <p className="text-sm sm:text-base">{t.folders.deleteModalText1} <strong>{folderToDelete?.name}</strong>?</p>
+        <p className="mt-2 text-xs sm:text-sm text-gray-600">{t.folders.deleteModalText2}</p>
       </ConfirmationModal>
       <div className="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto min-h-screen">
         <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-6 rounded-3xl border border-gray-200/50 dark:border-gray-700/50">
@@ -123,10 +128,10 @@ const FoldersPage = () => {
                 <div className="p-2 bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/40 dark:to-blue-900/10 rounded-xl mr-4 border border-blue-200/50 dark:border-blue-700/50">
                   <FolderIcon className="w-7 h-7 text-[#00A2D8] dark:text-[#4CC1EE]"/>
                 </div>
-                Folder Saya
+                {t.folders.title}
             </h1>
             <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm sm:text-base">
-                Kelola dan organisir semua catatan Anda ke dalam folder.
+                {t.folders.subtitle}
             </p>
           </div>
           <button
@@ -134,11 +139,11 @@ const FoldersPage = () => {
             className="mt-4 sm:mt-0 inline-flex items-center px-6 py-3 text-sm sm:text-base font-bold text-[#00A2D8] bg-blue-50 dark:bg-[#00A2D8]/10 rounded-xl hover:bg-blue-100 dark:hover:bg-[#00A2D8]/20 focus:outline-none transition-all duration-300 transform hover:scale-105"
           >
             <PlusIcon className="w-5 h-5 mr-2" />
-            <span>Buat Folder Baru</span>
+            <span>{t.folders.createFolder}</span>
           </button>
         </header>
 
-        {error && <p className="text-red-500 mb-4">Kesalahan: {error}</p>}
+        {error && <p className="text-red-500 mb-4">{t.folders.error} {error}</p>}
 
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -156,14 +161,14 @@ const FoldersPage = () => {
                 <div className="w-24 h-24 mx-auto bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-3xl flex items-center justify-center mb-6 border border-gray-200/50 dark:border-gray-700/50 relative z-10">
                   <FolderIcon className="w-12 h-12 text-gray-400 dark:text-gray-500"/>
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white relative z-10">Folder Masih Kosong</h3>
-                <p className="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400 relative z-10">Ayo buat folder pertamamu untuk mengorganisir catatan!</p>
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white relative z-10">{t.folders.emptyTitle}</h3>
+                <p className="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400 relative z-10">{t.folders.emptySubtitle}</p>
                  <button
                     onClick={openCreateModal}
                     className="mt-8 inline-flex items-center px-6 py-3 text-sm sm:text-base font-bold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl transition-all transform hover:-translate-y-1"
                 >
                     <PlusIcon className="w-5 h-5 mr-2" />
-                    Buat Folder Baru
+                    {t.folders.createFolder}
                 </button>
             </div>
         ) : (
@@ -182,20 +187,20 @@ const FoldersPage = () => {
                     <FolderIcon className="w-10 h-10" />
                   </div>
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate transition-colors">{folder.name}</h3>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{folder.noteCount} item tersimpan</p>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{folder.noteCount} {t.folders.savedItems}</p>
                 </Link>
                 <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <button
                     onClick={(e) => { e.preventDefault(); handleEditFolder(folder); }}
                     className="p-2 bg-white/80 dark:bg-gray-700/80 backdrop-blur rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600"
-                    title="Edit Folder"
+                    title={t.folders.editFolder}
                   >
                     <PencilIcon className="w-4 h-4 text-gray-700 dark:text-gray-300"/>
                   </button>
                   <button
                     onClick={(e) => { e.preventDefault(); handleOpenDeleteModal(folder); }}
                     className="p-2 bg-white/80 dark:bg-gray-700/80 backdrop-blur rounded-xl hover:bg-red-50 dark:hover:bg-red-900/40"
-                    title="Hapus Folder"
+                    title={t.folders.deleteFolder}
                   >
                     <TrashIcon className="w-4 h-4 text-red-500"/>
                   </button>

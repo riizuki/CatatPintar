@@ -2,7 +2,13 @@
 
 import { XMarkIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
+import { useLanguage } from "../../../lib/contexts/LanguageContext";
+import { dashboardTranslations } from "../../../locales/dashboard";
+
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children, isMutating }) => {
+  const { language } = useLanguage();
+  const t = dashboardTranslations[language];
+
   if (!isOpen) return null;
 
   return (
@@ -28,14 +34,14 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children, isMuta
             disabled={isMutating}
             className="w-full sm:w-auto px-6 py-2.5 text-sm font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 transition-all"
           >
-            Batal
+            {t.confirmationModal.cancel}
           </button>
           <button
             onClick={onConfirm}
             disabled={isMutating}
             className="w-full sm:w-auto px-6 py-2.5 text-sm font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl disabled:opacity-50 transition-all transform hover:-translate-y-0.5"
           >
-            {isMutating ? "Memproses..." : "Konfirmasi"}
+            {isMutating ? t.confirmationModal.processing : t.confirmationModal.confirm}
           </button>
         </div>
       </div>
