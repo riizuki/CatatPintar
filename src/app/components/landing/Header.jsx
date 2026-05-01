@@ -5,10 +5,14 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import ThemeToggle from "../ThemeToggle";
 import { motion } from "framer-motion";
+import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { translations } from "@/locales/landing";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { language, toggleLanguage } = useLanguage();
+  const t = translations[language].header;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,21 +50,34 @@ const Header = () => {
 
           <div className="hidden md:flex items-center space-x-6">
             <nav className="flex items-center space-x-6 text-sm font-medium text-gray-600 dark:text-gray-300">
-              <Link href="#fitur" className="hover:text-[#00A2D8] transition-colors">Fitur</Link>
-              <Link href="#cara-kerja" className="hover:text-[#00A2D8] transition-colors">Cara Kerja</Link>
+              <Link href="#fitur" className="hover:text-[#00A2D8] transition-colors">{t.features}</Link>
+              <Link href="#cara-kerja" className="hover:text-[#00A2D8] transition-colors">{t.howItWorks}</Link>
             </nav>
             <div className="flex items-center space-x-3 pl-6 border-l border-gray-200 dark:border-gray-700">
+              <button 
+                onClick={toggleLanguage}
+                className="flex items-center justify-center w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors font-bold text-sm"
+                title="Ganti Bahasa / Change Language"
+              >
+                {language.toUpperCase()}
+              </button>
               <ThemeToggle />
               <Link
                 href="/login"
                 className="px-5 py-2.5 text-sm font-bold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-full hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
               >
-                Masuk
+                {t.login}
               </Link>
             </div>
           </div>
 
           <div className="md:hidden flex items-center space-x-3">
+            <button 
+              onClick={toggleLanguage}
+              className="flex items-center justify-center w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors font-bold text-sm"
+            >
+              {language.toUpperCase()}
+            </button>
             <ThemeToggle />
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -92,14 +109,15 @@ const Header = () => {
           className="md:hidden mt-3 mx-auto max-w-7xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 shadow-xl rounded-3xl overflow-hidden px-4 py-4"
         >
           <div className="space-y-2">
-            <Link href="#fitur" onClick={() => setIsMenuOpen(false)} className="block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">Fitur</Link>
-            <Link href="#cara-kerja" onClick={() => setIsMenuOpen(false)} className="block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">Cara Kerja</Link>
+            <Link href="#fitur" onClick={() => setIsMenuOpen(false)} className="block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">{t.features}</Link>
+            <Link href="#cara-kerja" onClick={() => setIsMenuOpen(false)} className="block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">{t.howItWorks}</Link>
             <div className="pt-2 border-t border-gray-200 dark:border-gray-700 mt-2">
               <Link
                 href="/login"
-                className="block w-full text-center px-5 py-3 mt-2 text-sm font-bold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl hover:shadow-lg transition-all duration-300"
+                onClick={() => setIsMenuOpen(false)}
+                className="block w-full text-center px-5 py-3 text-sm font-bold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl transition-all duration-300"
               >
-                Masuk Sekarang
+                {t.login}
               </Link>
             </div>
           </div>

@@ -2,8 +2,13 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { translations } from "@/locales/landing";
 
 const Hero = () => {
+  const { language } = useLanguage();
+  const t = translations[language].hero;
+
   return (
     <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-white dark:bg-gray-950 transition-colors duration-500">
       
@@ -24,7 +29,7 @@ const Hero = () => {
           className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-white/50 dark:bg-gray-900/50 backdrop-blur-md border border-gray-200 dark:border-gray-800 shadow-sm"
         >
           <span className="flex h-2 w-2 rounded-full bg-[#00A2D8] animate-pulse"></span>
-          <span className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">Cara Baru Belajar Cerdas</span>
+          <span className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">{t.badge}</span>
         </motion.div>
 
         {/* Main Title */}
@@ -34,9 +39,9 @@ const Hero = () => {
           transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
           className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-8 leading-[1.1]"
         >
-          Catatan Kuliah, <br className="hidden sm:block" />
+          {t.title1} <br className="hidden sm:block" />
           <span className="text-[#00A2D8] dark:text-[#4CC1EE]">
-            Diperkuat AI.
+            {t.titleHighlight}
           </span>
         </motion.h1>
 
@@ -47,7 +52,7 @@ const Hero = () => {
           transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
           className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed"
         >
-          Tingkatkan produktivitas belajar Anda. Catat materi, dapatkan penjelasan cerdas, dan hasilkan kuis otomatis dalam hitungan detik.
+          {t.subtitle}
         </motion.p>
 
         {/* CTA Buttons */}
@@ -61,13 +66,13 @@ const Hero = () => {
             href="/register"
             className="w-full sm:w-auto px-8 py-4 text-base font-bold text-white bg-gradient-to-r from-[#00A2D8] to-[#4CC1EE] rounded-full shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-1 transition-all duration-300"
           >
-            Mulai Gratis Sekarang
+            {t.ctaStart}
           </Link>
           <Link
             href="#cara-kerja"
             className="w-full sm:w-auto px-8 py-4 text-base font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300"
           >
-            Pelajari Lebih Lanjut
+            {t.ctaLearn}
           </Link>
         </motion.div>
 

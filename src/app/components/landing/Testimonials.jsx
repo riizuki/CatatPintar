@@ -1,46 +1,51 @@
 "use client";
 import { motion } from "framer-motion";
 import Image from "next/image";
-
-const testimonials = [
-  {
-    id: 1,
-    quote: "“Sejak menggunakan CatatPintar, cara saya belajar berubah total. Catatan jadi lebih rapi, mudah dipahami, dan fitur kuis instan sangat membantu saya mengulang materi sebelum ujian.”",
-    name: "Ahmad R.",
-    role: "Mahasiswa Teknik Informatika",
-    avatar: "https://i.pravatar.cc/150?img=11"
-  },
-  {
-    id: 2,
-    quote: "“Materi kedokteran sangat padat dan penuh istilah. Dengan bantuan CatatPintar dan fitur AI-nya, saya bisa memahami konsep dengan lebih cepat dan tidak hanya menghafal.”",
-    name: "Sarah M.",
-    role: "Mahasiswi Kedokteran",
-    avatar: "https://i.pravatar.cc/150?img=5"
-  },
-  {
-    id: 3,
-    quote: "“Saya sangat terbantu dengan editor catatan yang fleksibel. Semua ide, referensi, dan rangkuman bisa saya susun dengan rapi, membuat proses belajar jauh lebih terstruktur.”",
-    name: "Budi S.",
-    role: "Mahasiswa DKV",
-    avatar: "https://i.pravatar.cc/150?img=8"
-  },
-  {
-    id: 4,
-    quote: "“Flashcard otomatisnya adalah game changer! Dulu saya harus menyalin ulang secara manual, sekarang cukup satu klik dan siap dihafal di jalan.”",
-    name: "Nisa A.",
-    role: "Mahasiswi Hukum",
-    avatar: "https://i.pravatar.cc/150?img=9"
-  },
-  {
-    id: 5,
-    quote: "“Tidak pernah terbayangkan belajar akuntansi bisa semenyenangkan ini. Penjelasan AI-nya sangat detail dan persis dengan yang saya butuhkan.”",
-    name: "Dimas P.",
-    role: "Mahasiswa Akuntansi",
-    avatar: "https://i.pravatar.cc/150?img=12"
-  }
-];
+import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { translations } from "@/locales/landing";
 
 const Testimonials = () => {
+  const { language } = useLanguage();
+  const t = translations[language].testimonials;
+
+  const testimonialsList = [
+    {
+      id: 1,
+      quote: t.review1 || "“Sejak menggunakan CatatPintar, cara saya belajar berubah total. Catatan jadi lebih rapi, mudah dipahami, dan fitur kuis instan sangat membantu saya mengulang materi sebelum ujian.”",
+      name: t.author1 || "Ahmad R.",
+      role: t.role1 || "Mahasiswa Teknik Informatika",
+      avatar: "https://i.pravatar.cc/150?img=11"
+    },
+    {
+      id: 2,
+      quote: t.review2 || "“Materi kedokteran sangat padat dan penuh istilah. Dengan bantuan CatatPintar dan fitur AI-nya, saya bisa memahami konsep dengan lebih cepat dan tidak hanya menghafal.”",
+      name: t.author2 || "Sarah M.",
+      role: t.role2 || "Mahasiswi Kedokteran",
+      avatar: "https://i.pravatar.cc/150?img=5"
+    },
+    {
+      id: 3,
+      quote: t.review3 || "“Saya sangat terbantu dengan editor catatan yang fleksibel. Semua ide, referensi, dan rangkuman bisa saya susun dengan rapi, membuat proses belajar jauh lebih terstruktur.”",
+      name: t.author3 || "Budi S.",
+      role: t.role3 || "Mahasiswa DKV",
+      avatar: "https://i.pravatar.cc/150?img=8"
+    },
+    {
+      id: 4,
+      quote: t.review4 || "“Flashcard otomatisnya adalah game changer! Dulu saya harus menyalin ulang secara manual, sekarang cukup satu klik dan siap dihafal di jalan.”",
+      name: t.author4 || "Nisa A.",
+      role: t.role4 || "Mahasiswi Hukum",
+      avatar: "https://i.pravatar.cc/150?img=9"
+    },
+    {
+      id: 5,
+      quote: t.review5 || "“Tidak pernah terbayangkan belajar akuntansi bisa semenyenangkan ini. Penjelasan AI-nya sangat detail dan persis dengan yang saya butuhkan.”",
+      name: t.author5 || "Dimas P.",
+      role: t.role5 || "Mahasiswa Akuntansi",
+      avatar: "https://i.pravatar.cc/150?img=12"
+    }
+  ];
+
   return (
     <section className="bg-gray-50 dark:bg-gray-950 py-24 lg:py-32 transition-colors duration-500 overflow-hidden">
       <div className="container mx-auto px-6 md:px-8 max-w-7xl">
@@ -51,7 +56,7 @@ const Testimonials = () => {
             viewport={{ once: true }}
             className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 tracking-tight"
           >
-            Apa Kata <span className="text-[#00A2D8] dark:text-[#4CC1EE]">Mereka</span>?
+            {t.badge}
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -60,7 +65,7 @@ const Testimonials = () => {
             transition={{ delay: 0.1 }}
             className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto"
           >
-            Cerita nyata dari mahasiswa berbagai jurusan yang telah meningkatkan produktivitas belajar mereka.
+            {t.subtitle}
           </motion.p>
         </div>
       </div>
@@ -74,7 +79,7 @@ const Testimonials = () => {
 
         {/* Marquee Track 1 */}
         <div className="flex shrink-0 min-w-full items-stretch gap-6 md:gap-8 pr-6 md:pr-8 animate-marquee group-hover:[animation-play-state:paused]">
-          {testimonials.map((t) => (
+          {testimonialsList.map((t) => (
             <div key={t.id} className="w-[300px] md:w-[400px] shrink-0">
               <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 md:p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-800 h-full flex flex-col justify-between transition-transform duration-300 hover:-translate-y-2">
                 <p className="text-gray-700 dark:text-gray-300 text-base md:text-lg leading-relaxed mb-8 italic">
@@ -100,7 +105,7 @@ const Testimonials = () => {
 
         {/* Marquee Track 2 (Duplicate for seamless loop) */}
         <div className="flex shrink-0 min-w-full items-stretch gap-6 md:gap-8 pr-6 md:pr-8 animate-marquee group-hover:[animation-play-state:paused]" aria-hidden="true">
-          {testimonials.map((t) => (
+          {testimonialsList.map((t) => (
             <div key={`dup-${t.id}`} className="w-[300px] md:w-[400px] shrink-0">
               <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 md:p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-800 h-full flex flex-col justify-between transition-transform duration-300 hover:-translate-y-2">
                 <p className="text-gray-700 dark:text-gray-300 text-base md:text-lg leading-relaxed mb-8 italic">

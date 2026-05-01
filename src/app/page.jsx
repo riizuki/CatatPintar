@@ -9,6 +9,7 @@ import HowItWorks from "./components/landing/HowItWorks";
 import CTA from "./components/landing/CTA";
 import Testimonials from "./components/landing/Testimonials";
 import ScrollToTop from "./components/landing/ScrollToTop";
+import { LanguageProvider } from "@/lib/contexts/LanguageContext";
 
 const containerVariants = {
   hidden: { opacity: 1 },
@@ -22,23 +23,25 @@ const containerVariants = {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 text-brand-gray dark:text-gray-300 transition-colors duration-500">
-      <Header />
+    <LanguageProvider>
+      <div className="min-h-screen bg-white dark:bg-gray-950 text-brand-gray dark:text-gray-300 transition-colors duration-500">
+        <Header />
 
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
-        <Hero />
-        <Features />
-        <HowItWorks />
-        <Testimonials />
-        <CTA />
-      </motion.div>
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+        >
+          <Hero />
+          <Features />
+          <HowItWorks />
+          <Testimonials />
+          <CTA />
+        </motion.div>
 
-      <ScrollToTop />
-      <Footer />
-    </div>
+        <ScrollToTop />
+        <Footer />
+      </div>
+    </LanguageProvider>
   );
 }
