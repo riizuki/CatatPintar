@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -43,8 +43,8 @@ model Note {
   id        Int      @id @default(autoincrement())
   userId    Int      @map("user_id")
   folderId  Int?     @map("folder_id")
-  title     String   @db.VarChar(150)
-  content   String   @db.Text
+  title     String
+  content   String
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -55,15 +55,16 @@ model Note {
   @@map("notes")
 }
 
-enum SourceType {
-  topic
-  note
-}
+// Removed enum since SQLite doesn't support it
+// enum SourceType {
+//   topic
+//   note
+// }
 
 model Quiz {
   id           Int      @id @default(autoincrement())
   userId       Int      @map("user_id")
-  sourceType   SourceType   @map("source_type")
+  sourceType   String       @map("source_type")
   sourceValue  String   @map("source_value")
   numQuestions Int      @map("num_questions")
   difficulty   String?
@@ -79,12 +80,12 @@ model Quiz {
 model QuizQuestion {
   id            Int     @id @default(autoincrement())
   quizId        Int     @map("quiz_id")
-  question      String  @db.Text
+  question      String
   optionA       String  @map("option_a")
   optionB       String  @map("option_b")
   optionC       String?
   optionD       String?
-  correctAnswer String  @db.Char(1) @map("correct_answer")
+  correctAnswer String  @map("correct_answer")
 
   quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
 
@@ -110,7 +111,7 @@ model Flashcard {
   userId    Int      @map("user_id")
   noteId    Int      @map("note_id")
   frontText String   @map("front_text")
-  backText  String   @db.Text @map("back_text")
+  backText  String   @map("back_text")
   createdAt DateTime @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

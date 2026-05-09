@@ -3,8 +3,9 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { ArrowLeftIcon, ArrowRightIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, ArrowRightIcon, SparklesIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { DocumentTextIcon } from "@heroicons/react/24/solid";
+import ConfirmationModal from "@/app/components/dashboard/ConfirmationModal";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { dashboardTranslations } from "@/locales/dashboard";
 
@@ -24,6 +25,11 @@ function FlashcardsDisplay() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [notesWithFlashcards, setNotesWithFlashcards] = useState([]);
+    
+    // Delete modal state
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [noteToDelete, setNoteToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -81,6 +87,32 @@ function FlashcardsDisplay() {
         setTimeout(() => setCurrentIndex(prev => (prev - 1 + flashcards.length) % flashcards.length), 150);
     };
 
+    const confirmDelete = (noteInfo) => {
+        setNoteToDelete(noteInfo);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDeleteFlashcards = async () => {
+        if (!noteToDelete) return;
+        setIsDeleting(true);
+        try {
+            const res = await fetch(`/api/flashcards?noteId=${noteToDelete.id}`, {
+                method: "DELETE",
+            });
+            if (!res.ok) throw new Error("Gagal menghapus riwayat flashcard");
+            
+            // Remove the note from the list
+            setNotesWithFlashcards(notesWithFlashcards.filter(n => n.id !== noteToDelete.id));
+            setIsDeleteModalOpen(false);
+            setNoteToDelete(null);
+        } catch (err) {
+            console.error(err);
+            alert("Terjadi kesalahan saat menghapus flashcard.");
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     if (loading) return (
         <div className="flex items-center justify-center h-[calc(100vh-100px)]">
             <div className="w-10 h-10 border-4 border-gray-200 border-t-[#00A2D8] rounded-full animate-spin"></div>
@@ -90,6 +122,15 @@ function FlashcardsDisplay() {
     // SCENARIO 1: SET SELECTION VIEW
     if (!noteId) {
         return (
+            <>
+            <ConfirmationModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleDeleteFlashcards}
+                title={t.flashcards.deleteFlashcards}
+                message={t.flashcards.deleteFlashcardsConfirm}
+                isProcessing={isDeleting}
+            />
             <div className="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto min-h-screen">
                 <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-6 rounded-3xl border border-gray-200/50 dark:border-gray-700/50">
                     <div>
@@ -120,21 +161,35 @@ function FlashcardsDisplay() {
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {notesWithFlashcards.map(n => (
-                            <Link 
-                                key={n.id} 
-                                href={`/dashboard/flashcards?noteId=${n.id}`} 
-                                className="block p-6 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 transform hover:-translate-y-2 hover:border-[#00A2D8]/50 group"
-                            >
-                                <div className="inline-flex p-3 rounded-2xl mb-4 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 text-gray-500 dark:text-gray-400 border border-gray-200/50 dark:border-gray-700/50 transition-transform group-hover:scale-110">
-                                    <DocumentTextIcon className="w-8 h-8"/>
-                                </div>
-                                <h2 className="text-lg font-bold text-gray-900 dark:text-white truncate transition-colors mb-2">{n.title}</h2>
-                                <p className="text-sm font-bold text-[#00A2D8] dark:text-[#4CC1EE] opacity-0 group-hover:opacity-100 transition-opacity">{t.flashcards.startLearning}</p>
-                            </Link>
+                            <div key={n.id} className="relative group block p-6 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 transform hover:-translate-y-2 hover:border-[#00A2D8]/50">
+                                <Link 
+                                    href={`/dashboard/flashcards?noteId=${n.id}`} 
+                                    className="block cursor-pointer h-full"
+                                >
+                                    <div className="inline-flex p-3 rounded-2xl mb-4 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 text-gray-500 dark:text-gray-400 border border-gray-200/50 dark:border-gray-700/50 transition-transform group-hover:scale-110">
+                                        <DocumentTextIcon className="w-8 h-8"/>
+                                    </div>
+                                    <h2 className="text-lg font-bold text-gray-900 dark:text-white truncate transition-colors mb-2 pr-8">{n.title}</h2>
+                                    <p className="text-sm font-bold text-[#00A2D8] dark:text-[#4CC1EE] opacity-0 group-hover:opacity-100 transition-opacity">{t.flashcards.startLearning}</p>
+                                </Link>
+                                
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        confirmDelete(n);
+                                    }}
+                                    className="absolute top-6 right-6 p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-colors z-10"
+                                    title={t.flashcards.deleteFlashcards}
+                                >
+                                    <TrashIcon className="w-5 h-5" />
+                                </button>
+                            </div>
                         ))}
                     </div>
                 )}
             </div>
+            </>
         );
     }
     

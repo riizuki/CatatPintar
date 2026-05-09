@@ -49,15 +49,14 @@ export default function RegisterPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 transition-colors duration-500 relative overflow-hidden">
-      
-      {/* Decorative Background Elements */}
+
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#4CC1EE] rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10 animate-blob"></div>
         <div className="absolute top-1/2 -right-24 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10 animate-blob animation-delay-2000"></div>
         <div className="absolute -bottom-24 left-1/3 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10 animate-blob animation-delay-4000"></div>
       </div>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
@@ -69,25 +68,33 @@ export default function RegisterPage() {
         </Link>
 
         <div className="text-center">
-            <motion.div
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", bounce: 0.5, delay: 0.2 }}
-            >
-              <Image 
-                  src="/img/logo.png"
-                  alt="CatatPintar Logo"
-                  width={56}
-                  height={56}
-                  className="mx-auto mb-4 drop-shadow-md"
-              />
-            </motion.div>
+          <motion.div
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", bounce: 0.5, delay: 0.2 }}
+          >
+            <Image
+              src="/img/logo.png"
+              alt="CatatPintar Logo"
+              width={56}
+              height={56}
+              className="mx-auto mb-4 drop-shadow-md"
+            />
+          </motion.div>
           <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Daftar Akun Baru</h1>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
             Mulai petualangan belajarmu bersama CatatPintar.
           </p>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.8 }}
+            className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-800/50 rounded-2xl text-md text-yellow-800 dark:text-yellow-200 leading-relaxed italic"
+          >
+            "Isinya sembarang aja ya:D"
+          </motion.div>
         </div>
-        
+
         <form className="space-y-5" onSubmit={handleRegister} autoComplete="off">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -176,7 +183,7 @@ export default function RegisterPage() {
           </motion.div>
 
           {error && (
-            <motion.p 
+            <motion.p
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               className="text-sm text-red-500 text-center font-medium bg-red-50 dark:bg-red-500/10 py-2 rounded-lg"
@@ -207,7 +214,7 @@ export default function RegisterPage() {
           </motion.div>
         </form>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7 }}

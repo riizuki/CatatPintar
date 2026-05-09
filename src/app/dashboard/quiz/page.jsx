@@ -1,9 +1,10 @@
 "use client";
 
-import { PlusIcon, ArrowLeftIcon, CheckCircleIcon, CalendarDaysIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, ArrowLeftIcon, CheckCircleIcon, CalendarDaysIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { DocumentTextIcon } from "@heroicons/react/24/solid";
 import { useState, useEffect } from "react";
 import CreateQuizModal from "@/app/components/dashboard/CreateQuizModal";
+import ConfirmationModal from "@/app/components/dashboard/ConfirmationModal";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
@@ -17,23 +18,30 @@ const QuizPage = () => {
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  
+  // Delete modal state
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [quizToDelete, setQuizToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
   const router = useRouter();
 
+  const fetchQuizzes = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/quizzes");
+      if (!res.ok) throw new Error("Gagal mengambil kuis");
+      const data = await res.json();
+      setQuizzes(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchQuizzes = async () => {
-      setLoading(true);
-      setError("");
-      try {
-        const res = await fetch("/api/quizzes");
-        if (!res.ok) throw new Error("Gagal mengambil kuis");
-        const data = await res.json();
-        setQuizzes(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchQuizzes();
   }, []);
 
@@ -41,9 +49,41 @@ const QuizPage = () => {
     return new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
   };
 
+  const confirmDelete = (quiz) => {
+    setQuizToDelete(quiz);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteQuiz = async () => {
+    if (!quizToDelete) return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/quizzes/${quizToDelete.id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Gagal menghapus kuis");
+      setQuizzes(quizzes.filter(q => q.id !== quizToDelete.id));
+      setIsDeleteModalOpen(false);
+      setQuizToDelete(null);
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan saat menghapus kuis.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <>
       <CreateQuizModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} notes={[]} />
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteQuiz}
+        title={t.quiz.deleteQuiz}
+        message={t.quiz.deleteQuizConfirm}
+        isProcessing={isDeleting}
+      />
       <div className="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto min-h-screen">
         <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-6 rounded-3xl border border-gray-200/50 dark:border-gray-700/50">
           <div className="flex items-center">
@@ -82,12 +122,21 @@ const QuizPage = () => {
                 <div key={quiz.id} className="group relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 transform hover:-translate-y-2 hover:border-[#00A2D8]/50 dark:hover:border-[#4CC1EE]/50 p-6 flex flex-col min-h-[280px]">
                   <div className="flex-grow">
                     <div className="flex items-start justify-between mb-4">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white capitalize line-clamp-2">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white capitalize line-clamp-2 pr-8">
                         {quiz.sourceType}: <span className="font-normal opacity-80">{quiz.sourceValue}</span>
                         </h3>
-                        {quiz.result && (
-                            <CheckCircleIcon className="w-6 h-6 text-emerald-500 flex-shrink-0" title={t.quiz.completed}/>
-                        )}
+                        <div className="flex items-center space-x-2">
+                            {quiz.result && (
+                                <CheckCircleIcon className="w-6 h-6 text-emerald-500 flex-shrink-0" title={t.quiz.completed}/>
+                            )}
+                            <button
+                                onClick={() => confirmDelete(quiz)}
+                                className="p-1.5 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
+                                title={t.quiz.deleteQuiz}
+                            >
+                                <TrashIcon className="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
                     <div className="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-lg w-fit">
                         <CalendarDaysIcon className="w-4 h-4 mr-2"/>

@@ -30,9 +30,9 @@ export default function Footer() {
               </div>
               <h3 className="font-bold text-xl text-gray-900 dark:text-white transition-colors duration-500">CatatPintar</h3>
             </Link>
-            <p className="text-gray-500 dark:text-gray-400 text-base leading-relaxed max-w-sm mb-8">
+            <div className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-8 whitespace-pre-line overflow-y-auto max-h-96 pr-2">
               {t.description}
-            </p>
+            </div>
             <div className="flex space-x-5">
               <a href="#" className="text-gray-400 hover:text-[#00A2D8] dark:hover:text-[#4CC1EE] transition-colors duration-300">
                 <span className="sr-only">Twitter</span>
@@ -86,7 +86,7 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} CatatPintar. All rights reserved.
           </p>
           <p className="flex items-center gap-1">
-            {t.madeWith} <span className="text-red-500">&hearts;</span> {t.by} <span className="font-semibold text-gray-700 dark:text-gray-300">Kelompok 5 IF1</span>
+            {t.madeWith} <span className="text-red-500">&hearts;</span> {t.by} <span className="font-semibold text-gray-700 dark:text-gray-300">Rizky Alfarid Hafizh</span>
           </p>
         </div>
       </div>

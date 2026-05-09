@@ -134,14 +134,16 @@ const NewNotePage = () => {
               placeholder={t.notes.editor.titlePlaceholder}
             />
           </div>
-          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded-2xl border border-gray-200/50 dark:border-gray-800/50 mb-24">
+          <div className="mb-32 pb-4">
             <ReactQuill
+              key={language}
               theme="snow"
               value={content}
               onChange={setContent}
               modules={modules}
               className="quill-editor modern-quill"
               style={{ minHeight: "60vh" }}
+              placeholder={t.notes.editor.contentPlaceholder}
             />
           </div>
           {/* Floating Action Bar */}

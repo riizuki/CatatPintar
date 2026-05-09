@@ -12,35 +12,35 @@ const Testimonials = () => {
     {
       id: 1,
       quote: t.review1 || "“Sejak menggunakan CatatPintar, cara saya belajar berubah total. Catatan jadi lebih rapi, mudah dipahami, dan fitur kuis instan sangat membantu saya mengulang materi sebelum ujian.”",
-      name: t.author1 || "Ahmad R.",
+      name: t.author1 || "Anonim",
       role: t.role1 || "Mahasiswa Teknik Informatika",
       avatar: "https://i.pravatar.cc/150?img=11"
     },
     {
       id: 2,
       quote: t.review2 || "“Materi kedokteran sangat padat dan penuh istilah. Dengan bantuan CatatPintar dan fitur AI-nya, saya bisa memahami konsep dengan lebih cepat dan tidak hanya menghafal.”",
-      name: t.author2 || "Sarah M.",
+      name: t.author2 || "Anonim",
       role: t.role2 || "Mahasiswi Kedokteran",
       avatar: "https://i.pravatar.cc/150?img=5"
     },
     {
       id: 3,
       quote: t.review3 || "“Saya sangat terbantu dengan editor catatan yang fleksibel. Semua ide, referensi, dan rangkuman bisa saya susun dengan rapi, membuat proses belajar jauh lebih terstruktur.”",
-      name: t.author3 || "Budi S.",
+      name: t.author3 || "Anonim",
       role: t.role3 || "Mahasiswa DKV",
       avatar: "https://i.pravatar.cc/150?img=8"
     },
     {
       id: 4,
       quote: t.review4 || "“Flashcard otomatisnya adalah game changer! Dulu saya harus menyalin ulang secara manual, sekarang cukup satu klik dan siap dihafal di jalan.”",
-      name: t.author4 || "Nisa A.",
+      name: t.author4 || "Anonim",
       role: t.role4 || "Mahasiswi Hukum",
       avatar: "https://i.pravatar.cc/150?img=9"
     },
     {
       id: 5,
       quote: t.review5 || "“Tidak pernah terbayangkan belajar akuntansi bisa semenyenangkan ini. Penjelasan AI-nya sangat detail dan persis dengan yang saya butuhkan.”",
-      name: t.author5 || "Dimas P.",
+      name: t.author5 || "Anonim",
       role: t.role5 || "Mahasiswa Akuntansi",
       avatar: "https://i.pravatar.cc/150?img=12"
     }

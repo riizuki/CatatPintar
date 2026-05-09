@@ -83,7 +83,9 @@ export const dashboardTranslations = {
       viewResult: "Lihat Hasil",
       startQuiz: "Mulai Kuis",
       emptyTitle: "Belum Ada Kuis",
-      emptySubtitle: "Buat kuis pertamamu dari catatan atau topik favoritmu!"
+      emptySubtitle: "Buat kuis pertamamu dari catatan atau topik favoritmu!",
+      deleteQuiz: "Hapus Riwayat Kuis",
+      deleteQuizConfirm: "Anda yakin ingin menghapus kuis ini? Semua riwayat nilai terkait juga akan dihapus permanen.",
     },
     flashcards: {
       selectSet: "Pilih Set Flashcard",
@@ -98,7 +100,9 @@ export const dashboardTranslations = {
       openEditor: "Buka Editor Catatan",
       clickToFlip: "Klik untuk membalik kartu",
       prev: "Sebelumnya",
-      next: "Selanjutnya"
+      next: "Selanjutnya",
+      deleteFlashcards: "Hapus Riwayat Flashcard",
+      deleteFlashcardsConfirm: "Anda yakin ingin menghapus semua riwayat flashcard untuk catatan ini? Tindakan ini tidak dapat dibatalkan.",
     },
     settings: {
       title: "Pengaturan Akun",
@@ -118,6 +122,7 @@ export const dashboardTranslations = {
     notes: {
       editor: {
         titlePlaceholder: "Judul Catatan...",
+        contentPlaceholder: "Mulai ketik di sini, atau blok teks untuk mengubah gaya...",
         folder: "Folder:",
         noFolder: "Tanpa Folder",
         cancel: "Batal",
@@ -225,7 +230,9 @@ export const dashboardTranslations = {
       viewResult: "View Result",
       startQuiz: "Start Quiz",
       emptyTitle: "No Quizzes Yet",
-      emptySubtitle: "Create your first quiz from your favorite notes or topics!"
+      emptySubtitle: "Create your first quiz from your favorite notes or topics!",
+      deleteQuiz: "Delete Quiz History",
+      deleteQuizConfirm: "Are you sure you want to delete this quiz? All related score history will be permanently deleted.",
     },
     flashcards: {
       selectSet: "Select Flashcard Set",
@@ -240,7 +247,9 @@ export const dashboardTranslations = {
       openEditor: "Open Note Editor",
       clickToFlip: "Click to flip card",
       prev: "Previous",
-      next: "Next"
+      next: "Next",
+      deleteFlashcards: "Delete Flashcard History",
+      deleteFlashcardsConfirm: "Are you sure you want to delete all flashcards for this note? This action cannot be undone.",
     },
     settings: {
       title: "Account Settings",
@@ -260,6 +269,7 @@ export const dashboardTranslations = {
     notes: {
       editor: {
         titlePlaceholder: "Note Title...",
+        contentPlaceholder: "Start typing here, or highlight text to style...",
         folder: "Folder:",
         noFolder: "No Folder",
         cancel: "Cancel",

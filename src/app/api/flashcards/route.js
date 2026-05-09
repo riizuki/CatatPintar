@@ -44,3 +44,44 @@ export async function GET(request) {
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
+
+// DELETE /api/flashcards?noteId=[noteId] - Delete all flashcards for a note
+export async function DELETE(request) {
+  const session = await getServerSession(authOptions);
+  
+  if (!session) {
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const noteId = searchParams.get('noteId');
+
+  if (!noteId) {
+    return NextResponse.json({ message: 'noteId query parameter is required' }, { status: 400 });
+  }
+
+  try {
+    const note = await prisma.note.findFirst({
+      where: {
+        id: parseInt(noteId),
+        userId: session.user.id,
+      }
+    });
+
+    if (!note) {
+      return NextResponse.json({ message: 'Note not found or access denied' }, { status: 404 });
+    }
+
+    await prisma.flashcard.deleteMany({
+      where: {
+        noteId: parseInt(noteId),
+        userId: session.user.id,
+      },
+    });
+
+    return NextResponse.json({ message: 'Flashcards deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting flashcards:', error);
+    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+  }
+}

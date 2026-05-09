@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "node -r dotenv/config ./node_modules/.bin/next dev",
-    "build": "next build",
+    "build": "npx prisma generate && npx prisma db push && next build",
     "start": "next start",
     "lint": "eslint"
   },

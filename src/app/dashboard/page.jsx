@@ -126,7 +126,6 @@ function DashboardContent() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-10"
       >
-        {/* Dynamic Greeting Banner */}
         <div className="relative overflow-hidden bg-[#00A2D8] rounded-3xl p-8 md:p-10 text-white mb-8 border border-white/20 dark:border-white/10">
           <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-20 rounded-full blur-2xl"></div>
           <div className="absolute bottom-0 left-1/4 w-32 h-32 bg-blue-300 opacity-30 rounded-full blur-2xl"></div>
