@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { ReactLenis } from 'lenis/react';
 import Footer from "./components/Footer";
 import Header from "./components/landing/Header";
 import Hero from "./components/landing/Hero";
@@ -22,7 +23,8 @@ const containerVariants = {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 text-brand-gray dark:text-gray-300 transition-colors duration-500">
+    <ReactLenis root>
+      <div className="min-h-screen bg-white dark:bg-gray-950 text-brand-gray dark:text-gray-300 transition-colors duration-500">
         <Header />
 
         <motion.div
@@ -40,5 +42,6 @@ export default function LandingPage() {
         <ScrollToTop />
         <Footer />
       </div>
+    </ReactLenis>
   );
 }
