@@ -2,17 +2,20 @@
 
 import { PlusIcon, ArrowLeftIcon, CheckCircleIcon, CalendarDaysIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { DocumentTextIcon } from "@heroicons/react/24/solid";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import CreateQuizModal from "@/app/components/dashboard/CreateQuizModal";
 import ConfirmationModal from "@/app/components/dashboard/ConfirmationModal";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { dashboardTranslations } from "@/locales/dashboard";
 
-const QuizPage = () => {
+const QuizContent = () => {
   const { language } = useLanguage();
   const t = dashboardTranslations[language];
+
+  const searchParams = useSearchParams();
+  const noteIdParam = searchParams.get('noteId');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [quizzes, setQuizzes] = useState([]);
@@ -25,6 +28,12 @@ const QuizPage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   
   const router = useRouter();
+
+  useEffect(() => {
+    if (noteIdParam) {
+      setIsModalOpen(true);
+    }
+  }, [noteIdParam]);
 
   const fetchQuizzes = async () => {
     setLoading(true);
@@ -75,7 +84,12 @@ const QuizPage = () => {
 
   return (
     <>
-      <CreateQuizModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} notes={[]} />
+      <CreateQuizModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        preselectedSourceType={noteIdParam ? 'note' : null} 
+        preselectedSourceValue={noteIdParam ? parseInt(noteIdParam) : null} 
+      />
       <ConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
@@ -186,4 +200,14 @@ const QuizPage = () => {
   );
 };
 
-export default QuizPage;
+export default function QuizPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-950">
+        <div className="w-10 h-10 border-4 border-gray-200 border-t-[#00A2D8] rounded-full animate-spin"></div>
+      </div>
+    }>
+      <QuizContent />
+    </Suspense>
+  )
+}

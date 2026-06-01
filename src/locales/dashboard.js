@@ -5,6 +5,7 @@ export const dashboardTranslations = {
       folders: "Folder",
       quiz: "Kuis",
       flashcards: "Flashcard",
+      materials: "Materi Kuliah",
       settings: "Pengaturan",
     },
     header: {
@@ -165,6 +166,40 @@ export const dashboardTranslations = {
         flashcard: "Flashcard",
         exportPdf: "Export PDF"
       }
+    },
+    materials: {
+      title: "Materi Kuliah",
+      subtitle: "Unggah materi dosen (PDF/PPT) untuk dianalisis AI dan diubah menjadi rangkuman catatan pintar.",
+      uploadArea: {
+        title: "Tarik & Lepas Berkas di Sini",
+        subtitle: "atau klik untuk memilih berkas dari komputer Anda",
+        supportedTypes: "Mendukung berkas PDF, PPT, dan PPTX (Maks. 20MB)",
+      },
+      uploading: "Mengunggah berkas materi...",
+      parsing: "AI sedang membaca berkas materi...",
+      structuring: "Menyusun rangkuman catatan kuliah pintar...",
+      successTitle: "Materi Berhasil Dirangkum!",
+      successSubtitle: "AI telah selesai mencerna materi Anda. Pilih langkah belajar selanjutnya:",
+      actions: {
+        viewNote: "Buka Rangkuman Catatan",
+        createQuiz: "Hasilkan Kuis AI",
+        generateFlashcards: "Hasilkan Flashcard AI",
+        askAi: "Tanya Jawab AI (Chatbot)",
+      },
+      history: {
+        title: "Riwayat Materi Kuliah",
+        emptyTitle: "Belum Ada Materi",
+        emptySubtitle: "Unggah materi pertamamu untuk memulai belajar dengan asisten pintar!",
+        fileName: "Nama Berkas",
+        uploadedAt: "Diunggah",
+        fileSize: "Ukuran",
+        actions: "Aksi",
+      },
+      errors: {
+        unsupportedType: "Format file tidak didukung. Harap unggah berkas PDF, PPT, atau PPTX.",
+        fileTooLarge: "Ukuran file terlalu besar. Maksimal adalah 20MB.",
+        uploadFailed: "Gagal mengunggah dan merangkum berkas materi.",
+      }
     }
   },
   en: {
@@ -173,6 +208,7 @@ export const dashboardTranslations = {
       folders: "Folders",
       quiz: "Quizzes",
       flashcards: "Flashcards",
+      materials: "Lecture Materials",
       settings: "Settings",
     },
     header: {
@@ -332,6 +368,40 @@ export const dashboardTranslations = {
         generating: "Generating...",
         flashcard: "Flashcard",
         exportPdf: "Export PDF"
+      }
+    },
+    materials: {
+      title: "Lecture Materials",
+      subtitle: "Upload lecture materials (PDF/PPT) to be analyzed by AI and transformed into smart study notes.",
+      uploadArea: {
+        title: "Drag & Drop Files Here",
+        subtitle: "or click to select files from your computer",
+        supportedTypes: "Supports PDF, PPT, and PPTX files (Max. 20MB)",
+      },
+      uploading: "Uploading material file...",
+      parsing: "AI is reading and parsing material file...",
+      structuring: "Structuring smart lecture notes summary...",
+      successTitle: "Material Summarized Successfully!",
+      successSubtitle: "AI has finished digesting your material. Choose your next study step:",
+      actions: {
+        viewNote: "Open Study Notes",
+        createQuiz: "Generate Quiz",
+        generateFlashcards: "Generate Flashcards",
+        askAi: "Ask AI (Chatbot)",
+      },
+      history: {
+        title: "Lecture Materials History",
+        emptyTitle: "No Materials Yet",
+        emptySubtitle: "Upload your first lecture material to start learning with the smart assistant!",
+        fileName: "File Name",
+        uploadedAt: "Uploaded",
+        fileSize: "Size",
+        actions: "Actions",
+      },
+      errors: {
+        unsupportedType: "File format not supported. Please upload PDF, PPT, or PPTX files.",
+        fileTooLarge: "File size too large. Maximum size is 20MB.",
+        uploadFailed: "Failed to upload and summarize material file.",
       }
     }
   }

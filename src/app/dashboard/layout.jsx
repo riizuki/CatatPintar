@@ -13,6 +13,7 @@ import {
   ChevronLeftIcon,
   Bars3Icon,
   XMarkIcon,
+  CloudArrowUpIcon,
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -37,6 +38,7 @@ const Sidebar = () => {
   const navigation = [
     { name: t.sidebar.home, href: "/dashboard", icon: HomeIcon },
     { name: t.sidebar.folders, href: "/dashboard/folders", icon: FolderIcon },
+    { name: t.sidebar.materials, href: "/dashboard/materials", icon: CloudArrowUpIcon },
     { name: t.sidebar.quiz, href: "/dashboard/quiz", icon: QuestionMarkCircleIcon },
     {
       name: t.sidebar.flashcards,
@@ -195,6 +197,7 @@ const MobileSidebar = ({ isOpen, setIsOpen }) => {
   const navigation = [
     { name: t.sidebar.home, href: "/dashboard", icon: HomeIcon },
     { name: t.sidebar.folders, href: "/dashboard/folders", icon: FolderIcon },
+    { name: t.sidebar.materials, href: "/dashboard/materials", icon: CloudArrowUpIcon },
     { name: t.sidebar.quiz, href: "/dashboard/quiz", icon: QuestionMarkCircleIcon },
     {
       name: t.sidebar.flashcards,

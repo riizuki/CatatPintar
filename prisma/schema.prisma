@@ -45,6 +45,8 @@ model Note {
   folderId  Int?     @map("folder_id")
   title     String   @db.VarChar(150)
   content   String   @db.Text
+  filePath  String?  @db.Text @map("file_path")
+  fileType  String?  @db.VarChar(50) @map("file_type")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

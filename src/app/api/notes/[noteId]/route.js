@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import prisma from '@/lib/prisma';
+import path from 'path';
+import fs from 'fs/promises';
 
 // Helper function to verify note ownership
 async function verifyNoteOwnership(userId, noteId) {
@@ -99,6 +101,19 @@ export async function DELETE(request, { params }) {
     }
 
     try {
+        const note = await prisma.note.findUnique({
+            where: { id: parseInt(noteId) },
+        });
+
+        if (note && note.filePath) {
+            const physicalPath = path.join(process.cwd(), 'public', note.filePath);
+            try {
+                await fs.unlink(physicalPath);
+            } catch (err) {
+                console.warn(`Could not delete physical file at ${physicalPath}:`, err.message);
+            }
+        }
+
         await prisma.note.delete({
             where: { id: parseInt(noteId) },
         });
