@@ -1,6 +1,6 @@
 "use client";
 
-import { ChatBubbleLeftRightIcon, SparklesIcon, QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
+import { ChatBubbleLeftRightIcon, SparklesIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { useDashboard } from "../../../lib/contexts/DashboardContext";
 import { useLanguage } from "../../../lib/contexts/LanguageContext";
 import { dashboardTranslations } from "../../../locales/dashboard";
@@ -8,7 +8,9 @@ import { dashboardTranslations } from "../../../locales/dashboard";
 const NoteEditorNavbar = ({
   onGenerateFlashcards,
   onGenerateQuiz,
+  onExportPdf,
   isGenerating,
+  isExporting,
   noteId,
 }) => {
   const { setIsAiSidebarOpen } = useDashboard();
@@ -27,6 +29,7 @@ const NoteEditorNavbar = ({
         <ChatBubbleLeftRightIcon className="w-5 h-5 sm:mr-2" />
         <span className="hidden sm:inline">{t.notes.navbar.askAi}</span>
       </button>
+      
       <button
         type="button"
         onClick={onGenerateFlashcards}
@@ -40,6 +43,18 @@ const NoteEditorNavbar = ({
         </span>
       </button>
 
+      <button
+        type="button"
+        onClick={onExportPdf}
+        disabled={generationDisabled || isExporting}
+        className="w-full sm:w-auto flex items-center justify-center sm:justify-start px-5 py-2.5 text-sm font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-all transform hover:-translate-y-0.5 whitespace-nowrap shadow-sm"
+        title={generationDisabled ? "Simpan catatan untuk mengunduh PDF" : "Unduh catatan ini sebagai PDF"}
+      >
+        <ArrowDownTrayIcon className="w-5 h-5 sm:mr-2 text-gray-500 dark:text-gray-400" />
+        <span className="hidden sm:inline">
+          {isExporting ? t.notes.editor.saving : (t.notes.navbar.exportPdf || "Export PDF")}
+        </span>
+      </button>
     </div>
   );
 };

@@ -38,6 +38,7 @@ const EditNotePage = () => {
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isGenerating, setIsGenerating] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCreateQuizModalOpen, setIsCreateQuizModalOpen] = useState(false);
@@ -155,6 +156,139 @@ const EditNotePage = () => {
     }
   };
 
+  const handleExportPdf = async () => {
+    if (!note) return;
+    setIsExportingPdf(true);
+    const toastId = toast.loading(language === 'id' ? 'Menyiapkan berkas PDF...' : 'Preparing PDF file...');
+
+    try {
+      // Dynamic imports to prevent SSR errors
+      const { jsPDF } = await import('jspdf');
+      const html2canvas = (await import('html2canvas')).default;
+
+      const element = document.createElement('div');
+      element.style.padding = '40px 60px';
+      element.style.width = '800px';
+      element.style.backgroundColor = '#ffffff';
+      element.style.color = '#1f2937';
+      element.style.fontFamily = 'Quicksand, system-ui, sans-serif';
+      element.style.position = 'absolute';
+      element.style.left = '9999px';
+      element.style.top = '0';
+      element.style.height = 'auto';
+      element.style.overflow = 'visible';
+
+      // 1. Professional Header
+      const header = document.createElement('div');
+      header.style.display = 'flex';
+      header.style.justifyContent = 'space-between';
+      header.style.alignItems = 'center';
+      header.style.borderBottom = '2px solid #00A2D8';
+      header.style.paddingBottom = '15px';
+      header.style.marginBottom = '35px';
+
+      const logo = document.createElement('div');
+      logo.style.fontSize = '20px';
+      logo.style.fontWeight = 'bold';
+      logo.style.color = '#00A2D8';
+      logo.innerText = 'Catat Pintar';
+
+      const dateInfo = document.createElement('div');
+      dateInfo.style.fontSize = '12px';
+      dateInfo.style.color = '#6b7280';
+      dateInfo.innerText = new Date(note.updatedAt || Date.now()).toLocaleDateString(
+        language === 'id' ? 'id-ID' : 'en-US',
+        { day: 'numeric', month: 'long', year: 'numeric' }
+      );
+
+      header.appendChild(logo);
+      header.appendChild(dateInfo);
+      element.appendChild(header);
+
+      // 2. Note Title
+      const noteTitle = document.createElement('h1');
+      noteTitle.style.fontSize = '28px';
+      noteTitle.style.fontWeight = '800';
+      noteTitle.style.color = '#111827';
+      noteTitle.style.marginBottom = '25px';
+      noteTitle.style.lineHeight = '1.2';
+      noteTitle.innerText = title;
+      element.appendChild(noteTitle);
+
+      // 3. Note Content wrapper with ql-editor styling
+      const noteBody = document.createElement('div');
+      noteBody.className = 'ql-editor';
+      noteBody.style.padding = '0';
+      noteBody.style.fontSize = '15px';
+      noteBody.style.lineHeight = '1.6';
+      noteBody.innerHTML = content;
+      element.appendChild(noteBody);
+
+      // 4. Footer
+      const footer = document.createElement('div');
+      footer.style.marginTop = '40px';
+      footer.style.borderTop = '1px solid #e5e7eb';
+      footer.style.paddingTop = '15px';
+      footer.style.display = 'flex';
+      footer.style.justifyContent = 'space-between';
+      footer.style.alignItems = 'center';
+      footer.style.fontSize = '10px';
+      footer.style.color = '#9ca3af';
+
+      const footerLeft = document.createElement('div');
+      footerLeft.innerText = language === 'id' ? 'Dibuat dengan Catat Pintar - Belajar jadi lebih mudah' : 'Created with Catat Pintar - Learning made easy';
+
+      const footerRight = document.createElement('div');
+      footerRight.innerText = 'E-Notebook';
+
+      footer.appendChild(footerLeft);
+      footer.appendChild(footerRight);
+      element.appendChild(footer);
+
+      document.body.appendChild(element);
+
+      // Render canvas
+      const canvas = await html2canvas(element, {
+        useCORS: true,
+        allowTaint: true,
+        scale: 2, // High DPI resolution
+        logging: false,
+        height: element.scrollHeight,
+        windowHeight: element.scrollHeight + 1000
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.98);
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      let position = 0;
+
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      const cleanFileName = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      pdf.save(`${cleanFileName || 'catatan'}.pdf`);
+
+      document.body.removeChild(element);
+      toast.success(language === 'id' ? 'PDF berhasil diunduh!' : 'PDF downloaded successfully!', { id: toastId });
+    } catch (err) {
+      console.error(err);
+      toast.error(language === 'id' ? 'Gagal ekspor PDF.' : 'Failed to export PDF.', { id: toastId });
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
+
   const modules = useMemo(
     () => ({
       toolbar: [
@@ -197,7 +331,9 @@ const EditNotePage = () => {
       <NoteEditorNavbar
         onGenerateFlashcards={() => handleGenerate('flashcards')}
         onGenerateQuiz={() => setIsCreateQuizModalOpen(true)}
+        onExportPdf={handleExportPdf}
         isGenerating={isGenerating}
+        isExporting={isExportingPdf}
         noteId={noteId}
       />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">

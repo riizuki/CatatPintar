@@ -41,7 +41,27 @@ export const dashboardTranslations = {
       noFoldersYet: "Belum Ada Folder",
       groupNotes: "Kelompokkan catatanmu agar rapi",
       item: "item",
-      items: "item"
+      items: "item",
+      stats: {
+        title: "Statistik Belajar",
+        avgScore: "Rata-rata Kuis",
+        avgScoreSub: "Dari {count} kuis selesai",
+        comprehension: "Pemahaman",
+        comprehensionSub: "Berdasarkan performa kuis",
+        weeklyProgress: "Progress Belajar",
+        weeklyProgressSub: "Kuis selesai minggu ini",
+        challengingTopic: "Perlu Ditinjau",
+        challengingTopicSub: "Materi dengan skor terendah",
+        noQuizTaken: "Belum Ada Kuis",
+        noQuizTakenSub: "Mulai kuis untuk melihat statistik",
+        excellent: "Sangat Baik",
+        good: "Baik",
+        fair: "Cukup",
+        needsStudy: "Perlu Belajar",
+        none: "Belum Ada",
+        weekActivity: "kuis minggu ini",
+        notesCount: "catatan dibuat"
+      }
     },
     aiChat: {
       title: "Asisten AI",
@@ -142,7 +162,8 @@ export const dashboardTranslations = {
         flashcardDisabledTooltip: "Simpan catatan untuk membuat flashcard",
         flashcardTooltip: "Buat Flashcard dari Catatan Ini",
         generating: "Membuat...",
-        flashcard: "Flashcard"
+        flashcard: "Flashcard",
+        exportPdf: "Export PDF"
       }
     }
   },
@@ -188,7 +209,27 @@ export const dashboardTranslations = {
       noFoldersYet: "No Folders Yet",
       groupNotes: "Group your notes to keep them organized",
       item: "item",
-      items: "items"
+      items: "items",
+      stats: {
+        title: "Learning Statistics",
+        avgScore: "Average Quiz",
+        avgScoreSub: "From {count} completed quizzes",
+        comprehension: "Comprehension",
+        comprehensionSub: "Based on quiz performance",
+        weeklyProgress: "Learning Progress",
+        weeklyProgressSub: "Quizzes completed this week",
+        challengingTopic: "Needs Review",
+        challengingTopicSub: "Topic with lowest score",
+        noQuizTaken: "No Quizzes Yet",
+        noQuizTakenSub: "Start a quiz to view statistics",
+        excellent: "Excellent",
+        good: "Good",
+        fair: "Fair",
+        needsStudy: "Needs Study",
+        none: "None",
+        weekActivity: "quizzes this week",
+        notesCount: "notes created"
+      }
     },
     aiChat: {
       title: "AI Assistant",
@@ -289,7 +330,8 @@ export const dashboardTranslations = {
         flashcardDisabledTooltip: "Save note to generate flashcards",
         flashcardTooltip: "Generate Flashcards from this Note",
         generating: "Generating...",
-        flashcard: "Flashcard"
+        flashcard: "Flashcard",
+        exportPdf: "Export PDF"
       }
     }
   }

@@ -134,8 +134,7 @@ function FlashcardsDisplay() {
             <div className="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto min-h-screen">
                 <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-6 rounded-3xl border border-gray-200/50 dark:border-gray-700/50">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white flex items-center">
-                            <SparklesIcon className="w-8 h-8 mr-3 text-[#00A2D8] dark:text-[#4CC1EE]"/>
+                        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
                             {t.flashcards.selectSet}
                         </h1>
                         <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm sm:text-base">

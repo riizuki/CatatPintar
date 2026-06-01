@@ -1,6 +1,6 @@
 "use client";
 
-import { MagnifyingGlassIcon, PlusIcon, ClockIcon, SparklesIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, PlusIcon, ClockIcon, SparklesIcon, ChevronRightIcon, ChartBarIcon, ArrowTrendingUpIcon, ExclamationTriangleIcon, CheckCircleIcon, AcademicCapIcon } from "@heroicons/react/24/outline";
 import { FolderIcon, DocumentTextIcon } from "@heroicons/react/24/solid";
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
@@ -39,6 +39,7 @@ function DashboardContent() {
   const [notes, setNotes] = useState([]);
   const [recentNotes, setRecentNotes] = useState([]);
   const [folders, setFolders] = useState([]);
+  const [quizzes, setQuizzes] = useState([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -56,10 +57,11 @@ function DashboardContent() {
       try {
         const query = searchTerm ? `?search=${searchTerm}` : "";
 
-        const [recentRes, allRes, foldersRes] = await Promise.all([
+        const [recentRes, allRes, foldersRes, quizzesRes] = await Promise.all([
           fetch(`/api/notes?recent=true${query}`),
           fetch(`/api/notes${query}`),
           fetch("/api/folders"),
+          fetch("/api/quizzes").catch(() => null),
         ]);
 
         if (!recentRes.ok || !allRes.ok) {
@@ -72,10 +74,16 @@ function DashboardContent() {
         const recentData = await recentRes.json();
         const allData = await allRes.json();
         const foldersData = await foldersRes.json();
+        
+        let quizzesData = [];
+        if (quizzesRes && quizzesRes.ok) {
+          quizzesData = await quizzesRes.json();
+        }
 
         setRecentNotes(recentData);
         setNotes(allData);
         setFolders(foldersData);
+        setQuizzes(quizzesData);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -112,6 +120,47 @@ function DashboardContent() {
       setIsMutating(false);
     }
   };
+
+  // Calculate Learning Statistics
+  const completedQuizzes = quizzes.filter(q => q.result !== null);
+  const quizzesCount = completedQuizzes.length;
+  
+  // 1. Average Score
+  const averageScore = quizzesCount > 0 
+    ? Math.round(completedQuizzes.reduce((sum, q) => sum + q.result.score, 0) / quizzesCount)
+    : 0;
+
+  // 2. Comprehension Level
+  let comprehensionLevel = t.home.stats.none;
+  let comprehensionColor = "text-gray-500 bg-gray-50 dark:bg-gray-800/40 border-gray-200 dark:border-gray-700/50";
+  
+  if (quizzesCount > 0) {
+    if (averageScore >= 90) {
+      comprehensionLevel = t.home.stats.excellent;
+      comprehensionColor = "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/40";
+    } else if (averageScore >= 75) {
+      comprehensionLevel = t.home.stats.good;
+      comprehensionColor = "text-[#00A2D8] bg-[#00A2D8]/10 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900/40";
+    } else if (averageScore >= 50) {
+      comprehensionLevel = t.home.stats.fair;
+      comprehensionColor = "text-amber-600 bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/40";
+    } else {
+      comprehensionLevel = t.home.stats.needsStudy;
+      comprehensionColor = "text-rose-600 bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/40";
+    }
+  }
+
+  // 3. Weekly study activity
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const weeklyQuizzes = completedQuizzes.filter(q => new Date(q.result.takenAt) >= sevenDaysAgo);
+  const weeklyProgressCount = weeklyQuizzes.length;
+
+  // 4. Challenging Topic
+  const lowScoreQuizzes = completedQuizzes
+    .filter(q => q.result.score < 80)
+    .sort((a, b) => a.result.score - b.result.score);
+  const challengingTopic = lowScoreQuizzes.length > 0 ? lowScoreQuizzes[0] : null;
 
   return (
     <div className="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto min-h-screen">
@@ -182,6 +231,126 @@ function DashboardContent() {
           Kesalahan: {error}
         </div>
       )}
+
+      {/* Learning Statistics Section */}
+      <motion.section 
+        variants={itemVariants}
+        initial="hidden"
+        animate="visible"
+        className="mb-10 relative z-10"
+      >
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center mb-6">
+          <div className="p-1.5 bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/40 dark:to-blue-900/10 rounded-lg mr-3 border border-blue-200/50 dark:border-blue-700/50 text-[#00A2D8]">
+            <ChartBarIcon className="w-5 h-5" />
+          </div>
+          {t.home.stats?.title || "Statistik Belajar"}
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* 1. Average Score Card */}
+          <motion.div 
+            whileHover={{ y: -4, scale: 1.01 }}
+            className="p-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl border border-gray-100 dark:border-gray-700/50 shadow-sm flex flex-col justify-between"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.home.stats?.avgScore || "Rata-rata Kuis"}</span>
+              <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#00A2D8] border border-blue-100/50 dark:border-blue-900/30">
+                <ArrowTrendingUpIcon className="w-5 h-5" />
+              </div>
+            </div>
+            <div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-extrabold text-gray-900 dark:text-white">{quizzesCount > 0 ? `${averageScore}` : "-"}</span>
+                {quizzesCount > 0 && <span className="text-base font-bold text-gray-400">/ 100</span>}
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 line-clamp-1">
+                {quizzesCount > 0 
+                  ? (t.home.stats?.avgScoreSub || "Dari {count} kuis selesai").replace("{count}", quizzesCount)
+                  : (t.home.stats?.noQuizTakenSub || "Mulai kuis untuk melihat statistik")}
+              </p>
+            </div>
+          </motion.div>
+
+          {/* 2. Comprehension Level Card */}
+          <motion.div 
+            whileHover={{ y: -4, scale: 1.01 }}
+            className="p-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl border border-gray-100 dark:border-gray-700/50 shadow-sm flex flex-col justify-between"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.home.stats?.comprehension || "Pemahaman"}</span>
+              <div className="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 border border-purple-100/50 dark:border-purple-900/30">
+                <AcademicCapIcon className="w-5 h-5" />
+              </div>
+            </div>
+            <div>
+              {quizzesCount > 0 ? (
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold border ${comprehensionColor}`}>
+                  {comprehensionLevel}
+                </span>
+              ) : (
+                <span className="text-3xl font-extrabold text-gray-400">-</span>
+              )}
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 line-clamp-1">
+                {quizzesCount > 0 ? (t.home.stats?.comprehensionSub || "Berdasarkan performa kuis") : (t.home.stats?.noQuizTakenSub || "Mulai kuis untuk melihat statistik")}
+              </p>
+            </div>
+          </motion.div>
+
+          {/* 3. Weekly Progress Card */}
+          <motion.div 
+            whileHover={{ y: -4, scale: 1.01 }}
+            className="p-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl border border-gray-100 dark:border-gray-700/50 shadow-sm flex flex-col justify-between"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.home.stats?.weeklyProgress || "Progress Belajar"}</span>
+              <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 border border-emerald-100/50 dark:border-emerald-900/30">
+                <CheckCircleIcon className="w-5 h-5" />
+              </div>
+            </div>
+            <div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-4xl font-extrabold text-gray-900 dark:text-white">{weeklyProgressCount}</span>
+                <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase">{t.home.stats?.weekActivity || "kuis minggu ini"}</span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 line-clamp-1">
+                {notes.length} {(t.home.stats?.notesCount || "catatan dibuat")}
+              </p>
+            </div>
+          </motion.div>
+
+          {/* 4. Challenging Topic Card */}
+          <motion.div 
+            whileHover={{ y: -4, scale: 1.01 }}
+            className="p-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl border border-gray-100 dark:border-gray-700/50 shadow-sm flex flex-col justify-between"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.home.stats?.challengingTopic || "Perlu Ditinjau"}</span>
+              <div className="p-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 border border-rose-100/50 dark:border-rose-900/30">
+                <ExclamationTriangleIcon className="w-5 h-5" />
+              </div>
+            </div>
+            <div>
+              {challengingTopic ? (
+                <Link 
+                  href={`/dashboard/quiz/${challengingTopic.id}`}
+                  className="group flex items-center justify-between p-2.5 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100/50 dark:border-rose-900/20 hover:bg-rose-100/50 dark:hover:bg-rose-950/40 transition-colors"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-extrabold text-rose-700 dark:text-rose-400 truncate">{challengingTopic.sourceValue}</p>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">Skor: {challengingTopic.result.score}</p>
+                  </div>
+                  <ChevronRightIcon className="w-4 h-4 text-rose-500 group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              ) : (
+                <span className="text-3xl font-extrabold text-gray-400">-</span>
+              )}
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 line-clamp-1">
+                {challengingTopic ? (t.home.stats?.challengingTopicSub || "Materi dengan skor terendah") : (t.home.stats?.noQuizTakenSub || "Mulai kuis untuk melihat statistik")}
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </motion.section>
 
       <motion.div
         variants={containerVariants}
