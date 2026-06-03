@@ -5,7 +5,6 @@ import prisma from '@/lib/prisma';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { mkdir, writeFile } from 'fs/promises';
 import path from 'path';
-const pdfParse = require('pdf-parse');
 import AdmZip from 'adm-zip';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -105,6 +104,8 @@ export async function POST(request) {
     // 1. Text Extraction
     let extractedText = '';
     if (extension === '.pdf') {
+      const pdfParseModule = await import('pdf-parse');
+      const pdfParse = pdfParseModule.default || pdfParseModule;
       const data = await pdfParse(fileBuffer);
       extractedText = data.text;
     } else if (extension === '.pptx' || extension === '.ppt') {
