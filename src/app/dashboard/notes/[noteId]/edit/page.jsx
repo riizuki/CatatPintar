@@ -182,6 +182,24 @@ const EditNotePage = () => {
         ? 'Dibuat dengan Catat Pintar — Belajar jadi lebih mudah'
         : 'Created with Catat Pintar — Learning made easy';
 
+      // Sanitize content: strip all inline font-size and font-family styles from Quill HTML
+      // to ensure consistent typography in the PDF output
+      const sanitizedContent = content
+        .replace(/style\s*=\s*"[^"]*"/gi, (match) => {
+          // Remove font-size and font-family from inline styles, keep other styles
+          let cleaned = match
+            .replace(/font-size\s*:\s*[^;"]+;?/gi, '')
+            .replace(/font-family\s*:\s*[^;"]+;?/gi, '')
+            .replace(/color\s*:\s*[^;"]+;?/gi, '');
+          // If style is now empty, remove it entirely
+          if (cleaned.replace(/style\s*=\s*"[\s;]*"/i, '').trim() === '') return '';
+          return cleaned;
+        })
+        .replace(/class\s*=\s*"[^"]*ql-size-[^"]*"/gi, (match) => {
+          // Remove ql-size classes to prevent oversized text
+          return match.replace(/ql-size-\w+/g, '').replace(/\s+/g, ' ');
+        });
+
       // Build a self-contained HTML document for the print iframe
       const htmlContent = `
 <!DOCTYPE html>
@@ -189,181 +207,205 @@ const EditNotePage = () => {
 <head>
   <meta charset="utf-8">
   <title>${title}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    /* ===== Reset & Base ===== */
+    /* ===== Reset ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     @page {
       size: A4;
-      margin: 22mm 18mm 42mm 18mm;
+      margin: 20mm 18mm 18mm 18mm;
     }
 
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      font-size: 11pt;
+      font-family: 'Crimson Pro', 'Times New Roman', Georgia, serif;
+      font-size: 10pt;
       line-height: 1.7;
-      color: #1f2937;
+      color: #2d3748;
       background: #fff;
-      padding-bottom: 40mm;
+      font-weight: 400;
+      letter-spacing: 0.005em;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* ===== Header ===== */
+    /* ===== Layout ===== */
+    .print-container { width: 100%; border-collapse: collapse; }
+    .pdf-header-space { height: 42px; }
+    .pdf-footer-space { height: 32px; }
+
+    /* ===== Running Header ===== */
     .pdf-header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 28px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-bottom: 14px;
-      border-bottom: 2.5px solid #00A2D8;
-      margin-bottom: 32px;
+      border-bottom: 0.5pt solid #cbd5e0;
+      background: #fff;
+      padding-bottom: 4px;
+      z-index: 1000;
     }
     .pdf-header .brand {
-      font-size: 16pt;
-      font-weight: 800;
-      color: #00A2D8;
-      letter-spacing: -0.02em;
-    }
-    .pdf-header .brand span {
-      color: #0e7490;
+      font-family: 'Crimson Pro', 'Times New Roman', Georgia, serif;
+      font-size: 9.5pt;
+      font-weight: 700;
+      color: #2d3748;
+      letter-spacing: 0.02em;
     }
     .pdf-header .date {
-      font-size: 9pt;
-      color: #6b7280;
-      font-weight: 500;
+      font-size: 7.5pt;
+      color: #a0aec0;
+      font-weight: 400;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
     }
 
-    /* ===== Title ===== */
+    /* ===== Title Area ===== */
+    .pdf-title-block {
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 0.5pt solid #e2e8f0;
+    }
     .pdf-title {
-      font-size: 22pt;
-      font-weight: 800;
-      color: #111827;
-      line-height: 1.25;
-      margin-bottom: 8px;
-      letter-spacing: -0.02em;
+      font-family: 'Crimson Pro', 'Times New Roman', Georgia, serif;
+      font-size: 20pt;
+      font-weight: 700;
+      color: #1a202c;
+      line-height: 1.2;
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
     }
     .pdf-meta {
-      font-size: 9pt;
-      color: #9ca3af;
-      margin-bottom: 24px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #e5e7eb;
+      font-size: 8pt;
+      color: #a0aec0;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
 
-    /* ===== Content ===== */
+    /* ===== Body Content ===== */
     .pdf-body {
-      font-size: 11pt;
-      line-height: 1.75;
-      color: #374151;
+      font-size: 10pt;
+      line-height: 1.7;
+      color: #2d3748;
     }
 
-    .pdf-body h1 {
-      font-size: 18pt;
-      font-weight: 800;
-      color: #111827;
-      margin-top: 28px;
-      margin-bottom: 10px;
-      line-height: 1.3;
-      letter-spacing: -0.01em;
+    /* — Force all text inside pdf-body to inherit consistent sizing — */
+    .pdf-body * {
+      font-size: inherit !important;
+      line-height: inherit !important;
+    }
+
+    /* — Headings — */
+    .pdf-body h1, .pdf-body h2, .pdf-body h3,
+    .pdf-body h4, .pdf-body h5, .pdf-body h6 {
+      font-family: 'Crimson Pro', 'Times New Roman', Georgia, serif !important;
+      color: #1a202c;
+      line-height: 1.25 !important;
       page-break-after: avoid;
+      break-after: avoid;
+      font-weight: 700;
+    }
+    .pdf-body h1 {
+      font-size: 16pt !important;
+      margin: 22px 0 8px 0;
+      padding-bottom: 4px;
+      border-bottom: 0.5pt solid #e2e8f0;
     }
     .pdf-body h2 {
-      font-size: 15pt;
-      font-weight: 700;
-      color: #1f2937;
-      margin-top: 24px;
-      margin-bottom: 8px;
-      line-height: 1.35;
-      page-break-after: avoid;
+      font-size: 13pt !important;
+      margin: 18px 0 6px 0;
     }
     .pdf-body h3 {
-      font-size: 13pt;
-      font-weight: 700;
-      color: #374151;
-      margin-top: 20px;
-      margin-bottom: 6px;
-      line-height: 1.4;
-      page-break-after: avoid;
+      font-size: 11.5pt !important;
+      margin: 14px 0 5px 0;
     }
     .pdf-body h4, .pdf-body h5, .pdf-body h6 {
-      font-size: 11pt;
-      font-weight: 700;
-      color: #374151;
-      margin-top: 16px;
-      margin-bottom: 4px;
-      page-break-after: avoid;
+      font-size: 10pt !important;
+      margin: 12px 0 4px 0;
+      font-weight: 600;
     }
 
+    /* — Paragraphs — */
     .pdf-body p {
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       orphans: 3;
       widows: 3;
+      text-align: justify;
+      hyphens: auto;
     }
 
-    .pdf-body strong { font-weight: 700; color: #111827; }
+    .pdf-body strong { font-weight: 700; color: #1a202c; }
     .pdf-body em { font-style: italic; }
     .pdf-body u { text-decoration: underline; text-underline-offset: 2px; }
-    .pdf-body s { text-decoration: line-through; color: #9ca3af; }
+    .pdf-body s { text-decoration: line-through; color: #a0aec0; }
 
     .pdf-body a {
       color: #00A2D8;
-      text-decoration: underline;
-      text-underline-offset: 2px;
+      text-decoration: none;
+      border-bottom: 0.5pt solid #00A2D8;
     }
 
-    /* Lists */
+    /* — Lists — */
     .pdf-body ul, .pdf-body ol {
-      padding-left: 24px;
-      margin-bottom: 12px;
+      padding-left: 18px;
+      margin: 4px 0 10px 0;
     }
     .pdf-body li {
-      margin-bottom: 4px;
-      line-height: 1.65;
+      margin-bottom: 3px;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
     .pdf-body ul li { list-style-type: disc; }
     .pdf-body ol li { list-style-type: decimal; }
     .pdf-body li > ul, .pdf-body li > ol {
-      margin-top: 4px;
-      margin-bottom: 4px;
+      margin-top: 2px;
+      margin-bottom: 2px;
     }
+    .pdf-body ul ul li { list-style-type: circle; }
+    .pdf-body ul ul ul li { list-style-type: square; }
 
-    /* Blockquote */
+    /* — Blockquote — */
     .pdf-body blockquote {
-      border-left: 4px solid #00A2D8;
-      background: #f0f9ff;
-      padding: 12px 16px;
-      margin: 16px 0;
-      border-radius: 0 8px 8px 0;
-      color: #0c4a6e;
+      border-left: 2.5pt solid #00A2D8;
+      background: #f7fafc;
+      padding: 10px 14px;
+      margin: 12px 0;
+      border-radius: 0 4px 4px 0;
+      color: #4a5568;
       font-style: italic;
       page-break-inside: avoid;
+      break-inside: avoid;
     }
 
-    /* Code blocks */
-    .pdf-body pre {
-      background: #1e293b !important;
-      color: #e2e8f0 !important;
-      padding: 16px 20px;
-      border-radius: 8px;
-      font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-      font-size: 9pt;
-      line-height: 1.6;
+    /* — Code — */
+    .pdf-body pre, .pdf-body .ql-syntax {
+      background: #f7fafc !important;
+      color: #2d3748 !important;
+      padding: 10px 14px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', Consolas, monospace !important;
+      font-size: 8pt !important;
+      line-height: 1.5 !important;
       overflow-x: auto;
-      margin: 16px 0;
+      margin: 10px 0;
       white-space: pre-wrap;
       word-wrap: break-word;
       page-break-inside: avoid;
-      border: 1px solid #334155;
+      break-inside: avoid;
+      border: 0.5pt solid #e2e8f0 !important;
     }
 
     .pdf-body code {
-      background: #f1f5f9;
-      color: #dc2626;
-      padding: 1px 5px;
-      border-radius: 4px;
-      font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-      font-size: 0.9em;
+      background: #edf2f7;
+      color: #c53030;
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-family: 'JetBrains Mono', Consolas, monospace !important;
+      font-size: 8.5pt !important;
     }
 
     .pdf-body pre code {
@@ -371,139 +413,134 @@ const EditNotePage = () => {
       color: inherit;
       padding: 0;
       border-radius: 0;
-      font-size: inherit;
+      font-size: inherit !important;
     }
 
-    /* Images */
+    /* Highlight.js tokens */
+    .hljs-comment, .hljs-quote { color: #718096; font-style: italic; }
+    .hljs-keyword, .hljs-selector-tag, .hljs-subst { color: #5a67d8; font-weight: 600; }
+    .hljs-number, .hljs-literal, .hljs-variable, .hljs-template-variable, .hljs-tag .hljs-attr { color: #c05621; }
+    .hljs-string, .hljs-doctag, .hljs-regexp { color: #2b6cb0; }
+    .hljs-title, .hljs-section, .hljs-selector-id { color: #6b46c1; font-weight: 600; }
+    .hljs-type, .hljs-class .hljs-title { color: #b83280; }
+    .hljs-params, .hljs-attr { color: #2d3748; }
+    .hljs-built_in, .hljs-bullet { color: #c53030; }
+
+    /* — Images — */
     .pdf-body img {
-      max-width: 100%;
+      max-width: 85%;
       height: auto;
-      border-radius: 8px;
-      margin: 16px auto;
+      border-radius: 4px;
+      margin: 12px auto;
       display: block;
       page-break-inside: avoid;
+      break-inside: avoid;
     }
 
-    /* Tables */
+    /* — Tables — */
     .pdf-body table {
       width: 100%;
       border-collapse: collapse;
-      margin: 16px 0;
-      font-size: 10pt;
+      margin: 12px 0;
       page-break-inside: avoid;
+      break-inside: avoid;
     }
     .pdf-body th, .pdf-body td {
-      border: 1px solid #d1d5db;
-      padding: 8px 12px;
+      border: 0.5pt solid #e2e8f0;
+      padding: 6px 10px;
       text-align: left;
+      font-size: 9pt !important;
+      line-height: 1.4 !important;
     }
     .pdf-body th {
-      background: #f3f4f6;
-      font-weight: 700;
-      color: #111827;
+      background: #f7fafc;
+      font-weight: 600;
+      color: #1a202c;
+      font-size: 8.5pt !important;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
-    .pdf-body tr:nth-child(even) td {
-      background: #f9fafb;
-    }
+    .pdf-body tr:nth-child(even) td { background: #fafbfc; }
 
-    /* Horizontal rule */
+    /* — HR — */
     .pdf-body hr {
       border: none;
-      border-top: 1px solid #e5e7eb;
-      margin: 20px 0;
+      border-top: 0.5pt solid #e2e8f0;
+      margin: 16px 0;
     }
 
-    /* ===== Footer ===== */
+    /* ===== Running Footer ===== */
     .pdf-footer {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      bottom: 0; left: 0; right: 0;
+      height: 22px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 18mm;
-      font-size: 8pt;
-      color: #9ca3af;
-      border-top: 1px solid #e5e7eb;
+      border-top: 0.5pt solid #e2e8f0;
       background: #fff;
+      padding-top: 4px;
+      font-size: 7pt;
+      color: #a0aec0;
+      letter-spacing: 0.03em;
+      z-index: 1000;
     }
 
-    /* ===== Quill-specific overrides ===== */
-    .pdf-body .ql-indent-1 { padding-left: 3em; }
-    .pdf-body .ql-indent-2 { padding-left: 6em; }
-    .pdf-body .ql-indent-3 { padding-left: 9em; }
-    .pdf-body .ql-indent-4 { padding-left: 12em; }
-    .pdf-body .ql-indent-5 { padding-left: 15em; }
-    .pdf-body .ql-indent-6 { padding-left: 18em; }
-    .pdf-body .ql-indent-7 { padding-left: 21em; }
-    .pdf-body .ql-indent-8 { padding-left: 24em; }
+    /* ===== Quill Overrides ===== */
+    .pdf-body .ql-indent-1 { margin-left: 2em !important; }
+    .pdf-body .ql-indent-2 { margin-left: 4em !important; }
+    .pdf-body .ql-indent-3 { margin-left: 6em !important; }
+    .pdf-body .ql-indent-4 { margin-left: 8em !important; }
+    .pdf-body .ql-indent-5 { margin-left: 10em !important; }
+    .pdf-body .ql-indent-6 { margin-left: 12em !important; }
+    .pdf-body .ql-indent-7 { margin-left: 14em !important; }
+    .pdf-body .ql-indent-8 { margin-left: 16em !important; }
 
     .pdf-body .ql-align-center { text-align: center; }
     .pdf-body .ql-align-right { text-align: right; }
     .pdf-body .ql-align-justify { text-align: justify; }
 
-    .pdf-body .ql-size-small { font-size: 9pt; }
-    .pdf-body .ql-size-large { font-size: 14pt; }
-    .pdf-body .ql-size-huge { font-size: 18pt; }
+    /* Force Quill size classes to consistent sizes */
+    .pdf-body .ql-size-small { font-size: 9pt !important; }
+    .pdf-body .ql-size-large { font-size: 10pt !important; }
+    .pdf-body .ql-size-huge { font-size: 10pt !important; }
 
-    .pdf-body .ql-font-serif { font-family: Georgia, 'Times New Roman', serif; }
-    .pdf-body .ql-font-monospace { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+    .pdf-body .ql-font-serif { font-family: 'Crimson Pro', 'Times New Roman', Georgia, serif !important; }
+    .pdf-body .ql-font-monospace { font-family: 'JetBrains Mono', Consolas, monospace !important; }
 
-    .pdf-body .ql-syntax {
-      background: #1e293b !important;
-      color: #e2e8f0 !important;
-      padding: 16px 20px;
-      border-radius: 8px;
-      font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-      font-size: 9pt;
-      line-height: 1.6;
-      overflow-x: auto;
-      margin: 16px 0;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      page-break-inside: avoid;
-      border: 1px solid #334155;
-    }
+    /* Hide video embeds */
+    .pdf-body iframe, .pdf-body .ql-video { display: none; }
 
-    /* Video embeds */
-    .pdf-body iframe, .pdf-body .ql-video {
-      display: none; /* Hide video embeds in PDF */
-    }
-    .pdf-body .ql-video::after {
-      content: '[Video content - view in app]';
-      display: block;
-      font-style: italic;
-      color: #9ca3af;
-      font-size: 9pt;
-    }
+    /* — Span color overrides (strip Quill inline colors for clean print) — */
+    .pdf-body span[style*="color"] { color: inherit !important; }
+    .pdf-body span[style*="background"] { background: transparent !important; }
 
-    /* Print specific */
     @media print {
-      body {
-        background: white;
-        padding-bottom: 40mm;
-      }
-      .pdf-footer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: #fff;
-      }
+      body { background: white; }
     }
   </style>
 </head>
 <body>
+  <table class="print-container">
+    <thead><tr><td><div class="pdf-header-space"></div></td></tr></thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="pdf-title-block">
+            <div class="pdf-title">${title.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+            <div class="pdf-meta">E-Notebook &bull; ${formattedDate}</div>
+          </div>
+          <div class="pdf-body">${sanitizedContent}</div>
+        </td>
+      </tr>
+    </tbody>
+    <tfoot><tr><td><div class="pdf-footer-space"></div></td></tr></tfoot>
+  </table>
+
   <div class="pdf-header">
-    <div class="brand">Catat <span>Pintar</span></div>
+    <div class="brand">Catat Pintar</div>
     <div class="date">${formattedDate}</div>
   </div>
-
-  <div class="pdf-title">${title.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
-  <div class="pdf-meta">E-Notebook &bull; ${formattedDate}</div>
-
-  <div class="pdf-body">${content}</div>
 
   <div class="pdf-footer">
     <div>${footerText}</div>

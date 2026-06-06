@@ -101,21 +101,69 @@ export async function POST(request) {
     const extension = path.extname(filename).toLowerCase();
     const fileBuffer = Buffer.from(await file.arrayBuffer());
 
-    // 1. Text Extraction
-    let extractedText = '';
+    // 1. Text Extraction & AI Note Generation
+    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+    const isEn = languageHeader === 'en';
+    const systemLanguageText = isEn ? 'English' : 'Bahasa Indonesia';
+    
+    let result;
+
     if (extension === '.pdf') {
-      const pdfParseModule = await import('pdf-parse');
-      const pdfParse = pdfParseModule.default || pdfParseModule;
-      const data = await pdfParse(fileBuffer);
-      extractedText = data.text;
+      const pdfPart = {
+        inlineData: {
+          data: fileBuffer.toString('base64'),
+          mimeType: 'application/pdf'
+        }
+      };
+
+      const prompt = `
+        You are an expert student assistant.
+        A user has uploaded a lecture material file named "${filename}".
+        
+        Please read, understand, clean up and structure the content of the attached document into a high-quality, comprehensive, and beautiful student note summary in HTML.
+        Follow these guidelines:
+        1. Output MUST be in raw, clean HTML. Use standard tags like <h2>, <h3>, paragraphs <p>, structured lists <ul>, <ol>, <li>, and important accents <strong> or <em>. Do NOT use <html>, <head>, or <body> tags.
+        2. Group content logically. Summarize key concepts thoroughly, ensuring no critical educational elements are omitted.
+        3. The response MUST be written in ${systemLanguageText}.
+        4. Do NOT wrap the HTML output inside markdown code blocks like \`\`\`html or similar. Return ONLY the HTML code directly.
+      `;
+
+      result = await model.generateContent([pdfPart, prompt]);
     } else if (extension === '.pptx' || extension === '.ppt') {
-      extractedText = parsePptxText(fileBuffer);
+      const extractedText = parsePptxText(fileBuffer);
+      if (!extractedText || extractedText.trim() === '') {
+        return NextResponse.json({ message: 'Could not extract text from this file.' }, { status: 400 });
+      }
+
+      const prompt = `
+        You are an expert student assistant.
+        A user has uploaded a lecture material file named "${filename}".
+        Below is the raw extracted text of the material:
+        
+        ---
+        ${extractedText}
+        ---
+        
+        Please read, understand, clean up and structure the raw content into a high-quality, comprehensive, and beautiful student note summary in HTML.
+        Follow these guidelines:
+        1. Output MUST be in raw, clean HTML. Use standard tags like <h2>, <h3>, paragraphs <p>, structured lists <ul>, <ol>, <li>, and important accents <strong> or <em>. Do NOT use <html>, <head>, or <body> tags.
+        2. Group content logically. Summarize key concepts thoroughly, ensuring no critical educational elements are omitted.
+        3. The response MUST be written in ${systemLanguageText}.
+        4. Do NOT wrap the HTML output inside markdown code blocks like \`\`\`html or similar. Return ONLY the HTML code directly.
+      `;
+
+      result = await model.generateContent(prompt);
     } else {
       return NextResponse.json({ message: 'Unsupported file type. Use PDF or PPTX.' }, { status: 400 });
     }
 
-    if (!extractedText || extractedText.trim() === '') {
-      return NextResponse.json({ message: 'Could not extract text from this file.' }, { status: 400 });
+    let formattedHtml = result.response.text().trim();
+
+    // Clean up markdown wrapper if any
+    if (formattedHtml.startsWith('```html')) {
+      formattedHtml = formattedHtml.replace(/^```html/, '').replace(/```$/, '').trim();
+    } else if (formattedHtml.startsWith('```')) {
+      formattedHtml = formattedHtml.replace(/^```/, '').replace(/```$/, '').trim();
     }
 
     // 2. Save physical file locally
@@ -129,39 +177,6 @@ export async function POST(request) {
     
     const relativePath = `/uploads/materials/${userId}/${uniqueFilename}`;
     const fileType = extension.replace('.', '');
-
-    // 3. AI structuring notes using Gemini
-    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
-    
-    const isEn = languageHeader === 'en';
-    const systemLanguageText = isEn ? 'English' : 'Bahasa Indonesia';
-
-    const prompt = `
-      You are an expert student assistant.
-      A user has uploaded a lecture material file named "${filename}".
-      Below is the raw extracted text of the material:
-      
-      ---
-      ${extractedText}
-      ---
-      
-      Please read, understand, clean up and structure the raw content into a high-quality, comprehensive, and beautiful student note summary in HTML.
-      Follow these guidelines:
-      1. Output MUST be in raw, clean HTML. Use standard tags like <h2>, <h3>, paragraphs <p>, structured lists <ul>, <ol>, <li>, and important accents <strong> or <em>. Do NOT use <html>, <head>, or <body> tags.
-      2. Group content logically. Summarize key concepts thoroughly, ensuring no critical educational elements are omitted.
-      3. The response MUST be written in ${systemLanguageText}.
-      4. Do NOT wrap the HTML output inside markdown code blocks like \`\`\`html or similar. Return ONLY the HTML code directly.
-    `;
-
-    const result = await model.generateContent(prompt);
-    let formattedHtml = result.response.text().trim();
-
-    // Clean up markdown wrapper if any
-    if (formattedHtml.startsWith('```html')) {
-      formattedHtml = formattedHtml.replace(/^```html/, '').replace(/```$/, '').trim();
-    } else if (formattedHtml.startsWith('```')) {
-      formattedHtml = formattedHtml.replace(/^```/, '').replace(/```$/, '').trim();
-    }
 
     // 4. Manage auto-created Folder
     const folderName = isEn ? 'Lecture Materials' : 'Materi Kuliah';

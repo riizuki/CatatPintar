@@ -70,7 +70,7 @@ export const translations = {
     },
     // Footer
     footer: {
-      description: "Asisten AI andalan mahasiswa buat catat materi dan tembus ujian. Dibangun sebagai solusi inovatif dalam ajang #JuaraVibeCoding yang diselenggarakan oleh Google.",
+      description: "Asisten AI andalan mahasiswa buat catat materi dan tembus ujian. Dibangun sebagai solusi inovatif untuk mata kuliah Kewirausahaan program PKM (Pekan Kreativitas Mahasiswa) kampus UNIKOM.",
       products: "Fitur",
       company: "Informasi",
       legal: "Legalitas",
@@ -158,7 +158,7 @@ export const translations = {
     },
     // Footer
     footer: {
-      description: "The ultimate AI assistant for students to take notes and ace exams. Developed as an innovative solution for #JuaraVibeCoding organized by Google.",
+      description: "The ultimate AI assistant for students to take notes and ace exams. Developed as an innovative solution for the Entrepreneurship course under the PKM (Pekan Kreativitas Mahasiswa) program at UNIKOM.",
       products: "Features",
       company: "Information",
       legal: "Legal",

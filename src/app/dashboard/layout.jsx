@@ -25,6 +25,16 @@ import ThemeToggle from "../components/ThemeToggle";
 import { useLanguage } from "../../lib/contexts/LanguageContext";
 import { dashboardTranslations } from "../../locales/dashboard";
 
+const getInitials = (name) => {
+  if (!name) return "?";
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .substring(0, 2)
+    .toUpperCase();
+};
+
 const Sidebar = () => {
   const pathname = usePathname();
   const { data: session } = useSession();
@@ -137,13 +147,11 @@ const Sidebar = () => {
           {session?.user && (
             <div className={`flex items-center justify-between p-2 rounded-xl border border-transparent ${isSidebarOpen ? 'bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-700/50' : ''} transition-all`}>
               <div className="flex items-center min-w-0">
-                <Image
-                  src={`https://i.pravatar.cc/150?u=${session.user.email}`}
-                  alt="User Avatar"
-                  width={36}
-                  height={36}
-                  className="rounded-full flex-shrink-0 border border-gray-200 dark:border-gray-700"
-                />
+                <div
+                  className="w-9 h-9 rounded-full bg-gradient-to-br from-[#00A2D8] via-[#4CC1EE] to-blue-600 text-white flex items-center justify-center font-bold text-sm flex-shrink-0 shadow-sm border border-white/20 dark:border-white/10"
+                >
+                  {getInitials(session.user.name || "User")}
+                </div>
                 <motion.div
                   initial={false}
                   animate={{ 
@@ -264,13 +272,11 @@ const MobileSidebar = ({ isOpen, setIsOpen }) => {
                 {session?.user && (
                   <div className="flex items-center justify-between">
                     <div className="flex items-center min-w-0">
-                      <Image
-                        src={`https://i.pravatar.cc/150?u=${session.user.email}`}
-                        alt="User Avatar"
-                        width={40}
-                        height={40}
-                        className="rounded-full border border-gray-200 dark:border-gray-700"
-                      />
+                      <div
+                        className="w-10 h-10 rounded-full bg-gradient-to-br from-[#00A2D8] via-[#4CC1EE] to-blue-600 text-white flex items-center justify-center font-bold text-base flex-shrink-0 shadow-sm border border-white/20 dark:border-white/10"
+                      >
+                        {getInitials(session.user.name || "User")}
+                      </div>
                       <div className="min-w-0 ml-3">
                         <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
                           {session.user.name}

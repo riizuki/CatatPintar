@@ -85,9 +85,15 @@ export default function Footer() {
           <p>
             &copy; {new Date().getFullYear()} CatatPintar. All rights reserved.
           </p>
-          <p className="flex items-center gap-1">
-            {t.madeWith} <span className="text-red-500">&hearts;</span> {t.by} <span className="font-semibold text-gray-700 dark:text-gray-300">Rizky Alfarid Hafizh</span>
-          </p>
+          <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 font-medium select-none group">
+            <span>{t.madeWith}</span>
+            <span className="text-rose-500 animate-pulse inline-block transform group-hover:scale-125 transition-transform duration-300">&hearts;</span>
+            <span>{t.by}</span>
+            <span className="relative font-bold text-gray-800 dark:text-gray-100 hover:text-[#00A2D8] dark:hover:text-[#4CC1EE] transition-colors duration-300 cursor-pointer">
+              Rizky Al Farid Hafizh
+              <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-[#00A2D8] dark:bg-[#4CC1EE] transition-all duration-300 group-hover:w-full"></span>
+            </span>
+          </div>
         </div>
       </div>
     </footer>
