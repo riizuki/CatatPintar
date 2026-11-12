@@ -1,0 +1,314 @@
+/* ============================================================
+   NoteEditor — editor catatan CatatPintar (tanpa react-quill)
+   Memakai variabel tema dari landing.css (--ink, --rule, --hl-*, dll).
+   ============================================================ */
+@layer components {
+  .ne-root {
+    container-type: inline-size;
+    position: relative;
+    border: 2px solid var(--rule);
+    border-radius: 14px;
+    background: var(--card);
+    transition: border-color .15s;
+  }
+  /* Penanda aktif yang halus: tepi editor sedikit lebih gelap saat sedang menulis */
+  .ne-root:has(.ne-content:focus) { border-color: color-mix(in srgb, var(--ink-soft) 55%, var(--rule)); }
+
+  /* ---------- Toolbar ---------- */
+  .ne-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 10px;
+    border-bottom: 2px solid var(--rule);
+    background: var(--card);
+    border-radius: 12px 12px 0 0;
+  }
+  @media (max-width: 640px) {
+    .ne-toolbar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+    .ne-toolbar::-webkit-scrollbar { display: none; }
+  }
+  .ne-btn {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 34px;
+    border-radius: 8px;
+    color: var(--ink-soft);
+    font-size: 14px;
+    transition: background-color .12s, color .12s;
+  }
+  .ne-btn:hover { background: color-mix(in srgb, var(--rule) 70%, transparent); color: var(--ink); }
+  .ne-btn.is-active { background: var(--hl-yellow); color: var(--ink-fixed); }
+  .ne-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .ne-sep { width: 2px; height: 20px; margin: 0 3px; flex-shrink: 0; border-radius: 2px; background: var(--rule); }
+  .ne-grow { flex: 1; }
+
+  .ne-select-wrap { position: relative; flex-shrink: 0; }
+  .ne-select {
+    appearance: none;
+    height: 34px;
+    padding: 0 30px 0 12px;
+    border-radius: 8px;
+    border: 2px solid var(--rule);
+    background: var(--card);
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .ne-select:hover { border-color: var(--ink-soft); }
+  .ne-select-icon {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    font-size: 10px; color: var(--ink-soft); pointer-events: none;
+  }
+
+  .ne-ai {
+    display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0;
+    height: 34px; padding: 0 14px; border-radius: 8px;
+    background: var(--hl-blue); color: var(--ink-fixed);
+    font-size: 14px; font-weight: 700;
+    transition: filter .15s, transform .1s;
+  }
+  .ne-ai:hover { filter: brightness(.95); }
+  .ne-ai:active { transform: scale(.97); }
+
+  /* Strip pilihan di bawah toolbar */
+  .ne-strip {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    padding: 8px 12px; border-bottom: 2px solid var(--rule);
+    background: color-mix(in srgb, var(--rule) 30%, var(--card));
+    animation: ne-strip .12s ease-out;
+  }
+  @keyframes ne-strip { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+  /* Bulatan warna */
+  .ne-swatch {
+    width: 26px; height: 26px; border-radius: 999px;
+    border: 2px solid color-mix(in srgb, var(--ink) 15%, transparent);
+    transition: transform .12s;
+  }
+  .ne-swatch:hover { transform: scale(1.15); }
+  .ne-swatch-hl { border-radius: 6px 3px 7px 4px; }
+  .ne-swatch-none { display: flex; align-items: center; justify-content: center; color: var(--ink-soft); font-size: 12px; background: var(--card); }
+
+  /* Popover link / gambar */
+  .ne-popover {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    padding: 10px 12px; border-bottom: 2px solid var(--rule);
+    background: color-mix(in srgb, var(--hl-yellow) 18%, var(--card));
+  }
+  .ne-popover-icon { color: var(--ink-soft); }
+  .ne-popover input[type="text"] {
+    flex: 1 1 220px; height: 36px; padding: 0 12px; border-radius: 8px;
+    border: 2px solid var(--rule); background: var(--card); color: var(--ink); outline: none;
+  }
+  .ne-popover input[type="text"]:focus { border-color: var(--ink-soft); }
+  .ne-pop-primary, .ne-pop-ghost {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 36px; padding: 0 14px; border-radius: 8px; font-size: 14px; font-weight: 700;
+  }
+  .ne-pop-primary { background: var(--ink-btn); color: #fff; }
+  .ne-pop-ghost { border: 2px solid var(--rule); color: var(--ink); }
+  .ne-pop-ghost:hover { border-color: var(--ink-soft); }
+
+  /* Bubble menu */
+  .ne-bubble {
+    position: absolute; z-index: 25; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 2px;
+    padding: 5px; border-radius: 12px;
+    background: var(--card); border: 2px solid var(--ink-fixed);
+    animation: ne-pop .14s ease-out;
+  }
+  .ne-bubble .ne-btn { width: 30px; height: 30px; }
+  .ne-bubble-hl {
+    width: 20px; height: 20px; margin: 0 3px; border-radius: 5px 3px 6px 4px;
+    border: 2px solid color-mix(in srgb, var(--ink-fixed) 20%, transparent);
+  }
+  .ne-bubble-hl:hover { transform: scale(1.15); }
+  .ne-bubble-ai {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 30px; margin-left: 4px; padding: 0 10px; border-radius: 8px;
+    background: var(--hl-blue); color: var(--ink-fixed); font-size: 13px; font-weight: 700;
+  }
+  @media (max-width: 640px) { .ne-bubble { display: none; } }
+  @keyframes ne-pop { from { opacity: 0; transform: translate(-50%, 4px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+  /* ---------- Kertas & isi ---------- */
+  .ne-paper {
+    position: relative;
+    border-radius: 0 0 12px 12px;
+  }
+  .ne-paper.is-ruled {
+    background-image: repeating-linear-gradient(to bottom, transparent 0 31px, var(--rule) 31px 32px);
+    background-position: 0 6px;
+  }
+  .ne-paper.is-ruled::before {
+    content: ""; position: absolute; top: 0; bottom: 0; left: 52px; width: 2px;
+    background: var(--margin); opacity: .55; pointer-events: none;
+  }
+
+  /* Area tulis tidak perlu garis fokus (outline) — kursor sudah jadi penandanya */
+  .ne-content:focus,
+  .ne-content:focus-visible { outline: none; box-shadow: none; }
+
+  .ne-content {
+    min-height: 60vh;
+    padding: 6px 28px 96px 28px;
+    outline: none;
+    color: var(--ink);
+    font-size: 18px;
+    line-height: 32px;
+    word-wrap: break-word;
+    caret-color: var(--margin);
+  }
+  .is-ruled .ne-content { padding-left: 72px; }
+  @media (max-width: 640px) {
+    .ne-content { padding-left: 18px; padding-right: 18px; }
+    .is-ruled .ne-content { padding-left: 46px; }
+    .ne-paper.is-ruled::before { left: 32px; }
+  }
+  .ne-content.is-empty::before {
+    content: attr(data-placeholder);
+    position: absolute; pointer-events: none;
+    color: var(--ink-soft); opacity: .7;
+    font-family: "Caveat Variable", cursive; font-size: 24px;
+  }
+
+  .ne-content > * { margin: 0; }
+  .ne-content p { margin: 0; }
+  .ne-content h1 { font-size: 2rem; line-height: 64px; font-weight: 800; letter-spacing: -.02em; }
+  .ne-content h2 { font-size: 1.5rem; line-height: 32px; font-weight: 800; margin-top: 32px; letter-spacing: -.01em; }
+  .ne-content h3 { font-size: 1.2rem; line-height: 32px; font-weight: 700; margin-top: 32px; }
+  .ne-content h4, .ne-content h5, .ne-content h6 { font-size: 1.05rem; line-height: 32px; font-weight: 700; }
+  .ne-content > :first-child { margin-top: 0; }
+  .ne-content ul, .ne-content ol { padding-left: 1.6em; }
+  .ne-content ul { list-style: disc; }
+  .ne-content ol { list-style: decimal; }
+  .ne-content ul ul { list-style: circle; }
+  .ne-content li::marker { color: var(--margin); font-weight: 700; }
+  .ne-content blockquote {
+    padding-left: 16px; border-left: 4px solid var(--hl-blue);
+    color: var(--ink-soft); font-style: italic;
+  }
+  .ne-content a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--hl-blue); text-decoration-thickness: 3px; text-underline-offset: 3px; }
+  .ne-content code {
+    padding: 1px 6px; border-radius: 6px; font-size: .88em;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    background: color-mix(in srgb, var(--hl-pink) 35%, transparent); color: var(--ink);
+  }
+  .ne-content pre {
+    margin: 16px 0; padding: 14px 16px; border-radius: 10px;
+    background: #16203d; color: #e2e8f0;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 14px; line-height: 22px;
+    white-space: pre-wrap; tab-size: 2;
+  }
+  .dark .ne-content pre { background: #0a1020; border: 2px solid var(--rule); }
+  .ne-content pre code { padding: 0; background: none; color: inherit; font-size: inherit; }
+  .ne-content img { display: block; max-width: 100%; height: auto; margin: 16px 0; border-radius: 10px; border: 2px solid var(--rule); }
+  .ne-content hr { border: 0; border-top: 2px dashed var(--ink-soft); opacity: .5; margin: 15px 0; }
+  .ne-content table { width: 100%; margin: 16px 0; border-collapse: collapse; background: var(--card); font-size: 15px; line-height: 24px; }
+  .ne-content th, .ne-content td { border: 2px solid var(--rule); padding: 6px 10px; text-align: left; vertical-align: top; min-width: 60px; }
+  .ne-content th { background: color-mix(in srgb, var(--hl-yellow) 35%, var(--card)); font-weight: 700; }
+  .ne-content iframe { width: 100%; aspect-ratio: 16 / 9; height: auto; margin: 16px 0; border-radius: 10px; }
+  .ne-content span[style*="background-color"] { border-radius: .3em .15em .35em .2em; padding: 0 .1em; color: var(--ink-fixed); }
+
+  /* Kompatibilitas catatan lama dari Quill */
+  .ne-content .ql-align-center { text-align: center; }
+  .ne-content .ql-align-right { text-align: right; }
+  .ne-content .ql-align-justify { text-align: justify; }
+  .ne-content .ql-indent-1 { padding-left: 2em; }
+  .ne-content .ql-indent-2 { padding-left: 4em; }
+  .ne-content .ql-indent-3 { padding-left: 6em; }
+  .ne-content .ql-size-small { font-size: .85em; }
+  .ne-content .ql-size-large { font-size: 1.25em; }
+  .ne-content .ql-size-huge { font-size: 1.6em; }
+  .ne-content ul[data-checked] { list-style: none; padding-left: .5em; }
+  .ne-content ul[data-checked] > li::before { content: "☐ "; }
+  .ne-content ul[data-checked="true"] > li::before { content: "☑ "; }
+  .ne-content .hljs-comment, .ne-content .hljs-quote { color: #8b9bb4; font-style: italic; }
+  .ne-content .hljs-keyword, .ne-content .hljs-selector-tag { color: #c792ea; }
+  .ne-content .hljs-string, .ne-content .hljs-attr { color: #c3e88d; }
+  .ne-content .hljs-number, .ne-content .hljs-literal { color: #f78c6c; }
+  .ne-content .hljs-title, .ne-content .hljs-function { color: #82aaff; }
+  .ne-content .hljs-built_in, .ne-content .hljs-type { color: #ffcb6b; }
+
+  /* Tombol layar penuh selalu terlihat di ujung kanan, walau toolbar digeser (HP/tablet) */
+  .ne-full-wrap {
+    position: sticky; right: 0; flex-shrink: 0;
+    display: inline-flex; padding-left: 4px; margin-left: 2px;
+    background: var(--card);
+  }
+
+  /* ---------- Mode layar penuh ---------- */
+  .ne-root.is-full {
+    position: fixed; inset: 0; z-index: 55;
+    display: flex; flex-direction: column;
+    border: 0; border-radius: 0;
+    background: var(--paper);
+    animation: ne-full-in .18s ease-out;
+  }
+  @keyframes ne-full-in { from { opacity: 0; transform: scale(.985); } to { opacity: 1; transform: none; } }
+  .is-full .ne-toolbar { position: relative; border-radius: 0; padding-left: max(10px, calc((100% - 1150px) / 2)); padding-right: max(10px, calc((100% - 1150px) / 2)); }
+  .is-full .ne-strip, .is-full .ne-popover { padding-left: max(12px, calc((100% - 1150px) / 2)); padding-right: max(12px, calc((100% - 1150px) / 2)); }
+  .is-full .ne-paper { flex: 1; overflow-y: auto; border-radius: 0; background: var(--paper); padding: 28px 16px 40px; }
+  .is-full .ne-paper.is-ruled { background-image: none; }
+  .is-full .ne-paper.is-ruled::before { display: none; }
+  .is-full .ne-content {
+    position: relative;
+    max-width: 1100px; min-height: calc(100% - 8px); margin: 0 auto;
+    border: 2px solid var(--rule); border-radius: 14px; background-color: var(--card);
+    padding: 6px 56px 120px 56px; font-size: 19px;
+  }
+  .is-full .is-ruled .ne-content {
+    padding-left: 84px;
+    background-image:
+      linear-gradient(to right, transparent 60px, color-mix(in srgb, var(--margin) 55%, transparent) 60px 62px, transparent 62px),
+      repeating-linear-gradient(to bottom, transparent 0 31px, var(--rule) 31px 32px);
+    background-position: 0 0, 0 6px;
+  }
+  .is-full .ne-footer { border-radius: 0; padding-left: max(14px, calc((100% - 1150px) / 2)); padding-right: max(14px, calc((100% - 1150px) / 2)); }
+  @media (max-width: 640px) {
+    .is-full .ne-paper { padding: 12px 8px 24px; }
+    .is-full .ne-content { padding: 6px 18px 80px 18px; }
+    .is-full .is-ruled .ne-content { padding-left: 46px; background-image: linear-gradient(to right, transparent 32px, color-mix(in srgb, var(--margin) 55%, transparent) 32px 34px, transparent 34px), repeating-linear-gradient(to bottom, transparent 0 31px, var(--rule) 31px 32px); }
+  }
+
+  /* ---------- Footer ---------- */
+  .ne-footer {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px;
+    padding: 8px 14px; border-top: 2px solid var(--rule);
+    font-size: 13px; color: var(--ink-soft);
+  }
+  .ne-legend-btn {
+    display: inline-flex; flex-shrink: 0; align-items: center; gap: 8px;
+    height: 34px; padding: 0 12px; margin-left: 6px; border-radius: 999px;
+    border: 2px solid var(--rule); background: var(--card);
+    color: var(--ink); font-weight: 700; font-size: 13px; white-space: nowrap;
+    transition: border-color .15s;
+  }
+  .ne-legend-btn:hover { border-color: var(--ink-soft); }
+  .ne-legend-dots { display: inline-flex; }
+  .ne-legend-dots span { width: 12px; height: 12px; border-radius: 999px; border: 2px solid var(--card); margin-left: -4px; }
+  .ne-legend-dots span:first-child { margin-left: 0; }
+  /* Editor sempit: sembunyikan label supaya toolbar tetap satu baris */
+  @container (max-width: 950px) {
+    .ne-legend-label { display: none; }
+    .ne-legend-btn { padding: 0 10px; gap: 6px; }
+  }
+  /* Editor sempit (tablet/HP): toolbar satu baris dan bisa digeser ke samping */
+  @container (max-width: 860px) {
+    .ne-toolbar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+    .ne-toolbar::-webkit-scrollbar { display: none; }
+  }
+  .ne-hint { font-family: "Caveat Variable", cursive; font-size: 18px; }
+  @media (max-width: 640px) { .ne-hint { display: none; } }
+  .ne-switch { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; }
+  .ne-switch input { accent-color: var(--ink-btn); width: 15px; height: 15px; }
+}

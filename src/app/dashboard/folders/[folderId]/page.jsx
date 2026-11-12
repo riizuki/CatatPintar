@@ -1,20 +1,118 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
-import { DocumentTextIcon } from "@heroicons/react/24/solid";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faArrowLeft, faClock, faCode, faFileCirclePlus, faFileLines, faImage, faMagnifyingGlass, faPlus, faTable, faXmark,
+} from "@fortawesome/free-solid-svg-icons";
+import { EmptyState, ErrorNote, Page, Spinner, cls } from "../../../components/ui/kit";
+import { useLanguage } from "../../../../lib/contexts/LanguageContext";
+
+/**
+ * Ringkas isi catatan untuk pratinjau: judul bagian pertama, beberapa poin, jumlah kata,
+ * dan penanda isi (gambar/tabel/kode). HTML hanya DIBACA sebagai teks, tidak dirender.
+ */
+function summarize(html = "") {
+  const empty = { heading: "", points: [], words: 0, img: false, table: false, code: false, text: "" };
+  if (!html || typeof window === "undefined") return empty;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const clean = (t) => (t || "").replace(/\s+/g, " ").trim();
+  const cut = (t, n = 110) => (t.length > n ? `${t.slice(0, n).trimEnd()}…` : t);
+
+  const text = clean(doc.body.textContent);
+  const heading = clean(doc.querySelector("h1,h2,h3")?.textContent);
+
+  let points = [...doc.querySelectorAll("li")].map((li) => clean(li.textContent)).filter(Boolean);
+  if (points.length < 2) {
+    const paras = [...doc.querySelectorAll("p")].map((x) => clean(x.textContent)).filter((t) => t && t !== heading);
+    points = [...points, ...paras];
+  }
+  if (points.length === 0 && text) points = [text];
+
+  return {
+    heading: cut(heading, 80),
+    points: points.filter((t) => t !== heading).slice(0, 3).map((t) => cut(t)),
+    words: text ? text.split(" ").length : 0,
+    img: !!doc.querySelector("img"),
+    table: !!doc.querySelector("table"),
+    code: !!doc.querySelector("pre,code"),
+    text: text.toLowerCase(),
+  };
+}
+
+const BADGE = { pdf: "bg-[var(--hl-pink)]", ppt: "bg-[var(--hl-yellow)]", pptx: "bg-[var(--hl-yellow)]" };
+const stripExt = (title = "") => title.replace(/\.(pdf|pptx?|docx?)$/i, "");
+
+function NoteCard({ note, isId }) {
+  const sum = useMemo(() => summarize(note.content), [note.content]);
+  const ext = (note.fileType || "").toLowerCase();
+  const minutes = Math.max(1, Math.round(sum.words / 200));
+
+  return (
+    <Link href={`/dashboard/notes/${note.id}/edit`} className={`group flex h-full flex-col overflow-hidden ${cls.card} ${cls.cardHover}`}>
+      {/* Halaman mini */}
+      <div className={`ruled relative h-36 overflow-hidden border-b-2 border-[var(--rule)] pt-1.5 pl-10 ${ext ? "pr-16" : "pr-4"}`}>
+        <span className="margin-line left-6" aria-hidden="true" />
+        {sum.heading && <p className="truncate text-sm leading-8 font-extrabold">{sum.heading}</p>}
+        {sum.points.length > 0 ? (
+          <ul>
+            {sum.points.map((pt, i) => (
+              <li key={i} className="flex items-baseline gap-2 text-[13px] leading-8 text-[var(--ink-soft)]">
+                <span className="relative -top-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--margin)] opacity-70" aria-hidden="true" />
+                <span className="truncate">{pt}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="hand text-xl leading-8 text-[var(--ink-soft)]">{isId ? "catatan masih kosong" : "empty note"}</p>
+        )}
+        {ext && (
+          <span className={`absolute top-2.5 right-3 rounded-md px-2 py-0.5 text-[11px] font-extrabold uppercase text-[var(--ink-fixed)] ${BADGE[ext] || "bg-[var(--hl-blue)]"}`}>
+            {ext}
+          </span>
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="flex flex-1 flex-col p-4">
+        <h3 className="line-clamp-2 text-base leading-snug font-extrabold group-hover:underline group-hover:decoration-[var(--hl-yellow)] group-hover:decoration-4 group-hover:underline-offset-4">
+          {stripExt(note.title)}
+        </h3>
+        <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-3 text-xs font-semibold text-[var(--ink-soft)]">
+          <span className="inline-flex items-center gap-1.5">
+            <FontAwesomeIcon icon={faClock} />
+            {new Date(note.updatedAt).toLocaleDateString(isId ? "id-ID" : "en-US", { day: "numeric", month: "short", year: "numeric" })}
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <FontAwesomeIcon icon={faFileLines} />
+            {sum.words.toLocaleString(isId ? "id-ID" : "en-US")} {isId ? "kata" : "words"}
+          </span>
+          {sum.words > 0 && <span>±{minutes} {isId ? "mnt baca" : "min read"}</span>}
+          <span className="ml-auto flex gap-2 text-[var(--ink-soft)]">
+            {sum.img && <FontAwesomeIcon icon={faImage} title={isId ? "Ada gambar" : "Has images"} />}
+            {sum.table && <FontAwesomeIcon icon={faTable} title={isId ? "Ada tabel" : "Has tables"} />}
+            {sum.code && <FontAwesomeIcon icon={faCode} title={isId ? "Ada kode" : "Has code"} />}
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
 
 const FolderNotesPage = () => {
   const params = useParams();
   const router = useRouter();
   const { folderId } = params;
+  const { language } = useLanguage();
+  const isId = language === "id";
 
   const [folder, setFolder] = useState(null);
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     if (!folderId) return;
@@ -50,81 +148,87 @@ const FolderNotesPage = () => {
     fetchData();
   }, [folderId]);
   
-  if (loading) {
+  if (loading) return <Spinner className="h-[calc(100vh-140px)]" />;
+
+  if (error)
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-100px)]">
-        <div className="w-10 h-10 border-4 border-gray-200 border-t-[#00A2D8] rounded-full animate-spin"></div>
-      </div>
+      <Page>
+        <ErrorNote>Kesalahan: {error}</ErrorNote>
+      </Page>
     );
-  }
-  
-  if (error) {
-    return <div className="p-4 sm:p-6 md:p-8 text-red-500 bg-red-50 rounded-xl m-8">Kesalahan: {error}</div>;
-  }
+
+  const q = query.trim().toLowerCase();
+  const visible = q
+    ? notes.filter((n) => (n.title || "").toLowerCase().includes(q) || (n.content || "").replace(/<[^>]*>/g, " ").toLowerCase().includes(q))
+    : notes;
 
   return (
-    <div className="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto min-h-screen">
-      <header className="flex items-center mb-10 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-6 rounded-3xl border border-gray-200/50 dark:border-gray-700/50">
-        <button onClick={() => router.back()} className="mr-4 p-3 bg-white/80 dark:bg-gray-700/80 backdrop-blur rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-            <ArrowLeftIcon className="w-6 h-6 text-gray-700 dark:text-gray-300"/>
-        </button>
+    <Page wide>
+      <button
+        onClick={() => router.back()}
+        className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--ink-soft)] hover:text-[var(--ink)]"
+      >
+        <FontAwesomeIcon icon={faArrowLeft} />
+        {isId ? "Kembali" : "Back"}
+      </button>
+
+      <header className="mt-4 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
-              {folder ? folder.name : "Folder"}
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
-              {notes.length} Catatan tersimpan
+          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{folder ? folder.name : "Folder"}</h1>
+          <p className="hand mt-1 text-2xl text-[var(--margin)]">
+            {notes.length} {isId ? "catatan di folder ini" : "notes in this folder"}
           </p>
         </div>
+        <Link href="/dashboard/notes/new" className="btn-ink h-11 self-start px-5 md:self-auto">
+          <FontAwesomeIcon icon={faPlus} />
+          {isId ? "Catatan baru" : "New note"}
+        </Link>
       </header>
 
-      {notes.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {notes.map((note) => (
-            <Link
-              key={note.id}
-              href={`/dashboard/notes/${note.id}/edit`}
-              className="block p-6 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-700/50 hover:-translate-y-2 hover:border-[#00A2D8]/50 dark:hover:border-[#4CC1EE]/50 transition-all duration-300 group"
-            >
-              <div className="flex items-start gap-4">
-                  <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-gradient-to-tl from-gray-400/10 to-transparent rounded-full blur-2xl group-hover:from-gray-400/20 transition-all pointer-events-none"></div>
-                  <div className="p-3 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 text-gray-500 dark:text-gray-400 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0 relative z-10 border border-gray-200/50 dark:border-gray-700/50">
-                      <DocumentTextIcon className="w-7 h-7" />
-                  </div>
-                  <div className="min-w-0 flex-1 relative z-10">
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors truncate">
-                        {note.title}
-                      </h3>
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 mb-3">
-                         {new Date(note.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-                      </p>
-                  </div>
-              </div>
-              <div
-                className="mt-4 text-sm text-gray-600 dark:text-gray-400 prose dark:prose-invert max-h-20 overflow-hidden line-clamp-3 opacity-90"
-                dangerouslySetInnerHTML={{ __html: note.content }}
-              />
-              <div className="mt-4 flex items-center justify-between text-[#00A2D8] text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
-                <span>Buka Catatan</span>
-                <ArrowRightIcon className="w-4 h-4" />
-              </div>
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-16 sm:py-20 px-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-md rounded-3xl border border-dashed border-gray-300 dark:border-gray-700 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-50/50 dark:to-gray-900/50 pointer-events-none"></div>
-            <div className="w-20 h-20 mx-auto bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl flex items-center justify-center mb-6 border border-gray-200/50 dark:border-gray-700/50 relative z-10">
-              <DocumentTextIcon className="w-10 h-10 text-gray-400 dark:text-gray-500"/>
-            </div>
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white relative z-10">Belum ada catatan</h3>
-            <p className="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400 relative z-10">Ayo mulai mengisi folder ini dengan catatan barumu!</p>
-            <Link href="/dashboard/notes/new" className="mt-6 relative z-10 inline-flex items-center px-6 py-3 text-sm sm:text-base font-bold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl transition-all transform hover:-translate-y-1">
-                Buat catatan pertama
-            </Link>
+      {notes.length > 2 && (
+        <div className="relative mt-6 max-w-md">
+          <FontAwesomeIcon icon={faMagnifyingGlass} className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-[var(--ink-soft)]" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={isId ? "Cari di folder ini…" : "Search this folder…"}
+            aria-label={isId ? "Cari catatan di folder ini" : "Search notes in this folder"}
+            className={`${cls.input} pr-10 pl-11`}
+          />
+          {query && (
+            <button onClick={() => setQuery("")} aria-label="Hapus pencarian" className={`absolute top-1/2 right-1.5 -translate-y-1/2 ${cls.iconBtn} h-8 w-8`}>
+              <FontAwesomeIcon icon={faXmark} />
+            </button>
+          )}
         </div>
       )}
-    </div>
+
+      <div className="mt-8">
+        {notes.length === 0 ? (
+          <EmptyState
+            icon={faFileCirclePlus}
+            title={isId ? "Belum ada catatan" : "No notes yet"}
+            text={isId ? "ayo isi folder ini dengan catatan barumu!" : "fill this folder with your first note!"}
+          >
+            <Link href="/dashboard/notes/new" className="btn-ink h-11 px-5">
+              <FontAwesomeIcon icon={faPlus} />
+              {isId ? "Buat catatan pertama" : "Create first note"}
+            </Link>
+          </EmptyState>
+        ) : visible.length === 0 ? (
+          <p className="text-[var(--ink-soft)]">{isId ? `Tidak ada catatan yang cocok dengan "${query}".` : `No notes match "${query}".`}</p>
+        ) : (
+          <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {visible.map((note) => (
+              <li key={note.id} className="min-w-0">
+                <NoteCard note={note} isId={isId} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </Page>
   );
 };
 

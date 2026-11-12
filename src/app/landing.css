@@ -1,0 +1,125 @@
+/* ============================================================
+   Landing page CatatPintar — tema "buku tulis"
+   Font di-host sendiri (fontsource), tidak perlu Google Fonts.
+   ============================================================ */
+@import "@fontsource-variable/bricolage-grotesque";
+@import "@fontsource-variable/caveat";
+
+/* Semua aturan tema masuk ke layer `components` supaya utility Tailwind
+   (mis. md:hidden, px-4) tetap bisa menimpanya. */
+@layer components {
+  .landing {
+    --paper: #f7f9fc;      /* kertas */
+    --rule: #d6e4f5;       /* garis buku */
+    --margin: #e5484d;     /* garis margin merah */
+    --ink: #1e2a78;        /* tinta pulpen biru */
+    --ink-soft: #4a5487;
+    --ink-fixed: #1e2a78;  /* tetap gelap di mode gelap (teks di atas stabilo) */
+    --ink-btn: #1e2a78;    /* tombol & blok CTA */
+    --hl-yellow: #ffe14d;  /* stabilo */
+    --hl-pink: #ff9fcb;
+    --hl-green: #96edb6;
+    --hl-blue: #a9def5;
+    --card: #ffffff;
+    --right: #1a9e55;
+    --wrong: #d93a3f;
+
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Bricolage Grotesque Variable", system-ui, sans-serif;
+  }
+
+  .dark .landing {
+    --paper: #0e1626;
+    --rule: #1c2a44;
+    --margin: #b4373c;
+    --ink: #dbe3ff;
+    --ink-soft: #9aa7cf;
+    --card: #15203a;
+    --ink-btn: #3b4bc8;
+    --right: #4ade80;
+    --wrong: #f87171;
+  }
+
+  /* Tulisan tangan */
+  .hand {
+    font-family: "Caveat Variable", cursive;
+    font-weight: 600;
+  }
+
+  /* Kertas bergaris: tiap 32px satu garis */
+  .ruled {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0 31px,
+      var(--rule) 31px 32px
+    );
+  }
+
+  /* Garis margin merah di kiri */
+  .margin-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--margin);
+    opacity: 0.7;
+  }
+
+  /* Coretan stabilo */
+  .hl {
+    color: var(--ink-fixed);
+    padding: 0 0.25em;
+    margin: 0 -0.1em;
+    border-radius: 0.35em 0.2em 0.4em 0.25em;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+  .hl-yellow { background: var(--hl-yellow); }
+  .hl-pink { background: var(--hl-pink); }
+  .hl-green { background: var(--hl-green); }
+  .hl-blue { background: var(--hl-blue); }
+
+  /* Tombol utama: biru tinta, bayangan solid seperti tombol cetak */
+  .btn-ink {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 10px;
+    background: var(--ink-btn);
+    color: #fff;
+    font-weight: 700;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+  }
+  .btn-ink:hover { background: color-mix(in srgb, var(--ink-btn) 86%, #ffffff); }
+  .btn-ink:active { transform: scale(0.97); }
+
+  .landing :focus-visible {
+    outline: 3px solid var(--hl-blue);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  /* Lubang binder di kertas demo */
+  .binder-holes {
+    position: absolute;
+    left: 14px;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+  }
+  .binder-holes span {
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    background: var(--paper);
+    box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.15);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .landing * { transition: none !important; }
+  }
+}

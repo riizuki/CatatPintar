@@ -1,77 +1,75 @@
-'use client';
+"use client";
 
-import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
-import { SunIcon, MoonIcon } from '@heroicons/react/24/outline';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMoon, faSun } from "@fortawesome/free-solid-svg-icons";
 
+/**
+ * Saklar mode terang/gelap.
+ * Kapsul + kenop bulat yang bergeser dengan sedikit pantulan,
+ * ikon berputar saat berganti, dan bintang kecil muncul di mode gelap.
+ * Dipakai di landing, login, register, dan dashboard.
+ */
 export default function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  // Placeholder ukuran sama supaya header tidak bergeser saat dimuat
   if (!mounted) {
-    return <div className="w-10 h-10 md:w-20" />;
+    return <div className="h-8 w-[60px] shrink-0 rounded-full bg-[#e3eaf5] dark:bg-[#3b4bc8]" aria-hidden="true" />;
   }
 
-  const isDark = theme === 'dark';
+  const isDark = resolvedTheme === "dark";
+  const label = isDark ? "Ganti ke mode terang" : "Ganti ke mode gelap";
+  const ease = "ease-[cubic-bezier(0.34,1.56,0.64,1)]"; // sedikit memantul
 
   return (
-    <>
-      {/* Desktop Switch */}
-      <button
-        onClick={() => setTheme(isDark ? 'light' : 'dark')}
-        className={`hidden md:inline-flex relative h-10 w-20 items-center justify-center rounded-full p-1 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-[#00A2D8] focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${isDark ? 'bg-gray-800' : 'bg-blue-100'
-          }`}
-        aria-label="Toggle Dark Mode"
+    <button
+      type="button"
+      role="switch"
+      aria-checked={isDark}
+      aria-label={label}
+      title={label}
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      className={`relative h-8 w-[60px] shrink-0 overflow-hidden rounded-full transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a9def5] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${
+        isDark ? "bg-[#3b4bc8]" : "bg-[#e3eaf5] hover:bg-[#d6e0ef]"
+      }`}
+    >
+      {/* Bintang kecil (mode gelap) */}
+      <span
+        className={`pointer-events-none absolute inset-0 transition-opacity duration-300 ${isDark ? "opacity-100" : "opacity-0"}`}
+        aria-hidden="true"
       >
-        <div className="absolute inset-0 flex w-full justify-between items-center px-2.5">
-          <MoonIcon className={`h-5 w-5 z-10 transition-colors duration-300 ${isDark ? 'text-white' : 'text-gray-400'}`} />
-          <SunIcon className={`h-5 w-5 z-10 transition-colors duration-300 ${isDark ? 'text-gray-500' : 'text-orange-500'}`} />
-        </div>
-        <motion.div
-          className={`absolute h-8 w-8 rounded-full bg-white shadow-md`}
-          initial={false}
-          animate={{
-            x: isDark ? -20 : 20,
-          }}
-          transition={{ type: 'spring', stiffness: 700, damping: 30 }}
-        />
-      </button>
+        <span className="absolute top-[8px] left-[10px] h-[3px] w-[3px] rounded-full bg-white" />
+        <span className="absolute top-[17px] left-[17px] h-[2px] w-[2px] rounded-full bg-white/80" />
+        <span className="absolute top-[11px] left-[23px] h-[2px] w-[2px] rounded-full bg-white/60" />
+      </span>
 
-      {/* Mobile Icon Button */}
-      <button
-        onClick={() => setTheme(isDark ? 'light' : 'dark')}
-        className="md:hidden relative flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300 focus:outline-none overflow-hidden"
-        aria-label="Toggle Dark Mode"
+      {/* Kenop */}
+      <span
+        className={`absolute top-1 left-1 flex h-6 w-6 items-center justify-center rounded-full border border-[#c9d5e8] bg-white transition-transform duration-500 ${ease} ${
+          isDark ? "translate-x-7" : "translate-x-0"
+        }`}
+        aria-hidden="true"
       >
-        <AnimatePresence mode="wait" initial={false}>
-          {isDark ? (
-            <motion.div
-              key="moon"
-              initial={{ y: -30, opacity: 0, rotate: -90 }}
-              animate={{ y: 0, opacity: 1, rotate: 0 }}
-              exit={{ y: 30, opacity: 0, rotate: 90 }}
-              transition={{ duration: 0.3, type: "spring", stiffness: 300, damping: 20 }}
-            >
-              <MoonIcon className="h-5 w-5 text-blue-300" />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="sun"
-              initial={{ y: -30, opacity: 0, rotate: -90 }}
-              animate={{ y: 0, opacity: 1, rotate: 0 }}
-              exit={{ y: 30, opacity: 0, rotate: 90 }}
-              transition={{ duration: 0.3, type: "spring", stiffness: 300, damping: 20 }}
-            >
-              <SunIcon className="h-5 w-5 text-orange-500" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </button>
-    </>
+        <FontAwesomeIcon
+          icon={faSun}
+          className={`absolute text-[13px] text-amber-500 transition-all duration-500 ${ease} ${
+            isDark ? "rotate-90 scale-0 opacity-0" : "rotate-0 scale-100 opacity-100"
+          }`}
+        />
+        <FontAwesomeIcon
+          icon={faMoon}
+          className={`absolute text-[12px] text-[#3b4bc8] transition-all duration-500 ${ease} ${
+            isDark ? "rotate-0 scale-100 opacity-100" : "-rotate-90 scale-0 opacity-0"
+          }`}
+        />
+      </span>
+    </button>
   );
 }

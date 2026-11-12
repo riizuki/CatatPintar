@@ -1,8 +1,37 @@
 "use client";
 
-import { XMarkIcon, DocumentTextIcon, SparklesIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft, faCheck, faFileLines, faListCheck, faWandMagicSparkles } from "@fortawesome/free-solid-svg-icons";
+import { Modal, cls } from "../ui/kit";
+
+/* Pilihan berbentuk tombol (segmented) */
+function Choice({ options, value, onChange, label }) {
+  return (
+    <div>
+      <p className={cls.label}>{label}</p>
+      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={label}>
+        {options.map((opt) => (
+          <button
+            key={opt}
+            type="button"
+            role="radio"
+            aria-checked={value === opt}
+            onClick={() => onChange(opt)}
+            className={`h-10 min-w-[3.5rem] rounded-[10px] border-2 px-4 text-sm font-bold transition-colors ${
+              value === opt
+                ? "border-[var(--ink-fixed)] bg-[var(--hl-yellow)] text-[var(--ink-fixed)]"
+                : "border-[var(--rule)] text-[var(--ink)] hover:border-[var(--ink-soft)]"
+            }`}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 const CreateQuizModal = ({ isOpen, onClose, preselectedSourceType = null, preselectedSourceValue = null }) => {
   const router = useRouter();
@@ -115,153 +144,133 @@ const CreateQuizModal = ({ isOpen, onClose, preselectedSourceType = null, presel
     }
   };
 
-    const renderContent = () => {
+  const renderContent = () => {
     switch (step) {
       case "selectNote":
         return (
           <div className="space-y-6">
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Pilih Catatan</h3>
-            {isLoadingNotes && <p className="text-gray-500 dark:text-gray-400">Memuat catatan...</p>}
-            {preselectedSourceType === "note" ? (
-                <div className="p-4 rounded-xl border-2 bg-blue-50 dark:bg-blue-900/20 border-[#00A2D8] text-[#00A2D8] dark:text-[#4CC1EE] cursor-not-allowed">
-                    <p className="font-bold text-sm sm:text-base">Catatan ID: {preselectedSourceValue}</p>
+            <div>
+              <p className={cls.label}>Pilih catatan</p>
+              {isLoadingNotes && <p className="hand text-xl text-[var(--ink-soft)]">Memuat catatan…</p>}
+              {preselectedSourceType === "note" ? (
+                <div className="rounded-[10px] border-2 border-[var(--ink-fixed)] bg-[var(--hl-yellow)] px-4 py-3 font-bold text-[var(--ink-fixed)]">
+                  Catatan ini (ID {preselectedSourceValue})
                 </div>
-            ) : (
-                <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
-                {notes.map((note) => (
-                    <div
-                    key={note.id}
-                    onClick={() => setSelectedNoteId(note.id)}
-                    className={`p-4 rounded-xl cursor-pointer border-2 transition-all duration-300 ${ selectedNoteId === note.id ? "bg-blue-50 dark:bg-blue-900/20 border-[#00A2D8] text-[#00A2D8] dark:text-[#4CC1EE] " : "bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200" }`}
-                    >
-                    <p className="font-bold text-sm sm:text-base truncate">{note.title}</p>
-                    </div>
-                ))}
+              ) : (
+                <div className="max-h-60 space-y-2 overflow-y-auto pr-1">
+                  {notes.map((note) => {
+                    const active = selectedNoteId === note.id;
+                    return (
+                      <button
+                        type="button"
+                        key={note.id}
+                        onClick={() => setSelectedNoteId(note.id)}
+                        aria-pressed={active}
+                        className={`flex w-full items-center gap-3 rounded-[10px] border-2 px-4 py-3 text-left transition-colors ${
+                          active
+                            ? "border-[var(--ink-fixed)] bg-[var(--hl-yellow)] text-[var(--ink-fixed)]"
+                            : "border-[var(--rule)] hover:border-[var(--ink-soft)]"
+                        }`}
+                      >
+                        <FontAwesomeIcon icon={active ? faCheck : faFileLines} className="shrink-0 text-[var(--ink-soft)]" fixedWidth />
+                        <span className="truncate font-bold">{note.title}</span>
+                      </button>
+                    );
+                  })}
+                  {!isLoadingNotes && notes.length === 0 && (
+                    <p className="text-[var(--ink-soft)]">Belum ada catatan. Buat catatan dulu, atau pilih &ldquo;Dari topik&rdquo;.</p>
+                  )}
                 </div>
-            )}
-            <div className="mt-6">
-                <label htmlFor="numQuestions" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Jumlah Pertanyaan</label>
-                <select id="numQuestions" value={numQuestions} onChange={(e) => setNumQuestions(Number(e.target.value))} className="block w-full px-4 py-3 text-gray-900 dark:text-white bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A2D8]/50 focus:border-[#00A2D8] transition-all">
-                    <option>5</option>
-                    <option>10</option>
-                    <option>15</option>
-                    <option>20</option>
-                </select>
+              )}
             </div>
+            <Choice label="Jumlah pertanyaan" options={[5, 10, 15, 20]} value={numQuestions} onChange={setNumQuestions} />
           </div>
         );
       case "enterTopic":
         return (
           <div className="space-y-6">
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Masukkan Topik</h3>
-            <div className="space-y-6">
-                <div>
-                    <label htmlFor="topic" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Topik Kuis</label>
-                    <input
-                    id="topic"
-                    type="text"
-                    value={topic}
-                    onChange={(e) => setTopic(e.target.value)}
-                    placeholder="cth., 'Dasar-dasar Pembelajaran Mesin'"
-                    className="block w-full px-4 py-3 placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A2D8]/50 focus:border-[#00A2D8] transition-all"
-                    autoComplete="off"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="numQuestions" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Jumlah Pertanyaan</label>
-                    <select id="numQuestions" value={numQuestions} onChange={(e) => setNumQuestions(Number(e.target.value))} className="block w-full px-4 py-3 text-gray-900 dark:text-white bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A2D8]/50 focus:border-[#00A2D8] transition-all">
-                        <option>5</option>
-                        <option>10</option>
-                        <option>15</option>
-                        <option>20</option>
-                    </select>
-                </div>
-                <div>
-                    <label htmlFor="difficulty" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Tingkat Kesulitan</label>
-                    <select id="difficulty" value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className="block w-full px-4 py-3 text-gray-900 dark:text-white bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A2D8]/50 focus:border-[#00A2D8] transition-all">
-                        <option>Mudah</option>
-                        <option>Sedang</option>
-                        <option>Sulit</option>
-                    </select>
-                </div>
+            <div>
+              <label htmlFor="topic" className={cls.label}>Topik kuis</label>
+              <input
+                id="topic"
+                type="text"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                placeholder="mis. Sistem pencernaan manusia"
+                className={cls.input}
+                autoComplete="off"
+                autoFocus
+              />
             </div>
+            <Choice label="Jumlah pertanyaan" options={[5, 10, 15, 20]} value={numQuestions} onChange={setNumQuestions} />
+            <Choice label="Tingkat kesulitan" options={["Mudah", "Sedang", "Sulit"]} value={difficulty} onChange={setDifficulty} />
           </div>
         );
       case "selectType":
       default:
         return (
-          <div className="text-center">
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white mb-2">Buat Kuis Baru</h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-8 text-sm sm:text-base">Pilih sumber untuk membuat kuis Anda.</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button 
-                onClick={() => { setSourceType('note'); setStep("selectNote");}} 
-                className="group flex flex-col items-center justify-center p-6 sm:p-8 font-bold text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-gray-200/50 dark:border-gray-700/50 hover:border-[#00A2D8]/50 dark:hover:border-[#4CC1EE]/50 transition-all duration-300 transform hover:-translate-y-1"
-              >
-                <div className="p-4 rounded-2xl mb-4 bg-gray-50 dark:bg-gray-900/50 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20 transition-colors">
-                    <DocumentTextIcon className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400 dark:text-gray-500 group-hover:text-[#00A2D8] dark:group-hover:text-[#4CC1EE] transition-colors" />
-                </div>
-                Buat dari Catatan
-              </button>
-              <button 
-                onClick={() => { setSourceType('topic'); setStep("enterTopic");}} 
-                className="group flex flex-col items-center justify-center p-6 sm:p-8 font-bold text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-gray-200/50 dark:border-gray-700/50 hover:border-[#00A2D8]/50 dark:hover:border-[#4CC1EE]/50 transition-all duration-300 transform hover:-translate-y-1"
-              >
-                <div className="p-4 rounded-2xl mb-4 bg-sky-50 dark:bg-sky-900/20 transition-colors group-hover:scale-110 transform duration-300">
-                    <SparklesIcon className="w-8 h-8 sm:w-10 sm:h-10 text-[#00A2D8] dark:text-[#4CC1EE]" />
-                </div>
-                Buat dengan AI
-              </button>
+          <div>
+            <p className="text-[var(--ink-soft)]">Mau bikin kuis dari mana?</p>
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              {[
+                { type: "note", next: "selectNote", icon: faFileLines, hl: "bg-[var(--hl-yellow)]", title: "Dari catatan", desc: "Soal dibuat dari isi catatanmu sendiri." },
+                { type: "topic", next: "enterTopic", icon: faWandMagicSparkles, hl: "bg-[var(--hl-blue)]", title: "Dari topik", desc: "Tulis topik apa saja, AI yang menyusun soalnya." },
+              ].map((o) => (
+                <button
+                  key={o.type}
+                  type="button"
+                  onClick={() => { setSourceType(o.type); setStep(o.next); }}
+                  className={`group flex flex-col items-start gap-3 rounded-xl border-2 border-[var(--rule)] p-5 text-left ${cls.cardHover}`}
+                >
+                  <span className={`flex h-11 w-11 items-center justify-center rounded-xl text-lg text-[var(--ink-fixed)] ${o.hl}`}>
+                    <FontAwesomeIcon icon={o.icon} />
+                  </span>
+                  <span className="text-lg font-extrabold">{o.title}</span>
+                  <span className="text-sm text-[var(--ink-soft)]">{o.desc}</span>
+                </button>
+              ))}
             </div>
           </div>
         );
     }
   };
 
-  const renderFooter = () => {
-      const isSubmitDisabled = isGenerating || (step === 'selectNote' && !selectedNoteId) || (step === 'enterTopic' && !topic);
-      
-      if (step === 'selectNote' || step === 'enterTopic') {
-          return (
-            <div className="mt-8 flex justify-end">
-                <button
-                onClick={handleGenerateQuiz}
-                disabled={isSubmitDisabled}
-                className="w-full sm:w-auto px-8 py-3.5 text-sm sm:text-base font-bold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl disabled:from-gray-400 disabled:to-gray-500 disabled: disabled:cursor-not-allowed transition-all transform hover:-translate-y-0.5 disabled:hover:translate-y-0"
-                >
-                {isGenerating ? 'Membuat...' : 'Buat Kuis'}
-                </button>
-            </div>
-          )
-      } else if (step === 'selectType' && preselectedSourceType) {
-        // If preselected, and we are somehow back at selectType,
-        // we should not show any button here, as the flow is direct.
-        return null;
-      }
-      return null;
-  }
+  const isSubmitDisabled = isGenerating || (step === "selectNote" && !selectedNoteId) || (step === "enterTopic" && !topic);
+  const showBack = step !== "selectType" && !preselectedSourceType;
 
   return (
-    <div className={`fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-md p-4 transition-all ${isOpen ? '' : 'hidden'}`}>
-      <div className="w-full max-w-md sm:max-w-2xl p-6 sm:p-10 bg-white dark:bg-gray-800 rounded-3xl border border-gray-200/50 dark:border-gray-700/50">
-        <div className="flex justify-between items-center mb-6">
-            {(step !== 'selectType' && !preselectedSourceType) && (
-                <button onClick={() => setStep('selectType')} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                    <ArrowLeftIcon className="w-6 h-6 text-gray-500 dark:text-gray-400" />
-                </button>
+    <Modal
+      open={isOpen}
+      onClose={handleClose}
+      busy={isGenerating}
+      size="max-w-xl"
+      title="Buat kuis baru"
+      icon={faListCheck}
+      iconClass="bg-[var(--hl-pink)]"
+      footer={
+        step === "selectNote" || step === "enterTopic" ? (
+          <>
+            {showBack && (
+              <button type="button" onClick={() => setStep("selectType")} disabled={isGenerating} className={`${cls.btnOutline} sm:mr-auto`}>
+                <FontAwesomeIcon icon={faArrowLeft} />
+                Kembali
+              </button>
             )}
-            <div className="flex-grow"></div>
-            <button onClick={handleClose} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ml-auto">
-                <XMarkIcon className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+            <button type="button" onClick={handleGenerateQuiz} disabled={isSubmitDisabled} className="btn-ink h-10 px-6 text-sm disabled:cursor-not-allowed disabled:opacity-50">
+              <FontAwesomeIcon icon={faWandMagicSparkles} />
+              {isGenerating ? "Membuat soal…" : "Buat kuis"}
             </button>
-        </div>
-        <div>
-          {renderContent()}
-        </div>
-        {error && <p className="text-sm font-bold text-rose-500 mt-4 bg-rose-50 dark:bg-rose-900/20 p-3 rounded-xl">{error}</p>}
-        {renderFooter()}
-      </div>
-    </div>
+          </>
+        ) : null
+      }
+    >
+      {renderContent()}
+      {error && (
+        <p role="alert" className="mt-5 rounded-[10px] border-2 border-[var(--wrong)] px-4 py-3 text-sm font-semibold text-[var(--wrong)]">
+          {error}
+        </p>
+      )}
+    </Modal>
   );
 };
 

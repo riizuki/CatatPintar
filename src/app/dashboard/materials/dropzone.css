@@ -1,0 +1,97 @@
+/* Kotak unggah materi: kartu polos dengan selotip & sticky note */
+@layer components {
+  .dropzone {
+    position: relative;
+    display: flex;
+    min-height: 380px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 2px dashed color-mix(in srgb, var(--ink-soft) 45%, transparent);
+    border-radius: 14px;
+    background-color: var(--card);
+    padding: 48px 24px 32px;
+    text-align: center;
+    transition: border-color .2s, background-color .2s;
+    outline: none;
+  }
+  .dropzone:hover { border-color: var(--ink-soft); }
+  .dropzone:focus-visible { border-style: solid; border-color: var(--ink); }
+  .dropzone.is-drag {
+    border-style: solid;
+    border-color: var(--ink-fixed);
+    background-color: color-mix(in srgb, var(--hl-yellow) 22%, var(--card));
+  }
+
+  /* selotip */
+  .dz-tape {
+    position: absolute; top: 10px; left: 50%;
+    padding: 2px 18px 0;
+    transform: translateX(-50%) rotate(-2deg);
+    background: color-mix(in srgb, var(--hl-yellow) 75%, transparent);
+    color: var(--ink-fixed);
+    font-size: 20px; line-height: 26px;
+    border-left: 2px dashed color-mix(in srgb, var(--ink-fixed) 18%, transparent);
+    border-right: 2px dashed color-mix(in srgb, var(--ink-fixed) 18%, transparent);
+  }
+
+  .dz-body { position: relative; display: flex; flex-direction: column; align-items: center; max-width: 440px; }
+
+  /* ikon di atas "sticky note" miring */
+  .dz-icon {
+    position: relative;
+    display: flex; height: 76px; width: 76px; align-items: center; justify-content: center;
+    border-radius: 6px 6px 18px 6px;
+    background: var(--hl-green);
+    color: var(--ink-fixed);
+    font-size: 30px;
+    border: 2px solid color-mix(in srgb, var(--ink-fixed) 14%, transparent);
+    transform: rotate(-6deg);
+    transition: transform .35s cubic-bezier(0.34, 1.56, 0.64, 1), background-color .2s;
+  }
+  .dz-icon::after { /* sudut terlipat */
+    content: ""; position: absolute; right: -2px; bottom: -2px;
+    width: 18px; height: 18px; border-radius: 0 0 16px 0;
+    background: color-mix(in srgb, var(--ink-fixed) 14%, var(--hl-green));
+  }
+  .dropzone:hover .dz-icon { transform: rotate(4deg) translateY(-4px); }
+  .dropzone.is-drag .dz-icon {
+    background: var(--hl-yellow);
+    animation: dz-bob .8s ease-in-out infinite;
+  }
+  .dropzone.is-drag .dz-icon::after { background: color-mix(in srgb, var(--ink-fixed) 14%, var(--hl-yellow)); }
+  @keyframes dz-bob {
+    0%, 100% { transform: rotate(-6deg) translateY(0); }
+    50% { transform: rotate(6deg) translateY(-8px); }
+  }
+
+  /* judul dengan coretan stabilo di bagian bawah */
+  .dz-mark {
+    padding: 0 .2em;
+    background: linear-gradient(transparent 58%, var(--hl-yellow) 58%, var(--hl-yellow) 92%, transparent 92%);
+    -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  }
+
+  .dark .dz-mark {
+    --dz-hl: color-mix(in srgb, var(--hl-yellow) 38%, transparent);
+    background: linear-gradient(transparent 62%, var(--dz-hl) 62%, var(--dz-hl) 94%, transparent 94%);
+  }
+
+  .dz-chip {
+    display: inline-flex; align-items: center; height: 26px; padding: 0 10px;
+    border-radius: 7px; font-size: 12px; font-weight: 800; letter-spacing: .04em;
+    color: var(--ink-fixed);
+    transition: transform .2s;
+  }
+  .dz-chip:nth-child(1) { transform: rotate(-3deg); }
+  .dz-chip:nth-child(3) { transform: rotate(2deg); }
+  .dropzone:hover .dz-chip { transform: none; }
+
+  @media (max-width: 640px) {
+    .dropzone { padding: 48px 16px 28px; min-height: 360px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dropzone.is-drag .dz-icon { animation: none; }
+  }
+}

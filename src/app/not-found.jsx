@@ -26,7 +26,6 @@ export default function NotFound() {
 
   const t = content[language] || content.id;
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: {

@@ -1,15 +1,20 @@
 "use client";
 
-import { MagnifyingGlassIcon, PlusIcon, ClockIcon, SparklesIcon, ChevronRightIcon, ChartBarIcon, ArrowTrendingUpIcon, ExclamationTriangleIcon, CheckCircleIcon, AcademicCapIcon } from "@heroicons/react/24/outline";
-import { FolderIcon, DocumentTextIcon } from "@heroicons/react/24/solid";
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { motion, AnimatePresence } from "framer-motion";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faChevronRight,
+  faClock,
+  faFileLines,
+  faFolder,
+  faMagnifyingGlass,
+  faPlus,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 
-import SkeletonLoader from "@/app/components/dashboard/SkeletonLoader";
 import FolderModal from "@/app/components/dashboard/FolderModal";
-
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { dashboardTranslations } from "@/locales/dashboard";
 
@@ -21,18 +26,37 @@ const getGreeting = (t) => {
   return t.home.greeting.night;
 };
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 }
-  }
-};
+const folderColors = ["text-sky-500", "text-amber-500", "text-emerald-500", "text-pink-500", "text-violet-500"];
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
-};
+/* ---------- Komponen kecil ---------- */
+
+function SectionTitle({ icon, children, action }) {
+  return (
+    <div className="mb-4 flex items-center justify-between gap-3">
+      <h2 className="flex items-center gap-2.5 text-xl font-extrabold tracking-tight">
+        <FontAwesomeIcon icon={icon} className="text-base text-[var(--ink-soft)]" />
+        {children}
+      </h2>
+      {action}
+    </div>
+  );
+}
+
+function Skeleton({ className = "" }) {
+  return <div className={`animate-pulse rounded-lg bg-[var(--rule)] ${className}`} />;
+}
+
+function EmptyNote({ title, text, children }) {
+  return (
+    <div className="rounded-xl border-2 border-dashed border-[var(--rule)] px-6 py-10 text-center">
+      <p className="text-lg font-bold">{title}</p>
+      <p className="hand mt-1 text-xl text-[var(--ink-soft)]">{text}</p>
+      {children && <div className="mt-5">{children}</div>}
+    </div>
+  );
+}
+
+/* ---------- Halaman ---------- */
 
 function DashboardContent() {
   const { data: session } = useSession();
@@ -49,6 +73,7 @@ function DashboardContent() {
 
   const { language } = useLanguage();
   const t = dashboardTranslations[language];
+  const locale = language === "id" ? "id-ID" : "en-US";
 
   useEffect(() => {
     setGreeting(getGreeting(t));
@@ -74,7 +99,7 @@ function DashboardContent() {
         const recentData = await recentRes.json();
         const allData = await allRes.json();
         const foldersData = await foldersRes.json();
-        
+
         let quizzesData = [];
         if (quizzesRes && quizzesRes.ok) {
           quizzesData = await quizzesRes.json();
@@ -121,440 +146,315 @@ function DashboardContent() {
     }
   };
 
-  // Calculate Learning Statistics
-  const completedQuizzes = quizzes.filter(q => q.result !== null);
+  /* ---------- Statistik belajar ---------- */
+  const completedQuizzes = quizzes.filter((q) => q.result !== null);
   const quizzesCount = completedQuizzes.length;
-  
-  // 1. Average Score
-  const averageScore = quizzesCount > 0 
-    ? Math.round(completedQuizzes.reduce((sum, q) => sum + q.result.score, 0) / quizzesCount)
-    : 0;
 
-  // 2. Comprehension Level
+  const averageScore =
+    quizzesCount > 0
+      ? Math.round(completedQuizzes.reduce((sum, q) => sum + q.result.score, 0) / quizzesCount)
+      : 0;
+
   let comprehensionLevel = t.home.stats.none;
-  let comprehensionColor = "text-gray-500 bg-gray-50 dark:bg-gray-800/40 border-gray-200 dark:border-gray-700/50";
-  
+  let comprehensionHl = "";
   if (quizzesCount > 0) {
     if (averageScore >= 90) {
       comprehensionLevel = t.home.stats.excellent;
-      comprehensionColor = "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/40";
+      comprehensionHl = "hl-green";
     } else if (averageScore >= 75) {
       comprehensionLevel = t.home.stats.good;
-      comprehensionColor = "text-[#00A2D8] bg-[#00A2D8]/10 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900/40";
+      comprehensionHl = "hl-blue";
     } else if (averageScore >= 50) {
       comprehensionLevel = t.home.stats.fair;
-      comprehensionColor = "text-amber-600 bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/40";
+      comprehensionHl = "hl-yellow";
     } else {
       comprehensionLevel = t.home.stats.needsStudy;
-      comprehensionColor = "text-rose-600 bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/40";
+      comprehensionHl = "hl-pink";
     }
   }
 
-  // 3. Weekly study activity
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  const weeklyQuizzes = completedQuizzes.filter(q => new Date(q.result.takenAt) >= sevenDaysAgo);
-  const weeklyProgressCount = weeklyQuizzes.length;
+  const weeklyProgressCount = completedQuizzes.filter((q) => new Date(q.result.takenAt) >= sevenDaysAgo).length;
 
-  // 4. Challenging Topic
   const lowScoreQuizzes = completedQuizzes
-    .filter(q => q.result.score < 80)
+    .filter((q) => q.result.score < 80)
     .sort((a, b) => a.result.score - b.result.score);
   const challengingTopic = lowScoreQuizzes.length > 0 ? lowScoreQuizzes[0] : null;
 
+  const noQuizSub = t.home.stats?.noQuizTakenSub || "Mulai kuis untuk melihat statistik";
+
   return (
-    <div className="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto min-h-screen">
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:px-10 md:py-10">
       <FolderModal
         isOpen={isFolderModalOpen}
         onClose={() => setIsFolderModalOpen(false)}
         onSave={handleSaveFolder}
         isLoading={isMutating}
       />
-      <motion.header
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-10"
-      >
-        <div className="relative overflow-hidden bg-[#00A2D8] rounded-3xl p-8 md:p-10 text-white mb-8 border border-white/20 dark:border-white/10">
-          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-20 rounded-full blur-2xl"></div>
-          <div className="absolute bottom-0 left-1/4 w-32 h-32 bg-blue-300 opacity-30 rounded-full blur-2xl"></div>
 
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-sm font-medium mb-4 border border-white/20">
-                <SparklesIcon className="w-4 h-4" />
-                {t.home.activeWorkspace}
-              </div>
-              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
-                {greeting}, {session?.user?.name || t.home.greeting.friend}!
-              </h1>
-              <p className="text-blue-50 text-base md:text-lg max-w-lg">
-                {t.home.readyToDigest}
-              </p>
-            </div>
-
-            <Link
-              href="/dashboard/notes/new"
-              className="inline-flex items-center justify-center px-6 py-3.5 text-base font-bold text-[#00A2D8] bg-white rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-all duration-300 transform hover:scale-105 group"
-            >
-              <PlusIcon className="w-5 h-5 mr-2 transition-transform group-hover:rotate-90" />
-              <span>{t.home.createNewNote}</span>
-            </Link>
-          </div>
+      {/* ---------- Sapaan ---------- */}
+      <header className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl" suppressHydrationWarning>
+            {greeting}, {session?.user?.name || t.home.greeting.friend}.
+          </h1>
+          <p className="hand mt-1 rotate-[-1deg] text-2xl text-[var(--margin)]">{t.home.whatToStudy}</p>
         </div>
+        <Link href="/dashboard/notes/new" className="btn-ink hidden self-start px-5 py-3 md:inline-flex md:self-auto">
+          <FontAwesomeIcon icon={faPlus} />
+          {t.home.createNewNote}
+        </Link>
+      </header>
 
-        {/* Command Palette Search */}
-        <div className="relative max-w-2xl mx-auto -mt-14 z-20 px-4 md:px-0">
-          <div className="relative bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden group">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-4">
-              <MagnifyingGlassIcon className="w-6 h-6 text-gray-400 group-focus-within:text-[#00A2D8] transition-colors" />
-            </span>
-            <input
-              type="text"
-              placeholder={t.home.searchPlaceholder}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              autoComplete="off"
-              className="w-full pl-12 pr-4 py-4 text-base md:text-lg text-gray-800 dark:text-white bg-transparent focus:outline-none placeholder-gray-400"
-            />
-            {searchTerm && (
-              <span className="absolute inset-y-0 right-0 flex items-center pr-4">
-                <button onClick={() => setSearchTerm("")} className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 px-2 py-1 rounded-md hover:bg-gray-200">ESC</button>
-              </span>
-            )}
-          </div>
-        </div>
-      </motion.header>
+      {/* ---------- Pencarian ---------- */}
+      <div className="relative mt-8">
+        <FontAwesomeIcon
+          icon={faMagnifyingGlass}
+          className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-[var(--ink-soft)]"
+        />
+        <input
+          type="text"
+          placeholder={t.home.searchPlaceholder}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={(e) => e.key === "Escape" && setSearchTerm("")}
+          autoComplete="off"
+          aria-label={t.home.searchPlaceholder}
+          className="block w-full rounded-xl border-2 border-[var(--rule)] bg-[var(--card)] py-3.5 pr-12 pl-11 text-base text-[var(--ink)] outline-none transition-colors placeholder:text-[var(--ink-soft)]/70 focus:border-[var(--ink-soft)]"
+        />
+        {searchTerm && (
+          <button
+            onClick={() => setSearchTerm("")}
+            aria-label="Hapus pencarian"
+            className="absolute top-1/2 right-3 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-[var(--ink-soft)] hover:bg-[var(--rule)]"
+          >
+            <FontAwesomeIcon icon={faXmark} />
+          </button>
+        )}
+      </div>
 
       {error && (
-        <div className="p-4 bg-red-50 text-red-600 rounded-xl mb-8 border border-red-100">
-          Kesalahan: {error}
-        </div>
+        <p role="alert" className="mt-6 rounded-xl border-2 border-[var(--wrong)] px-4 py-3 font-medium text-[var(--wrong)]">
+          {error}
+        </p>
       )}
 
-      {/* Learning Statistics Section */}
-      <motion.section 
-        variants={itemVariants}
-        initial="hidden"
-        animate="visible"
-        className="mb-10 relative z-10"
-      >
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center mb-6">
-          <div className="p-1.5 bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/40 dark:to-blue-900/10 rounded-lg mr-3 border border-blue-200/50 dark:border-blue-700/50 text-[#00A2D8]">
-            <ChartBarIcon className="w-5 h-5" />
+      {/* ---------- Rapor belajar ---------- */}
+      <section className="mt-10" aria-labelledby="rapor">
+        <h2 id="rapor" className="sr-only">{t.home.stats?.title || "Statistik Belajar"}</h2>
+        <div className="grid grid-cols-1 overflow-hidden rounded-xl border-2 border-[var(--rule)] bg-[var(--card)] sm:grid-cols-2 lg:grid-cols-4">
+          {/* Rata-rata */}
+          <div className="border-b-2 border-[var(--rule)] p-5 sm:border-r-2 lg:border-b-0">
+            <p className="text-sm font-semibold text-[var(--ink-soft)]">{t.home.stats?.avgScore || "Rata-rata kuis"}</p>
+            <p className="mt-2 text-4xl font-extrabold">
+              {quizzesCount > 0 ? averageScore : "–"}
+              {quizzesCount > 0 && <span className="text-lg font-bold text-[var(--ink-soft)]"> /100</span>}
+            </p>
+            <p className="mt-1 text-sm text-[var(--ink-soft)]">
+              {quizzesCount > 0
+                ? (t.home.stats?.avgScoreSub || "Dari {count} kuis selesai").replace("{count}", quizzesCount)
+                : noQuizSub}
+            </p>
           </div>
-          {t.home.stats?.title || "Statistik Belajar"}
-        </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* 1. Average Score Card */}
-          <motion.div 
-            whileHover={{ y: -4, scale: 1.01 }}
-            className="p-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl border border-gray-100 dark:border-gray-700/50 shadow-sm flex flex-col justify-between"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.home.stats?.avgScore || "Rata-rata Kuis"}</span>
-              <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#00A2D8] border border-blue-100/50 dark:border-blue-900/30">
-                <ArrowTrendingUpIcon className="w-5 h-5" />
-              </div>
-            </div>
-            <div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-extrabold text-gray-900 dark:text-white">{quizzesCount > 0 ? `${averageScore}` : "-"}</span>
-                {quizzesCount > 0 && <span className="text-base font-bold text-gray-400">/ 100</span>}
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 line-clamp-1">
-                {quizzesCount > 0 
-                  ? (t.home.stats?.avgScoreSub || "Dari {count} kuis selesai").replace("{count}", quizzesCount)
-                  : (t.home.stats?.noQuizTakenSub || "Mulai kuis untuk melihat statistik")}
-              </p>
-            </div>
-          </motion.div>
+          {/* Pemahaman */}
+          <div className="border-b-2 border-[var(--rule)] p-5 lg:border-r-2 lg:border-b-0">
+            <p className="text-sm font-semibold text-[var(--ink-soft)]">{t.home.stats?.comprehension || "Pemahaman"}</p>
+            <p className="mt-2 text-2xl font-extrabold leading-10">
+              {quizzesCount > 0 ? <span className={`hl ${comprehensionHl}`}>{comprehensionLevel}</span> : "–"}
+            </p>
+            <p className="mt-1 text-sm text-[var(--ink-soft)]">
+              {quizzesCount > 0 ? t.home.stats?.comprehensionSub || "Berdasarkan performa kuis" : noQuizSub}
+            </p>
+          </div>
 
-          {/* 2. Comprehension Level Card */}
-          <motion.div 
-            whileHover={{ y: -4, scale: 1.01 }}
-            className="p-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl border border-gray-100 dark:border-gray-700/50 shadow-sm flex flex-col justify-between"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.home.stats?.comprehension || "Pemahaman"}</span>
-              <div className="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 border border-purple-100/50 dark:border-purple-900/30">
-                <AcademicCapIcon className="w-5 h-5" />
-              </div>
-            </div>
-            <div>
-              {quizzesCount > 0 ? (
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold border ${comprehensionColor}`}>
-                  {comprehensionLevel}
+          {/* Minggu ini */}
+          <div className="border-b-2 border-[var(--rule)] p-5 sm:border-r-2 sm:border-b-0">
+            <p className="text-sm font-semibold text-[var(--ink-soft)]">{t.home.stats?.weeklyProgress || "Progress belajar"}</p>
+            <p className="mt-2 text-4xl font-extrabold">
+              {weeklyProgressCount}
+              <span className="text-lg font-bold text-[var(--ink-soft)]"> {t.home.stats?.weekActivity || "kuis minggu ini"}</span>
+            </p>
+            <p className="mt-1 text-sm text-[var(--ink-soft)]">
+              {notes.length} {t.home.stats?.notesCount || "catatan dibuat"}
+            </p>
+          </div>
+
+          {/* Perlu ditinjau */}
+          <div className="p-5">
+            <p className="text-sm font-semibold text-[var(--ink-soft)]">{t.home.stats?.challengingTopic || "Perlu ditinjau"}</p>
+            {challengingTopic ? (
+              <Link
+                href={`/dashboard/quiz/${challengingTopic.id}`}
+                className="group mt-2 flex items-center justify-between gap-2 rounded-lg border-2 border-[var(--wrong)]/40 px-3 py-2 hover:border-[var(--wrong)]"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate font-bold">{challengingTopic.sourceValue}</span>
+                  <span className="text-sm text-[var(--wrong)]">Skor {challengingTopic.result.score}</span>
                 </span>
-              ) : (
-                <span className="text-3xl font-extrabold text-gray-400">-</span>
-              )}
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 line-clamp-1">
-                {quizzesCount > 0 ? (t.home.stats?.comprehensionSub || "Berdasarkan performa kuis") : (t.home.stats?.noQuizTakenSub || "Mulai kuis untuk melihat statistik")}
-              </p>
-            </div>
-          </motion.div>
-
-          {/* 3. Weekly Progress Card */}
-          <motion.div 
-            whileHover={{ y: -4, scale: 1.01 }}
-            className="p-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl border border-gray-100 dark:border-gray-700/50 shadow-sm flex flex-col justify-between"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.home.stats?.weeklyProgress || "Progress Belajar"}</span>
-              <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 border border-emerald-100/50 dark:border-emerald-900/30">
-                <CheckCircleIcon className="w-5 h-5" />
-              </div>
-            </div>
-            <div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-4xl font-extrabold text-gray-900 dark:text-white">{weeklyProgressCount}</span>
-                <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase">{t.home.stats?.weekActivity || "kuis minggu ini"}</span>
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 line-clamp-1">
-                {notes.length} {(t.home.stats?.notesCount || "catatan dibuat")}
-              </p>
-            </div>
-          </motion.div>
-
-          {/* 4. Challenging Topic Card */}
-          <motion.div 
-            whileHover={{ y: -4, scale: 1.01 }}
-            className="p-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl border border-gray-100 dark:border-gray-700/50 shadow-sm flex flex-col justify-between"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.home.stats?.challengingTopic || "Perlu Ditinjau"}</span>
-              <div className="p-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 border border-rose-100/50 dark:border-rose-900/30">
-                <ExclamationTriangleIcon className="w-5 h-5" />
-              </div>
-            </div>
-            <div>
-              {challengingTopic ? (
-                <Link 
-                  href={`/dashboard/quiz/${challengingTopic.id}`}
-                  className="group flex items-center justify-between p-2.5 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100/50 dark:border-rose-900/20 hover:bg-rose-100/50 dark:hover:bg-rose-950/40 transition-colors"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-extrabold text-rose-700 dark:text-rose-400 truncate">{challengingTopic.sourceValue}</p>
-                    <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">Skor: {challengingTopic.result.score}</p>
-                  </div>
-                  <ChevronRightIcon className="w-4 h-4 text-rose-500 group-hover:translate-x-0.5 transition-transform" />
-                </Link>
-              ) : (
-                <span className="text-3xl font-extrabold text-gray-400">-</span>
-              )}
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 line-clamp-1">
-                {challengingTopic ? (t.home.stats?.challengingTopicSub || "Materi dengan skor terendah") : (t.home.stats?.noQuizTakenSub || "Mulai kuis untuk melihat statistik")}
-              </p>
-            </div>
-          </motion.div>
+                <FontAwesomeIcon icon={faChevronRight} className="text-sm text-[var(--wrong)] transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            ) : (
+              <p className="mt-2 text-4xl font-extrabold">–</p>
+            )}
+            <p className="mt-1 text-sm text-[var(--ink-soft)]">
+              {challengingTopic ? t.home.stats?.challengingTopicSub || "Materi dengan skor terendah" : noQuizSub}
+            </p>
+          </div>
         </div>
-      </motion.section>
+      </section>
 
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="grid grid-cols-1 lg:grid-cols-12 gap-8"
-      >
-        <div className="lg:col-span-8 space-y-10">
-          {/* Terakhir Dilihat (Recent Notes) */}
-          <motion.section variants={itemVariants}>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
-                <ClockIcon className="w-6 h-6 mr-3 text-[#00A2D8] dark:text-[#4CC1EE]" />
-                {t.home.continueLearning}
-              </h2>
-            </div>
-
+      <div className="mt-12 grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-10">
+        <div className="space-y-12 lg:col-span-8">
+          {/* ---------- Lanjutkan belajar ---------- */}
+          <section>
+            <SectionTitle icon={faClock}>{t.home.continueLearning}</SectionTitle>
             {isInitialLoad ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <SkeletonLoader type="note" count={2} />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Skeleton className="h-40" />
+                <Skeleton className="h-40" />
               </div>
             ) : recentNotes.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-                {recentNotes.slice(0, 2).map((note) => (
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                {recentNotes.slice(0, 2).map((note, i) => (
                   <Link
                     key={note.id}
                     href={`/dashboard/notes/${note.id}/edit`}
-                    className="p-6 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 hover:border-[#00A2D8]/50 dark:hover:border-[#4CC1EE]/50 transition-all duration-300 group flex flex-col h-[160px]"
+                    className={`ruled group relative flex h-40 flex-col overflow-hidden rounded-xl border-2 border-[var(--rule)] bg-[var(--card)] pt-1.5 pb-4 pr-5 pl-10 transition-colors hover:border-[var(--ink-soft)] ${
+                      i % 2 ? "rotate-[0.4deg]" : "rotate-[-0.4deg]"
+                    }`}
                   >
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-[#00A2D8] dark:group-hover:text-[#4CC1EE] transition-colors line-clamp-2">
-                      {note.title}
-                    </h3>
-                    <div className="mt-auto flex items-center justify-between">
-                      <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                        <ClockIcon className="w-4 h-4 mr-1 opacity-70" />
-                        {new Date(note.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
-                      </p>
-                      <div className="w-8 h-8 rounded-full bg-gray-50 dark:bg-gray-700 flex items-center justify-center group-hover:bg-[#00A2D8]/10 group-hover:text-[#00A2D8] transition-colors">
-                        <ChevronRightIcon className="w-4 h-4" />
-                      </div>
-                    </div>
+                    <span className="margin-line left-6" aria-hidden="true" />
+                    <h3 className="line-clamp-2 text-lg font-bold leading-8">{note.title}</h3>
+                    <p className="mt-auto flex items-center gap-2 text-sm text-[var(--ink-soft)]">
+                      <FontAwesomeIcon icon={faClock} />
+                      {new Date(note.updatedAt).toLocaleDateString(locale, { day: "numeric", month: "short" })}
+                      <FontAwesomeIcon icon={faChevronRight} className="ml-auto transition-transform group-hover:translate-x-1" />
+                    </p>
                   </Link>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 px-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-3xl border border-dashed border-gray-300 dark:border-gray-700 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-50/50 dark:to-gray-900/50 pointer-events-none"></div>
-                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl flex items-center justify-center mb-5 border border-gray-200/50 dark:border-gray-700/50 relative z-10">
-                  <DocumentTextIcon className="w-10 h-10 text-gray-400 dark:text-gray-500" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 relative z-10">{t.home.emptyDesk}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 mb-6 relative z-10 max-w-xs mx-auto">{t.home.startJourney}</p>
-                <Link
-                  href="/dashboard/notes/new"
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-900 dark:bg-gray-100 dark:text-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
-                >
-                  <PlusIcon className="w-4 h-4 mr-2" /> {t.home.createNow}
+              <EmptyNote title={t.home.emptyDesk} text={t.home.startJourney}>
+                <Link href="/dashboard/notes/new" className="btn-ink px-5 py-2.5">
+                  <FontAwesomeIcon icon={faPlus} />
+                  {t.home.createNow}
                 </Link>
-              </div>
+              </EmptyNote>
             )}
-          </motion.section>
+          </section>
 
-          {/* Semua Catatan */}
-          <motion.section variants={itemVariants}>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
-                <div className="p-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg mr-3 border border-gray-200/50 dark:border-gray-700/50">
-                  <DocumentTextIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                </div>
-                {t.home.noteArchive}
-              </h2>
-            </div>
+          {/* ---------- Arsip catatan, gaya daftar isi ---------- */}
+          <section>
+            <SectionTitle icon={faFileLines}>{t.home.noteArchive}</SectionTitle>
             {isInitialLoad ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                <SkeletonLoader type="note" count={3} />
+              <div className="space-y-3">
+                <Skeleton className="h-6" />
+                <Skeleton className="h-6 w-5/6" />
+                <Skeleton className="h-6 w-4/6" />
               </div>
             ) : notes.length > 0 ? (
-              <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <AnimatePresence mode="popLayout">
-                  {notes.map((note) => (
-                    <motion.div
-                      layout
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ duration: 0.2 }}
-                      key={note.id}
+              <ol className="divide-y-2 divide-[var(--rule)] rounded-xl border-2 border-[var(--rule)] bg-[var(--card)]">
+                {notes.map((note, i) => (
+                  <li key={note.id}>
+                    <Link
+                      href={`/dashboard/notes/${note.id}/edit`}
+                      className="group flex items-baseline gap-3 px-4 py-3 hover:bg-[var(--rule)]/40"
                     >
-                      <Link
-                        href={`/dashboard/notes/${note.id}/edit`}
-                        className="p-5 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-300 group flex items-start gap-4 relative overflow-hidden h-full"
-                      >
-                        <div className="absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br from-gray-400/10 to-transparent rounded-full blur-xl group-hover:from-gray-400/20 transition-all"></div>
-                        <div className="p-3 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 text-gray-500 dark:text-gray-400 rounded-xl group-hover:scale-110 transition-transform flex-shrink-0 relative z-10 border border-gray-200/50 dark:border-gray-700/50">
-                          <DocumentTextIcon className="w-7 h-7" />
-                        </div>
-                        <div className="min-w-0 flex-1 relative z-10">
-                          <h3 className="text-base font-bold text-gray-900 dark:text-white group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors truncate">
-                            {note.title}
-                          </h3>
-                          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            {new Date(note.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-                          </p>
-                        </div>
-                      </Link>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </motion.div>
+                      <span className="hand w-7 shrink-0 text-xl text-[var(--ink-soft)]">{i + 1}.</span>
+                      <span className="truncate font-semibold group-hover:underline group-hover:decoration-[var(--hl-yellow)] group-hover:decoration-4 group-hover:underline-offset-4">
+                        {note.title}
+                      </span>
+                      <span className="mx-1 hidden flex-1 border-b-2 border-dotted border-[var(--rule)] sm:block" aria-hidden="true" />
+                      <span className="ml-auto shrink-0 text-sm text-[var(--ink-soft)] sm:ml-0">
+                        {new Date(note.updatedAt).toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ol>
             ) : (
-              !isInitialLoad && recentNotes.length > 0 &&
-              <p className="text-gray-500 dark:text-gray-400 text-sm">{t.home.noOtherNotes}</p>
+              !isInitialLoad &&
+              recentNotes.length > 0 && <p className="text-[var(--ink-soft)]">{t.home.noOtherNotes}</p>
             )}
-          </motion.section>
+          </section>
         </div>
 
-        {/* Sidebar Kanan (Folders) */}
-        <div className="lg:col-span-4">
-          <motion.aside variants={itemVariants} className="sticky top-24">
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-gray-700/50 dark:">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center">
-                  <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg mr-3">
-                    <FolderIcon className="w-5 h-5 text-[#00A2D8] dark:text-[#4CC1EE]" />
-                  </div>
-                  {t.home.folderCollection}
-                </h2>
+        {/* ---------- Folder ---------- */}
+        <aside className="lg:col-span-4">
+          <div className="lg:sticky lg:top-6">
+            <SectionTitle
+              icon={faFolder}
+              action={
                 <button
                   onClick={() => setIsFolderModalOpen(true)}
-                  className="p-1.5 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  aria-label="Buat folder"
+                  title="Buat folder"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border-2 border-[var(--rule)] text-[var(--ink-soft)] hover:border-[var(--ink-soft)] hover:text-[var(--ink)]"
                 >
-                  <PlusIcon className="w-4 h-4" />
+                  <FontAwesomeIcon icon={faPlus} />
                 </button>
+              }
+            >
+              {t.home.folderCollection}
+            </SectionTitle>
+
+            {isInitialLoad ? (
+              <div className="space-y-3">
+                <Skeleton className="h-14" />
+                <Skeleton className="h-14" />
+                <Skeleton className="h-14" />
               </div>
-
-              {isInitialLoad ? (
-                <div className="space-y-4">
-                  <SkeletonLoader type="folder" count={4} />
-                </div>
-              ) : folders.length > 0 ? (
-                <div className="space-y-3">
-                  {folders.map((folder, index) => {
-                    const colorClass = "text-[#00A2D8] bg-[#00A2D8]/10";
-
-                    return (
-                      <Link
-                        key={folder.id}
-                        href={`/dashboard/folders/${folder.id}`}
-                        className="flex items-center justify-between p-4 bg-gray-50/50 dark:bg-gray-900/50 rounded-2xl border border-transparent hover:border-blue-200 dark:hover:border-blue-800/50 hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 group relative overflow-hidden"
-                      >
-                        <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-gradient-to-r from-[#00A2D8]/10 to-transparent rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <div className="flex items-center min-w-0 gap-4 relative z-10">
-                          <div className={`p-2.5 rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/40 dark:to-blue-900/10 text-[#00A2D8] group-hover:scale-110 transition-transform border border-blue-200/50 dark:border-blue-700/50`}>
-                            <FolderIcon className="w-6 h-6" />
-                          </div>
-                          <div className="min-w-0">
-                            <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 truncate group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
-                              {folder.name}
-                            </h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {folder.noteCount} {folder.noteCount === 1 ? t.home.item : t.home.items}
-                            </p>
-                          </div>
-                        </div>
-                        <ChevronRightIcon className="w-4 h-4 text-gray-300 dark:text-gray-600 group-hover:text-gray-500 dark:group-hover:text-gray-400 transition-colors" />
-                      </Link>
-                    )
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-10 px-4">
-                  <div className="w-16 h-16 mx-auto bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl flex items-center justify-center mb-4 border border-gray-200/50 dark:border-gray-700/50">
-                    <FolderIcon className="w-8 h-8 text-gray-400 dark:text-gray-500" />
-                  </div>
-                  <p className="text-base font-bold text-gray-800 dark:text-gray-200">{t.home.noFoldersYet}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t.home.groupNotes}</p>
-                </div>
-              )}
-            </div>
-          </motion.aside>
-        </div>
-      </motion.div>
-
-      {/* Mobile FAB */}
-      <div className="md:hidden fixed bottom-6 right-6 z-40">
-        <Link
-          href="/dashboard/notes/new"
-          className="flex items-center justify-center w-14 h-14 text-white bg-[#00A2D8] rounded-full )] hover:bg-[#008EB2] focus:outline-none transition-transform hover:scale-110 active:scale-95"
-        >
-          <PlusIcon className="w-6 h-6" />
-        </Link>
+            ) : folders.length > 0 ? (
+              <ul className="space-y-2">
+                {folders.map((folder, i) => (
+                  <li key={folder.id}>
+                    <Link
+                      href={`/dashboard/folders/${folder.id}`}
+                      className="group flex items-center gap-3 rounded-xl border-2 border-[var(--rule)] bg-[var(--card)] px-4 py-3 hover:border-[var(--ink-soft)]"
+                    >
+                      <FontAwesomeIcon icon={faFolder} className={`text-xl ${folderColors[i % folderColors.length]}`} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-bold">{folder.name}</span>
+                        <span className="text-sm text-[var(--ink-soft)]">
+                          {folder.noteCount} {folder.noteCount === 1 ? t.home.item : t.home.items}
+                        </span>
+                      </span>
+                      <FontAwesomeIcon icon={faChevronRight} className="text-sm text-[var(--ink-soft)] transition-transform group-hover:translate-x-0.5" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <EmptyNote title={t.home.noFoldersYet} text={t.home.groupNotes} />
+            )}
+          </div>
+        </aside>
       </div>
+
+      {/* Tombol tambah catatan (mobile) */}
+      <Link
+        href="/dashboard/notes/new"
+        aria-label={t.home.createNewNote}
+        className="btn-ink fixed right-5 bottom-5 z-30 h-14 w-14 rounded-full text-xl md:hidden"
+      >
+        <FontAwesomeIcon icon={faPlus} />
+      </Link>
     </div>
   );
 }
 
 export default function Dashboard() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center h-full">
-        <div className="w-10 h-10 border-4 border-gray-200 border-t-[#00A2D8] rounded-full animate-spin"></div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex h-full items-center justify-center py-20">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-[var(--rule)] border-t-[var(--ink)]" />
+        </div>
+      }
+    >
       <DashboardContent />
     </Suspense>
-  )
+  );
 }

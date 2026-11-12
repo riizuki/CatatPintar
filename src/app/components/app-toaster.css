@@ -1,0 +1,48 @@
+/* Animasi notifikasi (dipakai AppToaster.jsx) */
+.cp-toast {
+  font-family: "Bricolage Grotesque Variable", system-ui, sans-serif;
+}
+
+/* Muncul: turun sedikit lalu "pop" */
+.cp-toast-in {
+  animation: cp-toast-in 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.cp-toast-out {
+  animation: cp-toast-out 260ms ease-in both;
+}
+@keyframes cp-toast-in {
+  0% { opacity: 0; transform: translateY(-16px) scale(0.92) rotate(-1.5deg); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes cp-toast-out {
+  0% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateY(-10px) scale(0.94); }
+}
+
+/* Ikon ikut "nge-pop" sesudah kartu muncul */
+.cp-toast-in .cp-toast-icon {
+  animation: cp-toast-icon 520ms 140ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes cp-toast-icon {
+  0% { transform: scale(0) rotate(-30deg); }
+  100% { transform: none; }
+}
+
+/* Bar waktu menyusut dari penuh ke nol; berhenti saat kursor di atas notifikasi */
+.cp-toast-timer {
+  width: 100%;
+  animation-name: cp-toast-timer;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+.cp-toast:hover .cp-toast-timer {
+  animation-play-state: paused;
+}
+@keyframes cp-toast-timer {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cp-toast-in, .cp-toast-out, .cp-toast-in .cp-toast-icon { animation: none; }
+}

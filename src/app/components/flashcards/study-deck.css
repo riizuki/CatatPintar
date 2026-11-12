@@ -1,0 +1,13 @@
+/* Animasi kartu masuk di mode belajar flashcard */
+.sd-enter-next { animation: sd-in-right 320ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.sd-enter-prev { animation: sd-in-left 320ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.sd-enter-known { animation: sd-in-up 360ms cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+.sd-enter-review { animation: sd-in-up 360ms cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+
+@keyframes sd-in-right { from { opacity: 0; transform: translateX(40px) rotate(2deg); } to { opacity: 1; transform: none; } }
+@keyframes sd-in-left { from { opacity: 0; transform: translateX(-40px) rotate(-2deg); } to { opacity: 1; transform: none; } }
+@keyframes sd-in-up { from { opacity: 0; transform: translateY(18px) scale(0.96); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .sd-enter-next, .sd-enter-prev, .sd-enter-known, .sd-enter-review { animation: none; }
+}

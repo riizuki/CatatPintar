@@ -3,13 +3,16 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { ArrowLeftIcon, ArrowRightIcon, SparklesIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { DocumentTextIcon } from "@heroicons/react/24/solid";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft, faClone, faPenToSquare, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import ConfirmationModal from "@/app/components/dashboard/ConfirmationModal";
+import StudyDeck from "@/app/components/flashcards/StudyDeck";
+import { EmptyState, ErrorNote, Page, PageHeader, Spinner, cls } from "@/app/components/ui/kit";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { dashboardTranslations } from "@/locales/dashboard";
 
-// A more modern take on the flashcard page
+const STACK = ["bg-[var(--hl-yellow)]", "bg-[var(--hl-blue)]", "bg-[var(--hl-green)]", "bg-[var(--hl-pink)]"];
+
 function FlashcardsDisplay() {
     const { language } = useLanguage();
     const t = dashboardTranslations[language];
@@ -113,171 +116,96 @@ function FlashcardsDisplay() {
         }
     };
 
-    if (loading) return (
-        <div className="flex items-center justify-center h-[calc(100vh-100px)]">
-            <div className="w-10 h-10 border-4 border-gray-200 border-t-[#00A2D8] rounded-full animate-spin"></div>
-        </div>
-    );
+    if (loading) return <Spinner className="h-[calc(100vh-140px)]" />;
 
-    // SCENARIO 1: SET SELECTION VIEW
+    /* ================= DAFTAR SET ================= */
     if (!noteId) {
         return (
             <>
-            <ConfirmationModal
-                isOpen={isDeleteModalOpen}
-                onClose={() => setIsDeleteModalOpen(false)}
-                onConfirm={handleDeleteFlashcards}
-                title={t.flashcards.deleteFlashcards}
-                message={t.flashcards.deleteFlashcardsConfirm}
-                isProcessing={isDeleting}
-            />
-            <div className="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto min-h-screen">
-                <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-6 rounded-3xl border border-gray-200/50 dark:border-gray-700/50">
-                    <div>
-                        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
-                            {t.flashcards.selectSet}
-                        </h1>
-                        <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm sm:text-base">
-                            {t.flashcards.selectSubtitle}
-                        </p>
-                    </div>
-                </header>
-                
-                {error && <p className="text-rose-500 bg-rose-50 dark:bg-rose-900/20 px-6 py-3 rounded-xl mb-6">{error}</p>}
+                <ConfirmationModal
+                    isOpen={isDeleteModalOpen}
+                    onClose={() => setIsDeleteModalOpen(false)}
+                    onConfirm={handleDeleteFlashcards}
+                    title={t.flashcards.deleteFlashcards}
+                    isMutating={isDeleting}
+                >
+                    <p>{t.flashcards.deleteFlashcardsConfirm}</p>
+                </ConfirmationModal>
 
-                {notesWithFlashcards.length === 0 && !error ? (
-                    <div className="text-center py-16 sm:py-20 px-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-md rounded-3xl border border-dashed border-gray-300 dark:border-gray-700">
-                        <SparklesIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600"/>
-                        <h3 className="mt-6 text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{t.flashcards.emptyTitle}</h3>
-                        <p className="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400">{t.flashcards.emptySubtitle}</p>
-                         <button
-                            onClick={() => router.push('/dashboard')}
-                            className="mt-8 inline-flex items-center px-6 py-3 text-sm font-bold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl transition-all transform hover:-translate-y-1"
-                        >
-                            {t.flashcards.backToHome}
-                        </button>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {notesWithFlashcards.map(n => (
-                            <div key={n.id} className="relative group block p-6 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 transform hover:-translate-y-2 hover:border-[#00A2D8]/50">
-                                <Link 
-                                    href={`/dashboard/flashcards?noteId=${n.id}`} 
-                                    className="block cursor-pointer h-full"
-                                >
-                                    <div className="inline-flex p-3 rounded-2xl mb-4 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 text-gray-500 dark:text-gray-400 border border-gray-200/50 dark:border-gray-700/50 transition-transform group-hover:scale-110">
-                                        <DocumentTextIcon className="w-8 h-8"/>
-                                    </div>
-                                    <h2 className="text-lg font-bold text-gray-900 dark:text-white truncate transition-colors mb-2 pr-8">{n.title}</h2>
-                                    <p className="text-sm font-bold text-[#00A2D8] dark:text-[#4CC1EE] opacity-0 group-hover:opacity-100 transition-opacity">{t.flashcards.startLearning}</p>
-                                </Link>
-                                
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        confirmDelete(n);
-                                    }}
-                                    className="absolute top-6 right-6 p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-colors z-10"
-                                    title={t.flashcards.deleteFlashcards}
-                                >
-                                    <TrashIcon className="w-5 h-5" />
+                <Page wide>
+                    <PageHeader title={t.flashcards.selectSet} subtitle={t.flashcards.selectSubtitle} />
+                    <div className="mt-8 space-y-6">
+                        <ErrorNote>{error}</ErrorNote>
+                        {notesWithFlashcards.length === 0 && !error ? (
+                            <EmptyState icon={faClone} title={t.flashcards.emptyTitle} text={t.flashcards.emptySubtitle}>
+                                <button onClick={() => router.push("/dashboard")} className="btn-ink h-11 px-5">
+                                    {t.flashcards.backToHome}
                                 </button>
-                            </div>
-                        ))}
+                            </EmptyState>
+                        ) : (
+                            <ul className="grid grid-cols-1 gap-x-6 gap-y-10 pt-2 sm:grid-cols-2 lg:grid-cols-3">
+                                {notesWithFlashcards.map((n, i) => (
+                                    <li key={n.id} className="group relative">
+                                        {/* tumpukan kartu di belakang */}
+                                        <span className={`absolute inset-x-3 -top-2 h-full rotate-[-2deg] rounded-xl border-2 border-[var(--rule)] ${STACK[(i + 1) % STACK.length]}`} aria-hidden="true" />
+                                        <span className="absolute inset-x-1.5 -top-1 h-full rotate-[1.5deg] rounded-xl border-2 border-[var(--rule)] bg-[var(--card)]" aria-hidden="true" />
+                                        <Link href={`/dashboard/flashcards?noteId=${n.id}`} className={`relative block overflow-hidden ${cls.card} ${cls.cardHover}`}>
+                                            <span className={`block h-3 ${STACK[i % STACK.length]}`} aria-hidden="true" />
+                                            <span className="block p-5 pr-14">
+                                                <span className="block truncate text-lg font-extrabold">{n.title}</span>
+                                                <span className="hand mt-1 block text-xl text-[var(--ink-soft)] group-hover:text-[var(--margin)]">{t.flashcards.startLearning}</span>
+                                            </span>
+                                        </Link>
+                                        <button
+                                            onClick={() => confirmDelete(n)}
+                                            className={`absolute top-6 right-3 ${cls.iconBtn} hover:!text-[var(--wrong)]`}
+                                            title={t.flashcards.deleteFlashcards}
+                                            aria-label={`${t.flashcards.deleteFlashcards}: ${n.title}`}
+                                        >
+                                            <FontAwesomeIcon icon={faTrashCan} />
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
-                )}
-            </div>
+                </Page>
             </>
         );
     }
-    
-    const currentCard = flashcards[currentIndex];
 
-    // SCENARIO 2: FLIPPER VIEW
+    /* ================= MODE BELAJAR ================= */
     return (
-        <div className="p-4 sm:p-6 md:p-10 flex flex-col items-center justify-center min-h-screen">
-            <div className="w-full max-w-3xl">
-                 <header className="mb-12 text-center flex items-center justify-between bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-6 rounded-3xl border border-gray-200/50 dark:border-gray-700/50 relative">
-                    <button onClick={() => router.push('/dashboard/flashcards')} className="absolute left-6 p-3 bg-white/80 dark:bg-gray-700/80 backdrop-blur rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-                        <ArrowLeftIcon className="w-6 h-6 text-gray-700 dark:text-gray-300" />
-                    </button>
-                    <div className="flex-grow px-16">
-                        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white truncate">
-                            {note?.title}
-                        </h1>
-                        <div className="inline-flex items-center mt-3 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-[#00A2D8] dark:text-[#4CC1EE] text-sm font-bold rounded-full">
-                            {t.flashcards.cardWord} {currentIndex + 1} {t.flashcards.cardOf} {flashcards.length}
-                        </div>
-                    </div>
-                 </header>
+        <Page>
+            <button
+                onClick={() => router.push("/dashboard/flashcards")}
+                className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--ink-soft)] hover:text-[var(--ink)]"
+            >
+                <FontAwesomeIcon icon={faArrowLeft} />
+                {language === "id" ? "Semua set" : "All sets"}
+            </button>
 
-                {error && (
-                    <div className="text-center py-16 sm:py-20 px-6 bg-white /20 rounded-2xl border-2 border-dashed border-red-300 /50">
-                        <h3 className="text-lg sm:text-2xl font-bold text-red-600">{t.flashcards.errorOccurred}</h3>
-                        <p className="mt-2 text-sm sm:text-base text-gray-500">{error}</p>
-                         <button
-                            onClick={() => router.push('/dashboard/notes/' + noteId + '/edit')}
-                            className="mt-8 inline-flex items-center px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all"
-                        >
+            <h1 className="mt-4 text-3xl font-extrabold tracking-tight break-words sm:text-4xl">{note?.title}</h1>
+
+            {error && (
+                <div className="mt-8">
+                    <EmptyState icon={faClone} title={t.flashcards.errorOccurred} text={error}>
+                        <button onClick={() => router.push("/dashboard/notes/" + noteId + "/edit")} className="btn-ink h-11 px-5">
+                            <FontAwesomeIcon icon={faPenToSquare} />
                             {t.flashcards.openEditor}
                         </button>
-                    </div>
-                )}
+                    </EmptyState>
+                </div>
+            )}
 
-                {!error && flashcards.length > 0 && (
-                    <>
-                        <div 
-                            className="relative w-full h-80 sm:h-96 md:h-[400px] perspective-1000 cursor-pointer group"
-                            onClick={() => setIsFlipped(!isFlipped)}
-                        >
-                            <div 
-                                className={`relative w-full h-full transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] transform-style-3d ${isFlipped ? 'rotate-y-180' : ''}`}
-                            >
-                                {/* Front of Card - Redesigned */}
-                                <div className="absolute w-full h-full backface-hidden flex flex-col items-center justify-center p-8 sm:p-12 bg-white dark:bg-gray-800 rounded-[3rem] border border-gray-100 dark:border-gray-700">
-                                    <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-center text-gray-900 dark:text-white leading-tight">{currentCard.frontText}</p>
-                                    <span className="absolute bottom-8 text-sm font-medium text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">{t.flashcards.clickToFlip}</span>
-                                </div>
-                                {/* Back of Card - Redesigned */}
-                                <div className="absolute w-full h-full backface-hidden rotate-y-180 flex items-center justify-center p-8 sm:p-12 bg-[#00A2D8] text-white rounded-[3rem]">
-                                    <p className="text-xl sm:text-2xl md:text-3xl text-center font-bold leading-relaxed">{currentCard.backText}</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div className="flex justify-between items-center mt-12 px-4 sm:px-10">
-                            <button 
-                                onClick={goToPrev} 
-                                className="flex items-center justify-center w-36 py-3.5 text-sm font-bold text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 backdrop-blur rounded-2xl hover:bg-white dark:hover:bg-gray-700 border border-gray-200/50 dark:border-gray-700/50 transition-all transform hover:-translate-y-1"
-                            >
-                                <ArrowLeftIcon className="w-5 h-5 mr-2"/>
-                                {t.flashcards.prev}
-                            </button>
-                            <div className="flex space-x-2">
-                                {flashcards.map((_, idx) => (
-                                    <div key={idx} className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === currentIndex ? 'w-6 bg-[#00A2D8]' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
-                                ))}
-                            </div>
-                            <button 
-                                onClick={goToNext} 
-                                className="flex items-center justify-center w-36 py-3.5 text-sm font-bold text-white bg-[#00A2D8] rounded-2xl transition-all transform hover:-translate-y-1"
-                            >
-                                {t.flashcards.next}
-                                <ArrowRightIcon className="w-5 h-5 ml-2"/>
-                            </button>
-                        </div>
-                    </>
-                )}
-            </div>
-        </div>
+            {!error && flashcards.length > 0 && <StudyDeck cards={flashcards} lang={language} />}
+        </Page>
     );
 }
 
-// Wrap the component in Suspense as it uses useSearchParams
 export default function FlashcardsPage() {
     return (
-        <Suspense fallback={<div className="p-8 text-center text-gray-500">Memuat...</div>}>
+        <Suspense fallback={<Spinner className="h-screen" />}>
             <FlashcardsDisplay />
         </Suspense>
     );

@@ -16,6 +16,11 @@ const AIChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // Isi otomatis kolom pertanyaan dari teks yang diblok di editor catatan
+  useEffect(() => {
+    if (noteContext?.prefill?.text) setSearchTerm(noteContext.prefill.text);
+  }, [noteContext?.prefill?.at]);
+
   // Auto scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

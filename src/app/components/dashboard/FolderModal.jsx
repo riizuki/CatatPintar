@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+"use client";
 
+import { useState, useEffect } from "react";
+import { faFolderPlus, faPen } from "@fortawesome/free-solid-svg-icons";
+import { Modal, cls } from "../ui/kit";
 import { useLanguage } from "../../../lib/contexts/LanguageContext";
 import { dashboardTranslations } from "../../../locales/dashboard";
 
@@ -11,9 +13,7 @@ export default function FolderModal({ isOpen, onClose, onSave, editingFolder, is
 
   useEffect(() => {
     setName(editingFolder ? editingFolder.name : "");
-  }, [editingFolder]);
-
-  if (!isOpen) return null;
+  }, [editingFolder, isOpen]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -21,50 +21,38 @@ export default function FolderModal({ isOpen, onClose, onSave, editingFolder, is
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-md p-4 transition-all">
-      <div className="w-full max-w-lg p-6 sm:p-8 bg-white dark:bg-gray-800 rounded-3xl border border-gray-200/50 dark:border-gray-700/50">
-        <div className="flex items-center justify-between mb-6 sm:mb-8">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-            {editingFolder ? t.folders.modal.editTitle : t.folders.modal.createTitle}
-          </h2>
-          <button onClick={onClose} disabled={isLoading} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-            <XMarkIcon className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      busy={isLoading}
+      title={editingFolder ? t.folders.modal.editTitle : t.folders.modal.createTitle}
+      icon={editingFolder ? faPen : faFolderPlus}
+      iconClass="bg-[var(--hl-yellow)]"
+    >
+      <form onSubmit={handleSubmit} autoComplete="off">
+        <label htmlFor="folder-name" className={cls.label}>
+          {t.folders.modal.folderName}
+        </label>
+        <input
+          id="folder-name"
+          name="name"
+          type="text"
+          required
+          autoFocus
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={language === "id" ? "mis. Persiapan UTS" : "e.g. Midterm prep"}
+          className={cls.input}
+        />
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <button type="button" onClick={onClose} disabled={isLoading} className={cls.btnOutline}>
+            {t.folders.modal.cancel}
+          </button>
+          <button type="submit" disabled={isLoading} className="btn-ink h-10 px-5 text-sm disabled:opacity-60">
+            {isLoading ? t.folders.modal.saving : editingFolder ? t.folders.modal.save : t.folders.modal.create}
           </button>
         </div>
-        <form onSubmit={handleSubmit} autoComplete="off">
-          <div className="space-y-2">
-            <label htmlFor="name" className="text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300">
-              {t.folders.modal.folderName}
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="block w-full px-3 py-2 sm:px-4 sm:py-3 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A2D8]/50 focus:border-[#00A2D8] transition-all"
-            />
-          </div>
-          <div className="mt-6 sm:mt-8 flex justify-end space-x-2 sm:space-x-4">
-            <button
-                type="button"
-                onClick={onClose}
-                disabled={isLoading}
-                className="px-4 py-2 text-sm sm:px-6 sm:py-2.5 sm:text-base font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
-            >
-                {t.folders.modal.cancel}
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="px-4 py-2 text-sm sm:px-6 sm:py-2.5 sm:text-base font-semibold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] disabled:opacity-50 transition-all transform hover:-translate-y-0.5"
-            >
-              {isLoading ? t.folders.modal.saving : (editingFolder ? t.folders.modal.save : t.folders.modal.create)}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 }

@@ -1,8 +1,14 @@
 import { Quicksand } from "next/font/google";
 import "./globals.css";
+import "@fortawesome/fontawesome-svg-core/styles.css";
+import { config } from "@fortawesome/fontawesome-svg-core";
+
 import Providers from "./components/Providers";
-import { Toaster } from "react-hot-toast";
+import AppToaster from "./components/AppToaster";
 import { LanguageProvider } from "@/lib/contexts/LanguageContext";
+
+// CSS Font Awesome sudah diimpor di atas, jadi jangan disuntik ulang (mencegah ikon "berkedip" besar)
+config.autoAddCss = false;
 
 const quicksand = Quicksand({
   subsets: ["latin"],
@@ -16,11 +22,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="id" suppressHydrationWarning>
       <body className={quicksand.className}>
         <LanguageProvider>
           <Providers>
-            <Toaster position="top-center" reverseOrder={false} />
+            <AppToaster />
             {children}
           </Providers>
         </LanguageProvider>
