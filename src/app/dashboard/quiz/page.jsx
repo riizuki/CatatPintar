@@ -1,14 +1,28 @@
 "use client";
 
-import { PlusIcon, ArrowLeftIcon, CheckCircleIcon, CalendarDaysIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { DocumentTextIcon } from "@heroicons/react/24/solid";
 import { useState, useEffect, Suspense } from "react";
-import CreateQuizModal from "@/app/components/dashboard/CreateQuizModal";
-import ConfirmationModal from "@/app/components/dashboard/ConfirmationModal";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCalendar, faFileLines, faListCheck, faMagnifyingGlassChart, faPlay, faPlus, faTrashCan, faWandMagicSparkles } from "@fortawesome/free-solid-svg-icons";
+import CreateQuizModal from "@/app/components/dashboard/CreateQuizModal";
+import ConfirmationModal from "@/app/components/dashboard/ConfirmationModal";
+import { EmptyState, ErrorNote, Page, PageHeader, Spinner, cls } from "@/app/components/ui/kit";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { dashboardTranslations } from "@/locales/dashboard";
+
+/* Nilai ala coretan guru: angka dilingkari, warnanya sesuai skor */
+function Grade({ score }) {
+  const color = score >= 80 ? "text-[var(--right)]" : score >= 60 ? "text-amber-500" : "text-[var(--margin)]";
+  return (
+    <div className={`relative flex h-20 w-24 items-center justify-center ${color}`}>
+      <svg className="absolute inset-0 h-full w-full" viewBox="0 0 96 80" fill="none" aria-hidden="true">
+        <path d="M80 14C64 2 26 4 12 22C0 38 10 66 44 72C76 78 94 58 88 36C85 26 76 18 60 14" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
+      </svg>
+      <span className="hand text-4xl leading-none">{score}</span>
+    </div>
+  );
+}
 
 const QuizContent = () => {
   const { language } = useLanguage();
@@ -55,7 +69,7 @@ const QuizContent = () => {
   }, []);
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    return new Date(dateString).toLocaleDateString(language === "id" ? "id-ID" : "en-US", { day: "numeric", month: "long", year: "numeric" });
   };
 
   const confirmDelete = (quiz) => {
@@ -82,132 +96,128 @@ const QuizContent = () => {
     }
   };
 
+  const sourceLabel = (q) =>
+    q.sourceType === "gap"
+      ? language === "id" ? "Dari celah catatan" : "From note gaps"
+      : q.sourceType === "note"
+        ? language === "id" ? "Dari catatan" : "From note"
+        : language === "id" ? "Dari topik" : "From topic";
+  const sourceStyle = (q) =>
+    q.sourceType === "gap" ? "bg-[var(--hl-pink)]" : q.sourceType === "note" ? "bg-[var(--hl-yellow)]" : "bg-[var(--hl-blue)]";
+  const sourceIcon = (q) =>
+    q.sourceType === "gap" ? faMagnifyingGlassChart : q.sourceType === "note" ? faFileLines : faWandMagicSparkles;
+
   return (
     <>
-      <CreateQuizModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        preselectedSourceType={noteIdParam ? 'note' : null} 
-        preselectedSourceValue={noteIdParam ? parseInt(noteIdParam) : null} 
+      <CreateQuizModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        preselectedSourceType={noteIdParam ? "note" : null}
+        preselectedSourceValue={noteIdParam ? parseInt(noteIdParam) : null}
       />
       <ConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteQuiz}
         title={t.quiz.deleteQuiz}
-        message={t.quiz.deleteQuizConfirm}
-        isProcessing={isDeleting}
-      />
-      <div className="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto min-h-screen">
-        <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-6 rounded-3xl border border-gray-200/50 dark:border-gray-700/50">
-          <div className="flex items-center">
-            <button onClick={() => router.back()} className="mr-4 p-3 bg-white/80 dark:bg-gray-700/80 backdrop-blur rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-                <ArrowLeftIcon className="w-6 h-6 text-gray-700 dark:text-gray-300"/>
+        isMutating={isDeleting}
+      >
+        <p>{t.quiz.deleteQuizConfirm}</p>
+      </ConfirmationModal>
+
+      <Page wide>
+        <PageHeader
+          title={t.quiz.title}
+          subtitle={t.quiz.subtitle}
+          action={
+            <button onClick={() => setIsModalOpen(true)} className="btn-ink h-11 px-5">
+              <FontAwesomeIcon icon={faPlus} />
+              {t.quiz.createQuiz}
             </button>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white flex items-center">
-                  {t.quiz.title}
-              </h1>
-              <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm sm:text-base">
-                  {t.quiz.subtitle}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="mt-4 sm:mt-0 w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 text-sm sm:text-base font-bold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105"
-          >
-            <PlusIcon className="w-5 h-5 mr-2" />
-            <span>{t.quiz.createQuiz}</span>
-          </button>
-        </header>
-        
-        {loading && (
-            <div className="flex items-center justify-center h-64">
-                <div className="w-10 h-10 border-4 border-gray-200 border-t-[#00A2D8] rounded-full animate-spin"></div>
-            </div>
-        )}
-        {error && <p className="text-red-500 bg-red-50 dark:bg-red-900/20 p-4 rounded-xl">{t.quiz.error} {error}</p>}
-        
-        {!loading && !error && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {quizzes.length > 0 ? (
-              quizzes.map((quiz) => (
-                <div key={quiz.id} className="group relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 transform hover:-translate-y-2 hover:border-[#00A2D8]/50 dark:hover:border-[#4CC1EE]/50 p-6 flex flex-col min-h-[280px]">
-                  <div className="flex-grow">
-                    <div className="flex items-start justify-between mb-4">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white capitalize line-clamp-2 pr-8">
-                        {quiz.sourceType}: <span className="font-normal opacity-80">{quiz.sourceValue}</span>
-                        </h3>
-                        <div className="flex items-center space-x-2">
-                            {quiz.result && (
-                                <CheckCircleIcon className="w-6 h-6 text-emerald-500 flex-shrink-0" title={t.quiz.completed}/>
-                            )}
-                            <button
-                                onClick={() => confirmDelete(quiz)}
-                                className="p-1.5 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
-                                title={t.quiz.deleteQuiz}
-                            >
-                                <TrashIcon className="w-5 h-5" />
-                            </button>
-                        </div>
+          }
+        />
+
+        <div className="mt-8">
+          {loading && <Spinner />}
+          <ErrorNote>{error && `${t.quiz.error} ${error}`}</ErrorNote>
+
+          {!loading && !error &&
+            (quizzes.length > 0 ? (
+              <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {quizzes.map((quiz) => (
+                  <li key={quiz.id} className={`group relative flex flex-col overflow-hidden ${cls.card}`}>
+                    {/* kepala kertas ujian */}
+                    <div className="flex items-center justify-between gap-2 border-b-2 border-dashed border-[var(--rule)] px-5 py-3">
+                      <span
+                        className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-bold text-[var(--ink-fixed)] ${
+                          sourceStyle(quiz)
+                        }`}
+                      >
+                        <FontAwesomeIcon icon={sourceIcon(quiz)} />
+                        {sourceLabel(quiz)}
+                      </span>
+                      <button
+                        onClick={() => confirmDelete(quiz)}
+                        className={`${cls.iconBtn} h-8 w-8 hover:!text-[var(--wrong)]`}
+                        title={t.quiz.deleteQuiz}
+                        aria-label={t.quiz.deleteQuiz}
+                      >
+                        <FontAwesomeIcon icon={faTrashCan} />
+                      </button>
                     </div>
-                    <div className="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-lg w-fit">
-                        <CalendarDaysIcon className="w-4 h-4 mr-2"/>
-                        <span>{formatDate(quiz.createdAt)}</span>
+
+                    <div className="flex flex-1 items-start justify-between gap-3 px-5 pt-4">
+                      <div className="min-w-0">
+                        <h3 className="line-clamp-2 text-lg font-extrabold leading-snug">{quiz.sourceValue}</h3>
+                        {quiz.createdAt && (
+                          <p className="mt-2 flex items-center gap-2 text-sm text-[var(--ink-soft)]">
+                            <FontAwesomeIcon icon={faCalendar} />
+                            {formatDate(quiz.createdAt)}
+                          </p>
+                        )}
+                      </div>
+                      {quiz.result ? (
+                        <Grade score={quiz.result.score} />
+                      ) : (
+                        <span className="hand mt-1 shrink-0 rotate-[-4deg] text-xl text-[var(--ink-soft)]">{t.quiz.notTaken}</span>
+                      )}
                     </div>
-                    
-                    {quiz.result ? (
-                       <div className="text-left mt-6">
-                           <p className="text-4xl font-extrabold text-[#00A2D8] dark:text-[#4CC1EE]">{quiz.result.score}%</p>
-                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{t.quiz.takenAt} {formatDate(quiz.result.takenAt)}</p>
-                       </div>
-                    ) : (
-                      <p className="text-sm italic text-gray-500 dark:text-gray-400 mt-6">{t.quiz.notTaken}</p>
-                    )}
-                  </div>
-                  
-                  <div className="mt-6">
-                    <Link href={`/dashboard/quiz/${quiz.id}`} 
-                        className={`w-full inline-flex justify-center items-center px-4 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${quiz.result ? 'text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600' : 'text-white bg-[#00A2D8] hover:bg-[#008EB2] '}`}
-                    >
+
+                    <div className="mt-auto px-5 pt-4 pb-5">
+                      {quiz.result && (
+                        <p className="mb-3 text-sm text-[var(--ink-soft)]">
+                          {t.quiz.takenAt} {formatDate(quiz.result.takenAt)}
+                        </p>
+                      )}
+                      <Link
+                        href={`/dashboard/quiz/${quiz.id}`}
+                        className={quiz.result ? `${cls.btnOutline} w-full` : "btn-ink h-10 w-full text-sm"}
+                      >
+                        {!quiz.result && <FontAwesomeIcon icon={faPlay} />}
                         {quiz.result ? t.quiz.viewResult : t.quiz.startQuiz}
-                    </Link>
-                  </div>
-                </div>
-              ))
+                      </Link>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             ) : (
-              <div className="col-span-full text-center py-20 px-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-md rounded-3xl border border-dashed border-gray-300 dark:border-gray-700 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-50/50 dark:to-gray-900/50 pointer-events-none"></div>
-                <div className="w-24 h-24 mx-auto bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-3xl flex items-center justify-center mb-6 border border-gray-200/50 dark:border-gray-700/50 relative z-10">
-                  <DocumentTextIcon className="w-12 h-12 text-gray-400 dark:text-gray-500"/>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white relative z-10">{t.quiz.emptyTitle}</h3>
-                <p className="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400 relative z-10">{t.quiz.emptySubtitle}</p>
-                 <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="mt-8 inline-flex items-center px-6 py-3 text-sm font-bold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-xl transition-all transform hover:-translate-y-1"
-                >
-                    <PlusIcon className="w-5 h-5 mr-2" />
-                    {t.quiz.createQuiz}
+              <EmptyState icon={faListCheck} title={t.quiz.emptyTitle} text={t.quiz.emptySubtitle}>
+                <button onClick={() => setIsModalOpen(true)} className="btn-ink h-11 px-5">
+                  <FontAwesomeIcon icon={faPlus} />
+                  {t.quiz.createQuiz}
                 </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+              </EmptyState>
+            ))}
+        </div>
+      </Page>
     </>
   );
 };
 
 export default function QuizPage() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-950">
-        <div className="w-10 h-10 border-4 border-gray-200 border-t-[#00A2D8] rounded-full animate-spin"></div>
-      </div>
-    }>
+    <Suspense fallback={<Spinner className="h-screen" />}>
       <QuizContent />
     </Suspense>
-  )
+  );
 }

@@ -23,8 +23,98 @@ model User {
   quizzes     Quiz[]
   quizResults QuizResult[]
   flashcards  Flashcard[]
+  materials   Material[]
 
   @@map("users")
+}
+
+/// Slide/materi milik dosen. Dipakai sebagai sumber kebenaran (ground truth)
+/// saat membandingkannya dengan catatan mahasiswa. Dipisahkan dari Note supaya
+/// "tulisan mahasiswa" dan "materi dosen" tidak lagi tercampur di satu tabel.
+model Material {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  title       String   @db.VarChar(200)
+  filePath    String   @map("file_path") @db.Text
+  fileType    String   @map("file_type") @db.VarChar(20)
+  fileSize    Int?     @map("file_size")
+  pageCount   Int?     @map("page_count")
+  /// pending | processing | done | failed
+  status      String   @default("pending") @db.VarChar(20)
+  /// text_layer  = teks per halaman terbaca langsung dari berkas (nomor halaman pasti)
+  /// vision_pdf  = berkas dibaca Gemini secara utuh (nomor halaman hasil inferensi)
+  extractMode String?  @map("extract_mode") @db.VarChar(20)
+  errorReason String?  @map("error_reason") @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  points SlidePoint[]
+  notes  Note[]
+
+  @@index([userId, createdAt])
+  @@map("materials")
+}
+
+/// Satu klaim/konsep dari satu halaman slide. Unit terkecil yang nanti
+/// dibandingkan dengan catatan mahasiswa untuk menemukan celah.
+model SlidePoint {
+  id          Int     @id @default(autoincrement())
+  materialId  Int     @map("material_id")
+  page        Int
+  orderIndex  Int     @map("order_index")
+  /// definisi | rumus | proses | contoh | klasifikasi | syarat
+  pointType   String  @map("point_type") @db.VarChar(20)
+  text        String  @db.Text
+  sourceQuote String? @map("source_quote") @db.Text
+
+  material  Material       @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  gaps      NoteGap[]
+  questions QuizQuestion[]
+
+  @@index([materialId, page, orderIndex])
+  @@map("slide_points")
+}
+
+/// F2 — hasil perbandingan satu catatan mahasiswa terhadap satu poin slide.
+/// Inilah "celah catatan" yang jadi kebaruan penelitian: selisih antara apa
+/// yang ada di slide dosen dan apa yang benar-benar dicatat mahasiswa.
+model NoteGap {
+  id                  Int       @id @default(autoincrement())
+  noteId              Int       @map("note_id")
+  slidePointId        Int       @map("slide_point_id")
+  /// covered   = tercatat, isinya sepadan
+  /// partial   = tercatat tapi kehilangan bagian penting
+  /// incorrect = tercatat tapi bertentangan dengan slide
+  /// missing   = tidak ada jejaknya di catatan
+  /// dismissed = mahasiswa menyatakan catatannya sudah benar
+  status              String    @db.VarChar(16)
+  /// Keyakinan model terhadap labelnya, 0..1. Ditampilkan ke mahasiswa supaya
+  /// sistem tidak terkesan memvonis dengan pasti.
+  confidence          Float?
+  /// Alasan singkat dari AI, jadi mahasiswa bisa menilai sendiri keputusannya.
+  aiReason            String?   @map("ai_reason") @db.Text
+  /// Potongan catatan mahasiswa yang dipakai sebagai dasar penilaian.
+  noteEvidence        String?   @map("note_evidence") @db.Text
+  /// Status sebelum dibantah mahasiswa, supaya bantahan bisa dibatalkan dan
+  /// supaya koreksi manusia bisa dihitung sebagai data evaluasi akurasi.
+  statusBefore        String?   @map("status_before") @db.VarChar(16)
+  dismissedAt         DateTime? @map("dismissed_at")
+  /// Terisi saat celah berhasil ditutup lewat lingkar perbaikan (F6).
+  closedAt            DateTime? @map("closed_at")
+  /// Berapa kali mahasiswa mencoba menutup celah ini lewat F6. Metrik untuk
+  /// Bab Hasil: berapa percobaan rata-rata sampai sebuah celah tertutup.
+  remediationAttempts Int       @default(0) @map("remediation_attempts")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  note       Note           @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  slidePoint SlidePoint     @relation(fields: [slidePointId], references: [id], onDelete: Cascade)
+  questions  QuizQuestion[]
+
+  @@unique([noteId, slidePointId])
+  @@index([noteId, status])
+  @@map("note_gaps")
 }
 
 model Folder {
@@ -40,41 +130,61 @@ model Folder {
 }
 
 model Note {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
-  folderId  Int?     @map("folder_id")
-  title     String   @db.VarChar(150)
-  content   String   @db.Text
-  filePath  String?  @db.Text @map("file_path")
-  fileType  String?  @db.VarChar(50) @map("file_type")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id            Int      @id @default(autoincrement())
+  userId        Int      @map("user_id")
+  folderId      Int?     @map("folder_id")
+  /// Slide yang dicatat. Null untuk catatan bebas.
+  materialId    Int?     @map("material_id")
+  title         String   @db.VarChar(150)
+  content       String   @db.Text
+  /// true = isi catatan ditulis AI (mode "Ringkasan Dosen"), bukan tulisan mahasiswa.
+  /// Catatan seperti ini DIKECUALIKAN dari analisis celah, karena ia lahir dari
+  /// slide sehingga tidak mungkin punya celah terhadap slide itu sendiri.
+  isAiGenerated Boolean  @default(false) @map("is_ai_generated")
+  /// Kolom lama, dipertahankan agar materi yang diunggah sebelum pemisahan
+  /// Material/Note tetap bisa dibuka. Unggahan baru memakai relasi `material`.
+  filePath      String?  @map("file_path") @db.Text
+  fileType      String?  @map("file_type") @db.VarChar(50)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  folder    Folder?    @relation(fields: [folderId], references: [id], onDelete: Cascade)
-  flashcards Flashcard[]
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder            Folder?            @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  material          Material?          @relation(fields: [materialId], references: [id], onDelete: SetNull)
+  flashcards        Flashcard[]
+  gaps              NoteGap[]
+  gapQuizzes        Quiz[]
+  coverageSnapshots CoverageSnapshot[]
 
+  @@index([materialId])
   @@map("notes")
 }
 
 enum SourceType {
   topic
   note
+  /// F3 — soal dibangkitkan HANYA dari celah catatan (poin slide yang
+  /// belum, kurang, atau keliru dicatat).
+  gap
 }
 
 model Quiz {
-  id           Int      @id @default(autoincrement())
-  userId       Int      @map("user_id")
-  sourceType   SourceType   @map("source_type")
-  sourceValue  String   @map("source_value")
-  numQuestions Int      @map("num_questions")
+  id           Int        @id @default(autoincrement())
+  userId       Int        @map("user_id")
+  sourceType   SourceType @map("source_type")
+  sourceValue  String     @map("source_value")
+  numQuestions Int        @map("num_questions")
   difficulty   String?
-  createdAt    DateTime @default(now()) @map("created_at")
+  /// Untuk kuis celah (sourceType = gap): catatan yang celahnya diuji.
+  noteId       Int?       @map("note_id")
+  createdAt    DateTime   @default(now()) @map("created_at")
 
-  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  questions     QuizQuestion[]
-  results       QuizResult[]
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  note      Note?          @relation(fields: [noteId], references: [id], onDelete: SetNull)
+  questions QuizQuestion[]
+  results   QuizResult[]
 
+  @@index([noteId])
   @@map("quizzes")
 }
 
@@ -86,19 +196,30 @@ model QuizQuestion {
   optionB       String  @map("option_b")
   optionC       String?
   optionD       String?
-  correctAnswer String  @db.Char(1) @map("correct_answer")
+  correctAnswer String  @map("correct_answer") @db.Char(1)
+  /// Asal-usul soal (F3). Inilah yang memungkinkan jawaban salah diarahkan
+  /// kembali ke halaman slide yang tepat (F5) dan ke celah yang harus
+  /// ditutup (F6). Null untuk soal dari kuis topik/catatan biasa.
+  slidePointId  Int?    @map("slide_point_id")
+  slidePage     Int?    @map("slide_page")
+  gapId         Int?    @map("gap_id")
+  /// Pembahasan singkat: kenapa jawaban itu benar, merujuk ke isi slide.
+  explanation   String? @db.Text
 
-  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  quiz       Quiz        @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  slidePoint SlidePoint? @relation(fields: [slidePointId], references: [id], onDelete: SetNull)
+  gap        NoteGap?    @relation(fields: [gapId], references: [id], onDelete: SetNull)
 
+  @@index([gapId])
   @@map("quiz_questions")
 }
 
 model QuizResult {
-  id       Int      @id @default(autoincrement())
-  quizId   Int      @map("quiz_id")
-  userId   Int      @map("user_id")
-  score    Int
-  takenAt  DateTime @default(now()) @map("taken_at")
+  id      Int      @id @default(autoincrement())
+  quizId  Int      @map("quiz_id")
+  userId  Int      @map("user_id")
+  score   Int
+  takenAt DateTime @default(now()) @map("taken_at")
 
   quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -112,11 +233,37 @@ model Flashcard {
   userId    Int      @map("user_id")
   noteId    Int      @map("note_id")
   frontText String   @map("front_text")
-  backText  String   @db.Text @map("back_text")
+  backText  String   @map("back_text") @db.Text
   createdAt DateTime @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
 
   @@map("flashcards")
+}
+
+/// F7 — riwayat Skor Kelengkapan Catatan.
+///
+/// Satu baris setiap kali skor berubah: setelah analisis penuh (F2), setelah
+/// celah ditutup lewat perbaikan (F6), dan setelah mahasiswa membantah atau
+/// membatalkan bantahan (F4). Inilah data "sebelum vs sesudah" untuk Bab Hasil.
+model CoverageSnapshot {
+  id        Int      @id @default(autoincrement())
+  noteId    Int      @map("note_id")
+  covered   Int
+  partial   Int
+  incorrect Int
+  missing   Int
+  dismissed Int
+  total     Int
+  /// Persentase 0..100, dengan satu angka desimal.
+  score     Float
+  /// analysis | remediation | dismiss | undismiss
+  trigger   String   @db.VarChar(20)
+  takenAt   DateTime @default(now()) @map("taken_at")
+
+  note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@index([noteId, takenAt])
+  @@map("coverage_snapshots")
 }

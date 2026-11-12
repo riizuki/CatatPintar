@@ -60,10 +60,15 @@ export async function POST(request, { params }) {
             },
         });
         
-        // 5. Return score and the correct answers for review
+        // 5. Return score and the correct answers for review.
+        // Untuk kuis celah (F3), sertakan juga asal-usul soal supaya jawaban
+        // yang salah bisa diarahkan kembali ke halaman slide sumbernya (F5).
         const reviewData = quiz.questions.map(q => ({
             questionId: q.id,
             correctAnswer: q.correctAnswer,
+            slidePage: q.slidePage ?? null,
+            gapId: q.gapId ?? null,
+            explanation: q.explanation ?? null,
         }));
 
         return NextResponse.json({ score, correctAnswers: reviewData });

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import prisma from '@/lib/prisma';
+import { hashPassword, validatePassword } from '@/lib/auth/password';
 
 export async function GET(request) {
     const session = await getServerSession(authOptions);
@@ -62,10 +63,12 @@ export async function PUT(request) {
         };
 
         if (password) {
-            if (password.length < 6) { // Example: password minimum length
-                return NextResponse.json({ message: 'Password must be at least 6 characters long' }, { status: 400 });
+            const passwordError = validatePassword(password);
+            if (passwordError) {
+                return NextResponse.json({ message: passwordError }, { status: 400 });
             }
-            dataToUpdate.password = password; // Store plain text password for now
+            // Disimpan sebagai hash bcrypt, tidak pernah sebagai teks biasa.
+            dataToUpdate.password = await hashPassword(password);
         }
 
         const updatedUser = await prisma.user.update({

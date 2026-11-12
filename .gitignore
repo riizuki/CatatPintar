@@ -42,3 +42,6 @@ next-env.d.ts
 catat_pintar.sql
 /src/generated/prisma
 /public/uploads/
+
+# berkas materi yang diunggah (di luar public/, diakses lewat API terproteksi)
+/var/

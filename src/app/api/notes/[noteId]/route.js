@@ -31,6 +31,13 @@ export async function GET(request, { params }) {
   try {
     const note = await prisma.note.findUnique({
       where: { id: parseInt(noteId) },
+      // Materi yang dicatat, supaya editor bisa menampilkan poin-poin slidenya
+      // di samping (panel bahan catatan).
+      include: {
+        material: {
+          select: { id: true, title: true, fileType: true, status: true, pageCount: true },
+        },
+      },
     });
     return NextResponse.json(note);
   } catch (error) {

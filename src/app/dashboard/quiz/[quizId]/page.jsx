@@ -3,7 +3,24 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeftIcon, CheckIcon, XMarkIcon, LightBulbIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft, faArrowUpRightFromSquare, faCheck, faLightbulb, faMagnifyingGlassChart, faPaperPlane, faPenToSquare, faRotateRight, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { ErrorNote, Page, Spinner, cls } from "../../../components/ui/kit";
+
+const OPTIONS = ["A", "B", "C", "D"];
+
+/* Nilai besar ala coretan guru */
+function BigGrade({ score }) {
+  const color = score >= 80 ? "text-[var(--right)]" : score >= 60 ? "text-amber-500" : "text-[var(--margin)]";
+  return (
+    <div className={`relative mx-auto flex h-40 w-48 items-center justify-center ${color}`}>
+      <svg className="absolute inset-0 h-full w-full" viewBox="0 0 96 80" fill="none" aria-hidden="true">
+        <path d="M80 14C64 2 26 4 12 22C0 38 10 66 44 72C76 78 94 58 88 36C85 26 76 18 60 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+      <span className="hand text-7xl leading-none">{score}</span>
+    </div>
+  );
+}
 
 const QuizTakingPage = () => {
     const params = useParams();
@@ -46,7 +63,9 @@ const QuizTakingPage = () => {
                     const resultData = await resultRes.json();
                     setResult({
                         score: resultData.score,
-                        correctAnswers: quizData.questions.map(q => ({
+                        // Kunci jawaban kini dikirim oleh rute result. Fallback lama
+                        // dipertahankan untuk berjaga-jaga, walau isinya selalu kosong.
+                        correctAnswers: resultData.correctAnswers ?? quizData.questions.map(q => ({
                             questionId: q.id,
                             correctAnswer: q.correctAnswer,
                         })),
@@ -141,177 +160,258 @@ const QuizTakingPage = () => {
         setError("");
     };
 
-    if (loading) return (
-      <div className="flex items-center justify-center h-[calc(100vh-100px)]">
-        <div className="w-10 h-10 border-4 border-gray-200 border-t-[#00A2D8] rounded-full animate-spin"></div>
-      </div>
+    if (loading) return <Spinner className="h-[calc(100vh-140px)]" />;
+    if (error && !quiz)
+        return (
+            <Page>
+                <ErrorNote>Kesalahan: {error}</ErrorNote>
+            </Page>
+        );
+    if (!quiz) return <Page><p className="text-[var(--ink-soft)]">Kuis tidak ditemukan.</p></Page>;
+
+    const backLink = (
+        <Link href="/dashboard/quiz" className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--ink-soft)] hover:text-[var(--ink)]">
+            <FontAwesomeIcon icon={faArrowLeft} />
+            Daftar kuis
+        </Link>
     );
-    if (error) return <div className="p-6 md:p-8 text-red-500 bg-red-50 dark:bg-red-900/20 rounded-xl m-8 text-center font-medium">Kesalahan: {error}</div>;
-    if (!quiz) return <div className="p-6 md:p-8 text-center text-gray-700 dark:text-gray-300">Kuis tidak ditemukan.</div>;
 
+    /* ================= HASIL ================= */
     if (result) {
-        const correctAnswersMap = new Map(result.correctAnswers.map(a => [a.questionId, a.correctAnswer]));
-        
-        const processAnalysisText = (text = '') => {
-            const cleanedText = text
-                .replace(/###?#?#?\s/g, '')
-                .replace(/(\*\*|__)/g, '')
-                .replace(/(\*|_)/g, '')
-                .replace(/`/g, '')
-                .replace(/---/g, '')
-                .replace(/[🚀💡✨🔍]/g, '')
-                .trim();
-            
-            return cleanedText.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 0);
-        };
+        const correctAnswersMap = new Map(result.correctAnswers.map((a) => [a.questionId, a.correctAnswer]));
+        const reviewMap = new Map(result.correctAnswers.map((a) => [a.questionId, a]));
+        // Kuis celah (F3): jawaban salah diarahkan ke halaman slide sumbernya.
+        const isGapQuiz = quiz.sourceType === "gap";
+        const gapMaterial = quiz.note?.material ?? null;
+        const slideHref = (page) =>
+            gapMaterial && gapMaterial.fileType === "pdf" && page
+                ? `/api/materials/${gapMaterial.id}/file#page=${page}`
+                : null;
+        const correctCount = result.correctAnswers.filter((a) => a.correctAnswer === answers[a.questionId]).length;
+        const answeredThisSession = Object.keys(answers).length > 0;
 
-        const shortenedAnalysis = `GG, kuisnya selesai! Pemahaman dasarmu udah oke. Biar makin jago, ini 2 konsep yang wajib kamu kuasai:\n\n**1. Virtual DOM itu buat ngebut.** Anggap aja React punya 'contekan' dari UI asli. Waktu ada perubahan, React cuma update bagian yang perlu di contekan itu, bukan gambar ulang semuanya. Hasilnya? Aplikasi jadi super responsif dan anti lemot.\n\n**2. Properti 'key' itu 'name tag'.** Setiap item di list butuh \`key\` sebagai penanda unik. Tanpa itu, React bisa 'salah kenal' waktu datanya di-filter atau diurutkan, yang bikin tampilan jadi error. Jadi, \`key\` itu wajib biar UI kamu stabil.\n\n**Tips Praktis:** Coba bikin to-do list, lalu hapus salah satu item dari tengah. Rasakan bedanya saat kamu pakai \`index\` vs ID unik sebagai \`key\`. Kamu bakal langsung paham. Keep grinding! 🚀`;
-
-        const analysisParagraphs = processAnalysisText(aiAnalysis || shortenedAnalysis);
+        const processAnalysisText = (text = "") =>
+            text
+                .replace(/###?#?#?\s/g, "")
+                .replace(/(\*\*|__)/g, "")
+                .replace(/(\*|_)/g, "")
+                .replace(/`/g, "")
+                .replace(/---/g, "")
+                .trim()
+                .split(/\n\s*\n/)
+                .map((p) => p.trim())
+                .filter((p) => p.length > 0);
 
         return (
-            <div className="p-6 md:p-10 max-w-4xl mx-auto min-h-screen">
-                <div className="text-center mb-12 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-3xl p-8 sm:p-12 border border-gray-200/50 dark:border-gray-700/50">
-                    <h1 className="text-xl sm:text-2xl font-bold text-gray-500 dark:text-gray-400 mb-4">Skor Akhir</h1>
-                    <p className="text-6xl sm:text-7xl md:text-8xl font-extrabold text-gray-900 dark:text-white">
-                        <span className="text-transparent bg-clip-text bg-[#00A2D8] hover:bg-[#008EB2]">{result.score}</span>%
-                    </p>
-                    <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 mt-6 font-medium">
-                        Anda menjawab <span className="text-emerald-500 font-bold">{result.correctAnswers.filter(a => a.correctAnswer === answers[a.questionId]).length}</span> dari {quiz.questions.length} pertanyaan dengan benar.
-                    </p>
-                    <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-                        <button
-                            onClick={handleAnalyzeWeaknesses}
-                            disabled={isAnalyzing}
-                            className="w-full sm:w-auto flex items-center justify-center px-6 py-3 sm:px-8 text-sm sm:text-base font-bold text-white bg-sky-500 hover:bg-sky-600 rounded-xl disabled:opacity-50 transition-all transform hover:-translate-y-1"
-                        >
-                            {isAnalyzing ? 'Menganalisis...' : <><LightBulbIcon className="w-5 h-5 mr-2" />Analisis Kelemahan AI</>}
+            <Page>
+                {backLink}
+
+                <section className={`ruled relative mt-4 overflow-hidden px-6 py-10 text-center ${cls.card}`}>
+                    <span className="margin-line left-8 hidden sm:block" aria-hidden="true" />
+                    <p className="font-semibold text-[var(--ink-soft)]">Skor akhir</p>
+                    <BigGrade score={result.score} />
+                    {answeredThisSession && (
+                        <p className="text-lg">
+                            Kamu menjawab <strong className="text-[var(--right)]">{correctCount}</strong> dari {quiz.questions.length} soal dengan benar.
+                        </p>
+                    )}
+                    <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+                        <button onClick={handleAnalyzeWeaknesses} disabled={isAnalyzing} className="btn-ink h-11 px-6 disabled:opacity-60">
+                            <FontAwesomeIcon icon={faLightbulb} />
+                            {isAnalyzing ? "Menganalisis…" : "Analisis kelemahan dengan AI"}
                         </button>
-                        <button
-                            onClick={handleRetakeQuiz}
-                            className="w-full sm:w-auto flex items-center justify-center px-6 py-3 sm:px-8 text-sm sm:text-base font-bold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
-                        >
-                            <ArrowPathIcon className="w-5 h-5 mr-2" />Coba Lagi
+                        <button onClick={handleRetakeQuiz} className={`${cls.btnOutline} h-11`}>
+                            <FontAwesomeIcon icon={faRotateRight} />
+                            Coba lagi
                         </button>
+                        {isGapQuiz && quiz.note && (
+                            <Link href={`/dashboard/notes/${quiz.note.id}/gaps`} className={`${cls.btnOutline} h-11`}>
+                                <FontAwesomeIcon icon={faMagnifyingGlassChart} />
+                                Kembali ke Celah Catatan
+                            </Link>
+                        )}
                     </div>
-                </div>
+                    {uiMessage && <p className="mt-4 font-semibold text-[var(--wrong)]">{uiMessage}</p>}
+                </section>
 
                 {aiAnalysis && (
-                    <div className="mt-12 p-8 bg-gradient-to-br from-sky-50 to-indigo-50 dark:from-sky-900/20 dark:to-indigo-900/20 rounded-3xl border border-sky-100 dark:border-sky-800">
-                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
-                            <LightBulbIcon className="w-6 sm:w-7 h-6 sm:h-7 mr-3 text-sky-500" />Saran Analisis AI
+                    <section className="mt-8 rounded-xl border-2 border-[var(--ink-fixed)] bg-[var(--hl-blue)] p-6 text-[var(--ink-fixed)]">
+                        <h2 className="flex items-center gap-2 text-xl font-extrabold">
+                            <FontAwesomeIcon icon={faLightbulb} />
+                            Saran dari AI
                         </h2>
-                        <div className="space-y-4">
-                            {analysisParagraphs.map((paragraph, index) => (
-                                <p key={index} className="text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed">
-                                    {paragraph}
-                                </p>
+                        <div className="mt-3 space-y-3 leading-relaxed">
+                            {processAnalysisText(aiAnalysis).map((p, i) => (
+                                <p key={i}>{p}</p>
                             ))}
                         </div>
-                    </div>
+                    </section>
                 )}
 
-                <div className="space-y-8 mt-16">
-                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Review Jawaban</h2>
+                <h2 className="mt-12 mb-5 text-2xl font-extrabold tracking-tight">Pembahasan jawaban</h2>
+                <ol className="space-y-5">
                     {quiz.questions.map((q, index) => {
                         const userAnswer = answers[q.id];
                         const correctAnswer = correctAnswersMap.get(q.id);
                         const isCorrect = userAnswer === correctAnswer;
-
-                        const getOptionClass = (option) => {
-                            if (option === correctAnswer) return 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-500 text-emerald-700 dark:text-emerald-400 font-bold';
-                            if (option === userAnswer && !isCorrect) return 'bg-rose-50 dark:bg-rose-900/20 border-rose-500 text-rose-700 dark:text-rose-400 font-bold';
-                            return 'bg-gray-50/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300';
-                        };
-
                         return (
-                            <div key={q.id} className="p-6 md:p-8 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-700/50">
-                                <p className="font-bold text-lg sm:text-xl text-gray-900 dark:text-white mb-6 leading-relaxed">{index + 1}. {q.question}</p>
-                                <div className="space-y-3">
-                                    {['A', 'B', 'C', 'D'].map(opt => (
-                                        <div key={opt} className={`p-4 rounded-xl border-2 ${getOptionClass(opt)} flex justify-between items-center transition-all`}>
-                                            <span className="text-sm sm:text-base">{opt}. {q[`option${opt}`]}</span>
-                                            {opt === correctAnswer && <CheckIcon className="w-6 h-6 text-emerald-500" />}
-                                            {opt === userAnswer && !isCorrect && <XMarkIcon className="w-6 h-6 text-rose-500" />}
-                                        </div>
-                                    ))}
+                            <li key={q.id} className={`p-5 sm:p-6 ${cls.card}`}>
+                                <div className="flex items-start gap-3">
+                                    {userAnswer && (
+                                        <span className={`hand shrink-0 text-3xl leading-none ${isCorrect ? "text-[var(--right)]" : "text-[var(--margin)]"}`} aria-label={isCorrect ? "Benar" : "Salah"}>
+                                            <FontAwesomeIcon icon={isCorrect ? faCheck : faXmark} />
+                                        </span>
+                                    )}
+                                    <p className="text-lg font-bold leading-relaxed">
+                                        {index + 1}. {q.question}
+                                    </p>
                                 </div>
-                            </div>
+                                {isGapQuiz && reviewMap.get(q.id)?.slidePage && (
+                                    <span className="mt-2 inline-block rounded bg-[var(--rule)] px-2 py-0.5 text-xs font-bold">
+                                        Slide halaman {reviewMap.get(q.id).slidePage}
+                                    </span>
+                                )}
+                                <div className="mt-4 grid gap-2">
+                                    {OPTIONS.map((opt) => {
+                                        if (!q[`option${opt}`]) return null;
+                                        const right = opt === correctAnswer;
+                                        const wrongPick = opt === userAnswer && !isCorrect;
+                                        return (
+                                            <div
+                                                key={opt}
+                                                className={`flex items-center gap-3 rounded-[10px] border-2 px-4 py-2.5 ${
+                                                    right
+                                                        ? "border-[var(--right)] font-semibold text-[var(--right)]"
+                                                        : wrongPick
+                                                          ? "border-[var(--wrong)] text-[var(--wrong)] line-through"
+                                                          : "border-[var(--rule)] text-[var(--ink-soft)]"
+                                                }`}
+                                            >
+                                                <span className="font-bold">{opt}.</span>
+                                                <span className="flex-1">{q[`option${opt}`]}</span>
+                                                {right && <FontAwesomeIcon icon={faCheck} />}
+                                                {wrongPick && <FontAwesomeIcon icon={faXmark} />}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                {isGapQuiz && reviewMap.get(q.id)?.explanation && (
+                                    <p className="mt-4 rounded-[10px] bg-[var(--hl-green)] px-4 py-3 text-sm text-[var(--ink-fixed)]">
+                                        {reviewMap.get(q.id).explanation}
+                                    </p>
+                                )}
+                                {/* F5 + F6: jawaban salah → lihat slidenya → lengkapi catatannya. */}
+                                {isGapQuiz && userAnswer && !isCorrect && (
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        {slideHref(reviewMap.get(q.id)?.slidePage) && (
+                                            <a
+                                                href={slideHref(reviewMap.get(q.id).slidePage)}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className={`${cls.btnOutline} h-9 text-sm`}
+                                            >
+                                                <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
+                                                Buka slide halaman {reviewMap.get(q.id).slidePage}
+                                            </a>
+                                        )}
+                                        {quiz.note && reviewMap.get(q.id)?.gapId && (
+                                            <Link
+                                                href={`/dashboard/notes/${quiz.note.id}/gaps?gap=${reviewMap.get(q.id).gapId}`}
+                                                className="btn-ink h-9 px-4 text-sm"
+                                            >
+                                                <FontAwesomeIcon icon={faPenToSquare} />
+                                                Lengkapi catatan untuk poin ini
+                                            </Link>
+                                        )}
+                                    </div>
+                                )}
+                            </li>
                         );
                     })}
-                </div>
-                <div className="text-center mt-12 mb-10">
-                    <Link href="/dashboard/quiz" className="w-full sm:w-auto inline-flex justify-center px-8 py-3.5 text-base font-bold text-white bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 dark:hover:bg-gray-600 rounded-xl transition-all transform hover:-translate-y-1">
-                        Kembali ke Daftar Kuis
+                </ol>
+                <div className="mt-10 text-center">
+                    <Link href="/dashboard/quiz" className={`${cls.btnOutline} h-11 px-6`}>
+                        <FontAwesomeIcon icon={faArrowLeft} />
+                        Kembali ke daftar kuis
                     </Link>
                 </div>
-            </div>
+            </Page>
         );
     }
 
+    /* ================= MENGERJAKAN ================= */
+    const answered = Object.keys(answers).length;
+    const total = quiz.questions.length;
+
     return (
-        <div className="p-6 md:p-10 max-w-4xl mx-auto min-h-screen">
-            <header className="mb-10 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl p-6 rounded-3xl border border-gray-200/50 dark:border-gray-700/50 relative">
-                <div className="flex flex-col md:flex-row items-center md:justify-between gap-4">
-                    <button onClick={() => router.push('/dashboard/quiz')} className="absolute md:relative left-6 top-6 md:left-auto md:top-auto p-3 bg-white/80 dark:bg-gray-700/80 backdrop-blur rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-                        <ArrowLeftIcon className="w-6 h-6 text-gray-700 dark:text-gray-300" />
-                    </button>
-                    <div className="text-center md:text-left flex-1 px-12 md:px-4">
-                        <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white capitalize truncate">
-                            Kuis: {quiz.sourceType} - {quiz.sourceValue}
-                        </h1>
-                        <div className="flex flex-wrap justify-center md:justify-start gap-x-4 gap-y-2 mt-3">
-                            <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-[#00A2D8] dark:text-[#4CC1EE] text-xs font-bold rounded-full">
-                                {quiz.numQuestions} Soal
-                            </span>
-                            {quiz.sourceType === 'topic' && quiz.difficulty && (
-                                <span className="px-3 py-1 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 text-xs font-bold rounded-full">
-                                    {quiz.difficulty}
-                                </span>
-                            )}
-                        </div>
-                    </div>
+        <Page>
+            {backLink}
+            <header className="mt-4">
+                <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{quiz.sourceValue}</h1>
+                <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="rounded-md bg-[var(--hl-yellow)] px-2.5 py-1 text-sm font-bold text-[var(--ink-fixed)]">{quiz.numQuestions} soal</span>
+                    {quiz.sourceType === "topic" && quiz.difficulty && (
+                        <span className="rounded-md bg-[var(--hl-pink)] px-2.5 py-1 text-sm font-bold text-[var(--ink-fixed)]">{quiz.difficulty}</span>
+                    )}
                 </div>
             </header>
 
-            <div className="space-y-8">
+            <ol className="mt-8 space-y-6">
                 {quiz.questions.map((q, index) => (
-                    <div key={q.id} className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-700/50 p-6 sm:p-10">
-                        <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white mb-8 leading-relaxed">
-                            <span className="text-[#00A2D8]">{index + 1}.</span> {q.question}
+                    <li key={q.id} className={`p-5 sm:p-7 ${cls.card}`}>
+                        <p className="text-lg font-bold leading-relaxed sm:text-xl">
+                            <span className="hand mr-2 text-2xl text-[var(--margin)]">{index + 1}.</span>
+                            {q.question}
                         </p>
-                        <div className="space-y-4">
-                            {['A', 'B', 'C', 'D'].map(opt => q[`option${opt}`] && (
-                                <div
-                                    key={opt}
-                                    onClick={() => handleSelectAnswer(q.id, opt)}
-                                    className={`p-5 rounded-2xl cursor-pointer transition-all duration-300 ease-out border-2 group ${answers[q.id] === opt ? 'bg-blue-50 dark:bg-blue-900/20 border-[#00A2D8] text-[#00A2D8] dark:text-[#4CC1EE] transform scale-[1.02]' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-[#00A2D8]/50 text-gray-700 dark:text-gray-300' }`}
-                                >
-                                    <span className="text-base sm:text-lg font-medium flex items-center">
-                                        <span className={`flex items-center justify-center w-8 h-8 rounded-full mr-4 text-sm font-bold transition-colors ${answers[q.id] === opt ? 'bg-[#00A2D8] text-white' : 'bg-gray-100 dark:bg-gray-700 group-hover:bg-[#00A2D8]/20 group-hover:text-[#00A2D8]'}`}>
+                        <div className="mt-5 grid gap-2.5" role="radiogroup" aria-label={`Soal ${index + 1}`}>
+                            {OPTIONS.map((opt) => {
+                                if (!q[`option${opt}`]) return null;
+                                const picked = answers[q.id] === opt;
+                                return (
+                                    <button
+                                        key={opt}
+                                        type="button"
+                                        role="radio"
+                                        aria-checked={picked}
+                                        onClick={() => handleSelectAnswer(q.id, opt)}
+                                        className={`group flex items-center gap-4 rounded-xl border-2 px-4 py-3 text-left transition-colors ${
+                                            picked ? "border-[var(--ink-fixed)] bg-[var(--hl-yellow)] text-[var(--ink-fixed)]" : "border-[var(--rule)] hover:border-[var(--ink-soft)]"
+                                        }`}
+                                    >
+                                        {/* bulatan ala lembar jawaban */}
+                                        <span
+                                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-extrabold transition-colors ${
+                                                picked ? "border-[var(--ink-fixed)] bg-[var(--ink-fixed)] text-white" : "border-[var(--ink-soft)] text-[var(--ink-soft)]"
+                                            }`}
+                                        >
                                             {opt}
                                         </span>
-                                        {q[`option${opt}`]}
-                                    </span>
-                                </div>
-                            ))}
+                                        <span className="font-medium">{q[`option${opt}`]}</span>
+                                    </button>
+                                );
+                            })}
                         </div>
-                    </div>
+                    </li>
                 ))}
-            </div>
-            <div className="mt-16 mb-10 flex flex-col items-center">
-                {uiMessage && (
-                    <p className="text-rose-500 bg-rose-50 dark:bg-rose-900/20 px-6 py-3 rounded-xl mb-6 text-sm sm:text-base font-bold animate-pulse">{uiMessage}</p>
-                )}
-                <button
-                    onClick={handleSubmit}
-                    disabled={isSubmitting || Object.keys(answers).length !== quiz.questions.length}
-                    className="w-full max-w-md px-8 py-4 text-lg font-extrabold text-white bg-[#00A2D8] hover:bg-[#008EB2] rounded-2xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A2D8] disabled:opacity-50 transition-all transform hover:-translate-y-1 disabled:hover:translate-y-0"
-                >
-                    {isSubmitting ? 'Mengirimkan...' : 'Kirim Jawaban'}
+            </ol>
+
+            {/* Bar kirim menempel di bawah, dengan progres */}
+            <div className={`sticky bottom-4 z-20 mt-8 flex flex-col gap-3 p-4 sm:flex-row sm:items-center ${cls.card}`}>
+                <div className="flex-1">
+                    <p className="text-sm font-semibold">
+                        {answered} dari {total} soal dijawab
+                    </p>
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--rule)]">
+                        <div className="h-full rounded-full bg-[var(--right)] transition-[width] duration-300" style={{ width: `${(answered / total) * 100}%` }} />
+                    </div>
+                    {uiMessage && <p className="mt-2 text-sm font-semibold text-[var(--wrong)]">{uiMessage}</p>}
+                </div>
+                <button onClick={handleSubmit} disabled={isSubmitting || answered !== total} className="btn-ink h-11 px-6 disabled:cursor-not-allowed disabled:opacity-50">
+                    <FontAwesomeIcon icon={faPaperPlane} />
+                    {isSubmitting ? "Mengirim…" : "Kirim jawaban"}
                 </button>
             </div>
-        </div>
+        </Page>
     );
 };
 

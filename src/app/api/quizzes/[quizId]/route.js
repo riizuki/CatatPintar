@@ -31,6 +31,15 @@ export async function GET(request, { params }) {
             quizId: true,
           },
         },
+        // Kuis celah (F3): catatan & materi sumbernya, untuk tautan balik ke
+        // halaman Celah Catatan dan ke halaman slide terkait.
+        note: {
+          select: {
+            id: true,
+            title: true,
+            material: { select: { id: true, title: true, fileType: true } },
+          },
+        },
       },
     });
 

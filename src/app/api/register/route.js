@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { hashPassword, validatePassword } from '@/lib/auth/password';
 
 export async function POST(request) {
   try {
@@ -8,6 +9,11 @@ export async function POST(request) {
 
     if (!fullName || !email || !password) {
       return NextResponse.json({ message: 'Salah satu Input Masih Kosong' }, { status: 400 });
+    }
+
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      return NextResponse.json({ message: passwordError }, { status: 400 });
     }
 
     const existingUser = await prisma.user.findUnique({
@@ -22,7 +28,8 @@ export async function POST(request) {
       data: {
         fullName,
         email,
-        password: password,
+        // Disimpan sebagai hash bcrypt, tidak pernah sebagai teks biasa.
+        password: await hashPassword(password),
       },
     });
 

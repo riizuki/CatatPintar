@@ -23,7 +23,25 @@ export async function GET(request, { params }) {
             return NextResponse.json({ message: 'Quiz result not found' }, { status: 404 });
         }
 
-        return NextResponse.json(quizResult);
+        // Kunci jawaban baru boleh dibuka SETELAH kuis dikerjakan. Sebelumnya
+        // halaman kuis mencoba membaca kunci dari GET /api/quizzes/[quizId],
+        // yang memang tidak mengirimkannya — sehingga pembahasan jawaban
+        // kosong setiap kali kuis yang sudah dikerjakan dibuka ulang.
+        const questions = await prisma.quizQuestion.findMany({
+            where: { quizId: quizResult.quizId },
+            select: { id: true, correctAnswer: true, slidePage: true, gapId: true, explanation: true },
+        });
+
+        return NextResponse.json({
+            ...quizResult,
+            correctAnswers: questions.map((q) => ({
+                questionId: q.id,
+                correctAnswer: q.correctAnswer,
+                slidePage: q.slidePage ?? null,
+                gapId: q.gapId ?? null,
+                explanation: q.explanation ?? null,
+            })),
+        });
 
     } catch (error) {
         console.error(`Error fetching quiz result for quizId ${quizId}:`, error);

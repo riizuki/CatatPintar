@@ -1,5 +1,6 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { hashPassword, verifyPassword } from '@/lib/auth/password';
 import prisma from '@/lib/prisma';
 
 export const authOptions = {
@@ -25,10 +26,24 @@ export const authOptions = {
           return null;
         }
 
-        const isPasswordValid = credentials.password === user.password;
+        const { valid, needsRehash } = await verifyPassword(credentials.password, user.password);
 
-        if (!isPasswordValid) {
+        if (!valid) {
           return null;
+        }
+
+        // Akun lama yang sandinya masih teks biasa: ganti dengan hash begitu
+        // pemiliknya berhasil masuk. Kegagalan di sini tidak boleh menggagalkan
+        // login — skrip migrasi akan menangkap sisanya.
+        if (needsRehash) {
+          try {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { password: await hashPassword(credentials.password) },
+            });
+          } catch (error) {
+            console.error(`Gagal meng-hash ulang kata sandi user ${user.id}:`, error);
+          }
         }
 
         return {
